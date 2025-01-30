@@ -10,16 +10,50 @@
             text-align: center; /* Center all text */
             margin: 0;
             padding: 0;
-            height: 100vh; /* Ensure full-page coverage */
+            height: 135vh; /* Ensure full-page coverage */
             color: white;
         }
         h1, h2 {
             color: black; /* Makes headers black */
         }
-
         a {
             color: #ffcc00; /* Makes links yellow */
         }
+        
+        /* Carousel Styles */
+        .carousel-container {
+            position: relative;
+            max-width: 400px;
+            margin: 20px auto;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+        .carousel-slide {
+            display: flex;
+            width: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-slide img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        
+        /* Navigation Buttons */
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 10;
+        }
+        .prev { left: 5px; }  /* Ensure visibility */
+        .next { right: 5px; } /* Ensure visibility */
+
     </style>
 </head>
 <body>
@@ -27,13 +61,57 @@
     <h2>About Me:</h2>
     <img src="./images/dylan.jpeg" alt="Dylan's Picture" width="200" height="275">
     <p style="font-size: 18px;">
-        Hello everyone! My name is Dylan. In this course, my ultimate goal it to be able 
+        Hello everyone! My name is Dylan. In this course, my ultimate goal is to be able 
         to create a genuine portfolio that I can link to the domain name that I have owned for <strong>YEARS!</strong> 
-        I have much experience in C++, arduino projects, Fusion 360, and 3D printing, but I hope to hone in my skills as a CTD major
+        I have much experience in C++, Arduino projects, Fusion 360, and 3D printing, but I hope to hone in my skills as a CTD major
         and continue to grow!
     </p>
     <p style="font-size: 18px;">
         <strong>Also,</strong> this is my favorite YouTube <a href="https://youtu.be/npIomYN8OGA?si=kPkX0n9dOBsthUZX">video!</a>
     </p>
+
+    <!-- Image Carousel -->
+    <div class="carousel-container">
+        <button class="prev" onclick="prevSlide()">&#10094;</button>
+        <div class="carousel-slide">
+            <img src="./images/image1.jpg" alt="Image 1">
+            <img src="./images/image2.jpg" alt="Image 2">
+            <img src="./images/image3.jpeg" alt="Image 3">
+        </div>
+        <button class="next" onclick="nextSlide()">&#10095;</button>
+    </div>
+
+    <script>
+        let slideIndex = 0;
+        const slides = document.querySelector('.carousel-slide');
+        const totalSlides = slides.children.length;
+        let slideInterval; // Variable to store interval
+
+        function showSlide(index) {
+            if (index >= totalSlides) slideIndex = 0;
+            else if (index < 0) slideIndex = totalSlides - 1;
+            else slideIndex = index;
+
+            slides.style.transform = `translateX(${-slideIndex * 100}%)`;
+        }
+
+        function nextSlide() {
+            showSlide(slideIndex + 1);
+            resetSlideTimer();
+        }
+
+        function prevSlide() {
+            showSlide(slideIndex - 1);
+            resetSlideTimer();
+        }
+
+        function resetSlideTimer() {
+            clearInterval(slideInterval); // Stop current timer
+            slideInterval = setInterval(nextSlide, 5000); // Restart timer
+        }
+
+        // Start the auto-slide timer
+        slideInterval = setInterval(nextSlide, 5000);
+    </script>
 </body>
 </html>
