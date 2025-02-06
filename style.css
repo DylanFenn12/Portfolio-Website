@@ -1,6 +1,6 @@
 /* General Body Styles */
 body {
-    background: linear-gradient(to top, rgb(51, 0, 255), rgb(255, 255, 255));
+    background: linear-gradient(to top, rgb(0, 0, 255), rgb(255, 255, 255));
     margin: 0;
     padding: 0;
     height: 160vh;
