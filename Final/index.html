@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Worst Phone Entry Plinko</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="container">
+    <h1>Worst Phone Number Entry</h1>
+    <div id="instructions">
+      Select a digit (0–9) and click <strong>OK</strong> to drop a ball into the Plinko board below.<br>
+      Balls stick in bins to form a phone number. Use <strong>Undo</strong> to remove the last drop,<br>
+      <strong>Restart</strong> to reset everything, or <strong>Enter</strong> to submit your number.<br>
+    </div>
+    <div id="controls">
+      <label>Digit: <input type="number" id="digit-input" min="0" max="9"></label>
+      <button id="drop-btn">OK</button>
+      <button id="undo-btn">Undo</button>
+      <button id="restart-btn">Restart</button>
+    </div>
+    <div id="board"></div>
+    <div id="phone-output">
+      <span class="label">Phone Number:</span>
+      <span id="phone-display">___-___-____</span>
+    </div>
+    <button id="enter-btn">Enter</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

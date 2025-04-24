@@ -1,0 +1,73 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg,#74ABE2 0%,#5563DE 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+  }
+  #container {
+    width: 90vw;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 { margin: 0 0 10px; color: #2c3e50; }
+  #instructions { margin-bottom:15px; text-align:center; color:#555; }
+  #controls { margin-bottom:15px; }
+  #controls input { width:50px; padding:6px; border:1px solid #ccc; border-radius:4px; }
+  #controls button {
+    margin-left:8px;
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    background:#3498db;
+    color:#fff;
+    font-size:1em;
+    cursor:pointer;
+    transition: background .2s;
+  }
+  #controls button:hover { background:#2980b9; }
+  #board {
+    position:relative;
+    width:100%;
+    height:60vh;
+    border:2px solid #333;
+    background:#ecf0f1;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  #phone-output {
+    margin-top:15px;
+    font-size:1.3em;
+    display:flex;
+    align-items:center;
+  }
+  #phone-output .label { font-weight:600; margin-right:8px; }
+  #phone-display {
+    background:#ecf0f1;
+    padding:6px 12px;
+    border-radius:4px;
+    letter-spacing:2px;
+  }
+  #enter-btn {
+    margin-top:10px;
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    background:#2ecc71;
+    color:#fff;
+    font-size:1em;
+    cursor:pointer;
+    transition: background .2s;
+  }
+  #enter-btn:hover { background:#27ae60; }
+  button:disabled { background:#bbb; cursor:not-allowed; }
+  
