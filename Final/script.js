@@ -1,26 +1,28 @@
 const { Engine, Render, Runner, Bodies, Composite, Events, Body } = Matter;
+
 const boardEl = document.getElementById('board');
+const displayEl = document.getElementById('phone-display');
+const inputEl = document.getElementById('digit-input');
+
 let engine, world, render, runner;
-const ROWS = 12, COLS = 12;
-let phoneDigits = Array(10).fill(null), containerBodies = [], droppedBalls = [];
+const COLS = 12, ROWS = 12;
+let digits = Array(10).fill(null);
+let bins = [], balls = [];
 
-// Adjust this to change horizontal peg spacing
-const SPACING = 1.3; // 1.0 = default, >1 wider, <1 tighter
-const PEG_RADIUS = 10; // change this to resize pegs
+const PEG_SIZE = 10;
+const SPACING = 1.3;
 
-function updateDisplay(){
-  let s = '';
-  phoneDigits.forEach((d,i) => {
-    if(i === 3 || i === 6) s += '-';
-    s += (d === null ? '_' : d);
-  });
-  document.getElementById('phone-display').textContent = s;
+function updateDisplay() {
+  displayEl.textContent = digits.map((d, i) => {
+    if (i === 3 || i === 6) return '-' + (d ?? '_');
+    return d ?? '_';
+  }).join('');
 }
 
-function initMatter(){
-  containerBodies = [];
-  droppedBalls = [];
-  engine = Engine.create(); world = engine.world;
+function initPhysics() {
+  engine = Engine.create();
+  world = engine.world;
+
   render = Render.create({
     element: boardEl,
     engine,
@@ -31,27 +33,33 @@ function initMatter(){
       background: '#ecf0f1'
     }
   });
-  Render.run(render);
-  runner = Runner.create(); Runner.run(runner, engine);
 
-  const W = boardEl.clientWidth, H = boardEl.clientHeight;
+  Render.run(render);
+  runner = Runner.create();
+  Runner.run(runner, engine);
+
+  const W = boardEl.clientWidth;
+  const H = boardEl.clientHeight;
+
   // walls
   Composite.add(world, [
-    Bodies.rectangle(W/2, -10, W, 20, { isStatic: true }),
-    Bodies.rectangle(-10, H/2, 20, H, { isStatic: true }),
-    Bodies.rectangle(W+10, H/2, 20, H, { isStatic: true })
+    Bodies.rectangle(W / 2, -10, W, 20, { isStatic: true }),
+    Bodies.rectangle(-10, H / 2, 20, H, { isStatic: true }),
+    Bodies.rectangle(W + 10, H / 2, 20, H, { isStatic: true })
   ]);
 
   // pegs
-  const pegX = (W / COLS) * SPACING;
-  const pegY = (H - 60) / (ROWS + 1);
-  const pegOffset = -33;
-  for(let r=0; r<ROWS; r++){
-    for(let c=0; c<COLS; c++){
-      const x = pegOffset + (c + (r%2?0.5:0)) * pegX + pegX/2;
-      const y = (r+1) * pegY;
+  const pegSpacingX = (W / COLS) * SPACING;
+  const pegSpacingY = (H - 60) / (ROWS + 1);
+  const offsetX = -33;
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const x = offsetX + (col + (row % 2 ? 0.5 : 0)) * pegSpacingX + pegSpacingX / 2;
+      const y = (row + 1) * pegSpacingY;
+
       Composite.add(world,
-        Bodies.circle(x, y, PEG_RADIUS, {
+        Bodies.circle(x, y, PEG_SIZE, {
           isStatic: true,
           restitution: 0.8,
           render: { fillStyle: '#2c3e50' }
@@ -60,41 +68,40 @@ function initMatter(){
     }
   }
 
-  // containers
-  const slotW = W / 10, gap = 4, floorH = 20;
-  for(let i=0; i<10; i++){
-    const cx = i * slotW + slotW/2;
-    const cont = Bodies.rectangle(
-      cx, H - floorH/2, slotW - gap, floorH,
-      { isStatic: true, label: 'container_' + i,
-        render: { fillStyle: '#bdc3c7', strokeStyle: '#7f8c8d', lineWidth: 1 }
+  // bottom bins
+  const slotW = W / 10;
+  const floorH = 20;
+  for (let i = 0; i < 10; i++) {
+    const x = i * slotW + slotW / 2;
+    const bin = Bodies.rectangle(x, H - floorH / 2, slotW - 4, floorH, {
+      isStatic: true,
+      label: `bin_${i}`,
+      render: {
+        fillStyle: '#bdc3c7',
+        strokeStyle: '#7f8c8d',
+        lineWidth: 1
       }
-    );
-    containerBodies.push(cont);
-    Composite.add(world, cont);
+    });
+    bins.push(bin);
+    Composite.add(world, bin);
   }
 
   // collisions
-  Events.on(engine, 'collisionStart', ev => {
-    ev.pairs.forEach(pair => {
-      let ball, cont;
-      if(pair.bodyA.label==='ball' && pair.bodyB.label.startsWith('container_')){
-        ball = pair.bodyA; cont = pair.bodyB;
-      } else if(pair.bodyB.label==='ball' && pair.bodyA.label.startsWith('container_')){
-        ball = pair.bodyB; cont = pair.bodyA;
-      }
-      if(ball && cont && !ball.recorded){
-        const idx = +cont.label.split('_')[1];
-        if(phoneDigits[idx]===null){
-          phoneDigits[idx] = ball.digit;
+  Events.on(engine, 'collisionStart', e => {
+    e.pairs.forEach(({ bodyA, bodyB }) => {
+      const [ball, bin] = [bodyA, bodyB].sort((a, b) => (a.label === 'ball') ? -1 : 1);
+
+      if (ball.label === 'ball' && bin.label.startsWith('bin_')) {
+        const index = +bin.label.split('_')[1];
+        if (digits[index] == null) {
+          digits[index] = ball.digit;
           updateDisplay();
-          cont.render.fillStyle = '#2ecc71';
+          bin.render.fillStyle = '#2ecc71';
           Body.setStatic(ball, true);
-          ball.binIndex = idx;
+          ball._binIndex = index;
         } else {
           Composite.remove(world, ball);
         }
-        ball.recorded = true;
       }
     });
   });
@@ -102,43 +109,64 @@ function initMatter(){
   // draw digits
   Events.on(render, 'afterRender', () => {
     const ctx = render.context;
-    ctx.font = '16px sans-serif'; ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
     world.bodies.forEach(b => {
-      if(b.label==='ball') ctx.fillText(b.digit, b.position.x, b.position.y);
+      if (b.label === 'ball') {
+        ctx.fillText(b.digit, b.position.x, b.position.y);
+      }
     });
   });
 }
 
-function dropBall(d){
+function dropBall(n) {
   const W = boardEl.clientWidth;
-  const startX = Math.random() * W;
-  const ball = Bodies.circle(startX, 20, 12, {
-    restitution: 0.5, frictionAir: 0.02, label: 'ball',
+  const ball = Bodies.circle(Math.random() * W, 20, 12, {
+    label: 'ball',
+    restitution: 0.5,
+    frictionAir: 0.02,
     render: { fillStyle: '#e74c3c' }
   });
-  ball.digit = d; ball.recorded = false; ball.binIndex = null;
-  Composite.add(world, ball); droppedBalls.push(ball);
+  ball.digit = n;
+  Composite.add(world, ball);
+  balls.push(ball);
 }
 
-document.getElementById('drop-btn').addEventListener('click', ()=>{
-  const v = parseInt(document.getElementById('digit-input').value);
-  if(isNaN(v)||v<0||v>9) return alert('Pick 0–9');
-  dropBall(v);
-});
-document.getElementById('undo-btn').addEventListener('click', ()=>{
-  if(!droppedBalls.length) return;
-  const last = droppedBalls.pop();
-  if(last.binIndex!=null){
-    phoneDigits[last.binIndex]=null;
-    updateDisplay();
-    containerBodies[last.binIndex].render.fillStyle = '#bdc3c7';
+// Event Listeners
+document.getElementById('drop-btn').addEventListener('click', () => {
+  const val = parseInt(inputEl.value);
+  if (isNaN(val) || val < 0 || val > 9) {
+    alert('Pick a digit between 0 and 9');
+    return;
   }
-  Composite.remove(world,last);
-});
-document.getElementById('restart-btn').addEventListener('click', ()=>location.reload());
-document.getElementById('enter-btn').addEventListener('click', ()=>{
-  alert(`Your entered number is: ${document.getElementById('phone-display').textContent}`);
+  dropBall(val);
 });
 
-window.addEventListener('load', ()=>{ initMatter(); updateDisplay(); });
+document.getElementById('undo-btn').addEventListener('click', () => {
+  const last = balls.pop();
+  if (!last) return;
+
+  if (last._binIndex != null) {
+    digits[last._binIndex] = null;
+    bins[last._binIndex].render.fillStyle = '#bdc3c7';
+    updateDisplay();
+  }
+  Composite.remove(world, last);
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  location.reload();
+});
+
+document.getElementById('enter-btn').addEventListener('click', () => {
+  alert(`You entered: ${displayEl.textContent}`);
+});
+
+// Init
+window.addEventListener('load', () => {
+  initPhysics();
+  updateDisplay();
+});
