@@ -143,7 +143,6 @@ function dropBall(n) {
   const ball = Bodies.circle(Math.random() * W, 20, 12, {
     label: 'ball',
     restitution: 0.5,
-    frictionAir: 0.02,
     render: { fillStyle: '#e74c3c' }
   });
   ball.digit = n;
