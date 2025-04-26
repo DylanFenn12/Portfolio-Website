@@ -13,9 +13,6 @@ const COLS = 12, ROWS = 12; // Sets the number of columns and rows for the pegbo
 let digits = Array(10).fill(null); // Creates an array to hold the digits so we can see the final result
 let bins = [], balls = []; // Creates arrays to hold the values of bins and balls
 
-const PEG_SIZE = 10; // Sets the size of the pegs
-const SPACING = 1.3; // This create an offset to easily fix the spacing between the pegs
-
 // This function updates the display of the phone with the digits
 function updateDisplay() {
 let phonenumbers = '';
@@ -65,20 +62,23 @@ engine = Engine.create(); // Create a new physics engine
   ]);
 
   // pegs
-  const pegSpacingX = (W / COLS) * SPACING; // This creates the spacing between the pegs with the spacing variable
-  const pegSpacingY = (H - 60) / (ROWS + 1); // Same for y
-  const offsetX = -33; // Movement of grid so that balls dont get stuck
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      // compute spacings
+      const pegX = (W / COLS) * 1.3;
+      const pegY = (H - 60) / (ROWS + 1);
 
-  for (let row = 0; row < ROWS; row++) { // For every row in the grid
-    for (let col = 0; col < COLS; col++) { // For every column in the grid
-      const x = offsetX + (col + (row % 2 ? 0.5 : 0)) * pegSpacingX + pegSpacingX / 2; // Stagger, mover over, and add spacing
-      const y = (row + 1) * pegSpacingY;
+      // stagger every other row by half a column, shift by -33, center by pegX/2
+      const x = -33
+              + (col + (row % 2 ? 0.5 : 0)) * pegX
+              + pegX / 2;
+      const y = (row + 1) * pegY;
 
       Composite.add(world,
-        Bodies.circle(x, y, PEG_SIZE, { // Create a circle for the peg
-          isStatic: true, // dont move
-          restitution: 1, // bouncy factor
-          render: { fillStyle: '#FFFFFF' } // color of the peg
+        Bodies.circle(x, y, 10, {   // peg radius = 10
+          isStatic: true,
+          restitution: 1,
+          render: { fillStyle: '#FFFFFF' }
         })
       );
     }
