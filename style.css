@@ -1,125 +1,130 @@
-/* General Body Styles */
-body {
-    background: linear-gradient(to top, rgb(0, 0, 255), rgb(255, 255, 255));
-    margin: 0;
-    padding: 0;
-    height: 160vh;
-    color: rgb(0, 0, 0);
-    font-size: 25px;
+h1 {
+  font-family: helvetica, arial, sans-serif;
+  text-align: center;
 }
 
-/* Banner Styles */
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to top, rgb(0, 0, 255), rgb(255, 255, 255));
+  margin: 0;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.full-img {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: 350px;
+  height: 480px;
+  padding: 10px;
+}
+
+.full-img img {
+  display: block;
+  width: 350px;
+  height: 480px;
+}
+
+.overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 350px;
+  height: 480px;
+  background-color: rgba(0,0,0,0);
+}
+
+button {
+  border: 0;
+  background: rgba(150,150,150,0.6);
+  text-shadow: 1px 1px 1px white;
+  border: 1px solid #999;
+  position: absolute;
+  cursor: pointer;
+  top: 12px;
+  left: 12px;
+}
+
+.thumb-bar img {
+  width: 20%;
+  height: auto;
+  cursor: pointer;
+}
+
+.thumb-bar {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  width: 350px;
+  margin-top: 10px;
+}
+
 .banner {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    background: url('./images/pano1.jpeg') no-repeat center center/cover;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 100%;
+  height: auto;
+  background: url('./images/pano1.jpeg') no-repeat center center/cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .banner h1 {
-    color: white;
-    font-size: 36px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-align: center;
+  display: block;
+  color: white;
+  font-size: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 0;
 }
-
-/* Main Layout */
 .content-container {
-    max-width: 1100px; /* Increase layout size */
-    margin: 20px auto;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 40px; /* Increase spacing */
+  max-width: 1100px;
+  margin: 20px auto;
+  text-align: left;
+  display: flex;
+  align-items: top;
+  gap: 40px; 
+  flex-direction: row;
 }
 
 h2 {
-    color: black;
+  color: black;
 }
 
 a {
-    color: #ffcc00;
+  color: #ffcc00;
 }
 
-/* About Me Section */
 .about-me {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
 }
 
 .about-me img {
-    width: 300px; /* Make image slightly bigger */
-    height: auto;
-    border-radius: 10px;
+  width: 300px;
+  height: auto;
+  border-radius: 10px;
 }
 
 .about-text {
-    font-size: 22px;
+  font-size: 22px;
 }
 
-/* ✅ Fixed Carousel Styling */
-.carousel-container {
-    flex: 1;
-    width: 100%;
-    max-width: 500px; /* Prevent excessive stretching */
-    aspect-ratio: 8/16; /* 16:9 aspect ratio */
-    position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ✅ Ensure images fill the container while keeping 9:16 aspect ratio */
-.carousel-slide {
-    display: flex;
-    width: 300%; /* 3 slides, each taking full width */
-    transition: transform 0.5s ease-in-out;
-    height: 100%;
-}
-
-.carousel-slide img {
-    width: 100%; /* Each image takes full width */
-    height: 100%; /* Fill the container */
-    object-fit: cover; /* Crop while keeping aspect ratio */
-    flex: 0 0 100%; /* Each image takes exactly 100% of the container */
-    border-radius: 10px;
-}
-
-/* Navigation Buttons */
-.prev, .next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-60%);
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    padding: 15px;
-    cursor: pointer;
-    font-size: 22px;
-    z-index: 10;
-}
-
-.prev { left: 5px; }
-.next { right: 20px; }
-
-/* ✅ Responsive Adjustments */
-@media (max-width: 900px) {
-    .content-container {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .carousel-container {
-        width: 90%;
-        height: 80vh; /* Scale down slightly on mobile */
-    }
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
 }
