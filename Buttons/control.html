@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Light Control</title>
+
+  <style>
+    /* Page layout */
+    body {
+      display: flex;
+      flex-direction: column;        /* stack buttons vertically */
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #fafafa;
+      font-family: system-ui, sans-serif;
+    }
+
+    /* Big, thumb-friendly buttons */
+    .big-btn {
+      --btn-hue: 210;                /* tweak one number, get a new color theme */
+      width: 90vw;                   /* basically full-width on phones */
+      max-width: 400px;              /* but not absurd on tablets/desktops */
+      padding: 1.25rem 0;            /* tall = easy tap */
+      margin: 0.5rem 0;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #fff;
+      background: hsl(var(--btn-hue) 90% 50%);
+      border: none;
+      border-radius: 0.75rem;
+      box-shadow: 0 6px 12px hsl(var(--btn-hue) 50% 40% / 0.3);
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    /* Instant visual feedback */
+    .big-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 6px hsl(var(--btn-hue) 50% 40% / 0.4);
+    }
+
+    /* Spice up the “Turn Off” hue */
+    #off-btn { --btn-hue: 10; }      /* warm red-orange */
+
+    /* Optional subtle hover effect for desktop users */
+    @media (hover: hover) {
+      .big-btn:hover {
+        filter: brightness(1.05);
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="big-btn" onclick="fetch('setstate.php?state=ON')">
+    💡 Turn&nbsp;On
+  </button>
+
+  <button id="off-btn" class="big-btn" onclick="fetch('setstate.php?state=OFF')">
+    🌑 Turn&nbsp;Off
+  </button>
+</body>
+</html>

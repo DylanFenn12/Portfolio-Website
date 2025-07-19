@@ -5,7 +5,7 @@ h1 {
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 30px;
   background: linear-gradient(to top, rgb(0, 0, 255), rgb(255, 255, 255));
   margin: 0;
   background-repeat: no-repeat;
@@ -39,7 +39,7 @@ body {
   background-color: rgba(0,0,0,0);
 }
 
-button {
+.dark {
   border: 0;
   background: rgba(150,150,150,0.6);
   text-shadow: 1px 1px 1px white;
@@ -90,10 +90,11 @@ button {
   max-width: 1100px;
   margin: 20px auto;
   text-align: left;
-  display: flex;
+  display: grid;
   align-items: top;
   gap: 40px; 
   flex-direction: row;
+  grid-template-columns: 1fr 1fr
 }
 
 h2 {
