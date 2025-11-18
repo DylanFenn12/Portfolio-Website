@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Puzzle – Question 1</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      input[type="number"] {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      input::placeholder {
+        color: #6b7280;
+      }
+
+      /* Disable selection of text */
+      .no-select,
+      .no-copy {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      .no-copy {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="no-select no-copy"
+          oncopy="return false"
+          oncut="return false"
+          onpaste="return false"
+          oncontextmenu="return false">
+        Question 1 – Hello Silly CRABS
+      </h1>
+
+      <p class="subtitle no-select no-copy"
+         oncopy="return false"
+         oncut="return false"
+         onpaste="return false"
+         oncontextmenu="return false">
+        Solve this abstract algebra problem to prove you’re worthy.
+      </p>
+
+      <div class="question-block no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <div class="question-title no-select">Problem</div>
+        <div class="question-text no-select">
+Consider the finite abelian group
+  G ≅ (ℤ/2ℤ) × (ℤ/2ℤ) × (ℤ/2ℤ).
+
+This is a 3-fold direct product of the cyclic group of order 2.
+How many elements does G have?
+        </div>
+      </div>
+
+      <form class="form-row" onsubmit="checkAnswer(event, '8', 'q2.html')">
+        <input
+          id="answer"
+          type="number"
+          placeholder="Enter the number of elements"
+          required
+          onpaste="return false"
+          oncopy="return false"
+          oncut="return false"
+          oncontextmenu="return false"
+          ondragstart="return false"
+          ondrop="return false"
+        />
+        <button type="submit">Check &amp; Continue</button>
+      </form>
+
+      <details class="no-copy"
+               oncopy="return false"
+               oncut="return false"
+               onpaste="return false"
+               oncontextmenu="return false">
+        <summary>Hint</summary>
+        <p class="no-select">
+          The size of a direct product is the product of the sizes.<br />
+          How many elements does ℤ/2ℤ have? What happens when you multiply that
+          three times?
+        </p>
+      </details>
+
+      <div class="footer no-select no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <span class="progress">Step 1 / 7</span>
+        <span class="reset-note">Any wrong answer sends you back here.</span>
+      </div>
+    </div>
+
+    <script>
+      function checkAnswer(event, correctAnswer, nextPage) {
+        event.preventDefault();
+
+        const input = document.getElementById("answer");
+        let value = input.value.trim();
+
+        const normValue = value.toLowerCase();
+        const normCorrect = String(correctAnswer).toLowerCase();
+
+        if (normValue === normCorrect) {
+          if (nextPage) {
+            window.location.href = nextPage;
+          } else {
+            alert("✔ Puzzle complete! You solved everything.");
+          }
+        } else {
+          alert("✖ Incorrect. You’ve been sent back to the beginning.");
+          window.location.href = "q1.html";
+        }
+      }
+    </script>
+  </body>
+</html>

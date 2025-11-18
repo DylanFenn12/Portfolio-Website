@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Puzzle – Question 7</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      button {
+        padding: 0.75rem 1.4rem;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(34, 197, 94, 0.35);
+        filter: brightness(1.05);
+      }
+
+      button:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+
+      /* Disable text selection and copying */
+      .no-select,
+      .no-copy {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      .no-copy {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1 class="no-select no-copy"
+          oncopy="return false"
+          oncut="return false"
+          onpaste="return false"
+          oncontextmenu="return false">
+        Question 7 – Scrambled, Cleaned
+      </h1>
+
+      <p class="subtitle no-select no-copy"
+         oncopy="return false"
+         oncut="return false"
+         onpaste="return false"
+         oncontextmenu="return false">
+        The original poem’s words are in the correct order again…  
+        but the internal letters are still scrambled,  
+        and all underscores have been removed.
+      </p>
+
+      <div class="question-block no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+
+        <div class="question-title no-select">
+          Scrambled Poem
+        </div>
+
+        <div class="question-text no-select">
+dCal ni purlep, I zega morf ihhg,
+erhWe CU ulordeB esemt teh ksy.
+eTh olirsFant durag hte phat oyu kate,
+Tuhrhgo ningidw slrtia, yoru psest ustm meak.
+omrF jFii’s ssehor ym enam ouy’ll ahre,
+A nsnihig arst asiawt yuo aner.
+tahW ma I?
+        </div>
+      </div>
+
+      <div class="question-block no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+
+        <div class="question-title no-select">Your options</div>
+
+        <div class="question-text no-select">
+          Two choices. Both are yours to make.<br>
+          Choose boldly.
+        </div>
+
+        <div class="button-row">
+          <button onclick="restart()">Solve</button>
+          <button onclick="restart()">Continue</button>
+        </div>
+      </div>
+
+      <div class="footer no-select no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <span class="progress">Step 7</span>
+        <span class="reset-note">Either button returns you to Question 1.</span>
+      </div>
+    </div>
+
+    <script>
+      function restart() {
+        window.location.href = "q1.html";
+      }
+    </script>
+  </body>
+</html>

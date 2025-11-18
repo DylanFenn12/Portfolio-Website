@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Puzzle – Question 2</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Question 2 – Undo the Hex Shift</h1>
+      <p class="subtitle">
+        The string below has been Caesar-shifted in “hex-space”. Undo it and
+        recover the start of the original hex.
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">Encoded data</div>
+        <div class="question-text">
+49 3N 5N 6L 61 5N 74 61 68 57 0I 61 6M 65 72 2M 5N 79 6N 75 5N 61 73 69 61 77 74 5N 61 72 73 74 5N 6M 73 6M 69 68 69 67 5N 41 0I 61 68 72 65 2K 5N 6N 75 79 M2 80 99 6K 6K 5N 65 6M 61 6L 5N 79 6L 5N 73 73 65 68 6N 72 5N 6I 46 69 69 M2 80 99 73 5N 6N 6L 72 46 0I 6L 65 61 6J 2M 5N 75 73 74 6L 5N 70 73 65 73 74 5N 79 6N 72 75 5N 73 6K 72 74 69 61 2K 5N 6M 69 6M 67 69 64 77 5N 54 75 68 72 68 67 6N 0I 6J 61 74 65 2K 5N 6N 79 75 5N 70 68 61 74 5N 68 74 65 5N 64 75 72 61 67 5N 6N 6K 69 72 73 46 61 6M 74 5N 65 54 68 0I 6J 73 79 2M 5N 74 65 68 5N 65 73 65 6L 74 5N 75 6K 6N 72 64 65 42 5N 55 43 5N 65 72 68 57 65 0I 69 68 68 67 2K 5N 6L 6N 72 66 5N 7I 65 67 61 5N 49 5N 70 75 72 6K 65 70 2K 5N 6M 69 5N 64 43 61 6K
+        </div>
+      </div>
+
+      <p style="margin-bottom: 0.75rem; font-size: 0.9rem;">
+        Assume each pair is a “shifted hex digit pair”. Undo the Caesar shift
+        (by 8 in hex) to get the original bytes, then answer:
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">Question</div>
+        <div class="question-text">
+What are the first four bytes of the original hex string?
+Write them with a space, like: 12 34 8N 0A
+        </div>
+      </div>
+
+      <!-- Correct answer here is "49 3F" from your original hex -->
+      <form class="form-row" onsubmit="checkAnswer(event, '49 3F 5F 6D', 'q3.html')">
+        <input
+          id="answer"
+          type="text"
+          placeholder="e.g., FUCK YOU CRABS"
+          autocomplete="off"
+          required
+        />
+        <button type="submit">Check &amp; Continue</button>
+      </form>
+
+      <details>
+        <summary>Hint</summary>
+        <p>
+SHIFT IS BY A NUMBER YOU KNOW WELL! ALSO, DO NUMBERS SHIFT IN A CAESAR???
+        </p>
+      </details>
+
+      <div class="footer">
+        <span class="progress">Step 2 / 7</span>
+        <span class="reset-note">Wrong answer = all the way back to Q1.</span>
+      </div>
+    </div>
+
+    <script>
+      function checkAnswer(event, correctAnswer, nextPage) {
+        event.preventDefault();
+
+        const input = document.getElementById("answer");
+        let value = input.value.trim();
+
+        const normValue = value.toLowerCase();
+        const normCorrect = String(correctAnswer).toLowerCase();
+
+        if (normValue === normCorrect) {
+          if (nextPage) {
+            window.location.href = nextPage;
+          } else {
+            alert("✔ Puzzle complete! You solved everything.");
+          }
+        } else {
+          alert("✖ Incorrect. You’ve been sent back to the beginning.");
+          window.location.href = "q1.html";
+        }
+      }
+    </script>
+  </body>
+</html>

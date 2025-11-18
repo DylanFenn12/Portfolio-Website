@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Puzzle – Question 3</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      input[type="text"] {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      input::placeholder {
+        color: #6b7280;
+      }
+
+      /* Disable selection of text */
+      .no-select,
+      .no-copy {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      /* Disable interactions */
+      .no-copy {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="no-select no-copy"
+          oncopy="return false"
+          oncut="return false"
+          onpaste="return false"
+          oncontextmenu="return false">
+        Question 3 – Hex to Binary (First 4 Bytes)
+      </h1>
+
+      <p class="subtitle no-select no-copy"
+         oncopy="return false"
+         oncut="return false"
+         onpaste="return false"
+         oncontextmenu="return false">
+        Convert the <strong>first four bytes</strong> of the hex string into 8-bit binary
+        values. You must compute them yourself — no copying from the hex block below.
+      </p>
+
+      <div class="question-block no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <div class="question-title no-select">Hex to inspect</div>
+
+        <div class="question-text no-select">
+49 3F 5F 6D 61 5F 74 61 68 57 0A 61 6E 65 72 2E ...
+        </div>
+      </div>
+
+      <div class="question-block no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <div class="question-title no-select">Your task</div>
+
+        <div class="question-text no-select">
+          1. Look only at the <strong>first four hex bytes</strong>.<br />
+          2. Convert EACH byte into an <strong>8-bit binary number</strong>.<br />
+          3. Separate them with a <strong>single space</strong>.<br /><br />
+
+          Example format:<br />
+          <code>XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX</code>
+        </div>
+      </div>
+
+      <!-- FIRST 4 BYTES:
+          49 → 01001001
+          3F → 00111111
+          5F → 01011111
+          6D → 01101101
+      -->
+      <form class="form-row" onsubmit="checkBinary(event)">
+        <input
+          id="answer"
+          type="text"
+          placeholder="e.g., AGAIN, FUCK YOU CRABS"
+          autocomplete="off"
+          required
+          onpaste="return false"
+          oncopy="return false"
+          oncut="return false"
+          oncontextmenu="return false"
+          ondragstart="return false"
+          ondrop="return false"
+        />
+        <button type="submit">Check &amp; Continue</button>
+      </form>
+
+      <details class="no-copy"
+               oncopy="return false"
+               oncut="return false"
+               onpaste="return false"
+               oncontextmenu="return false">
+        <summary>Hint</summary>
+        <p class="no-select">
+          Each hex byte becomes 8 bits. For example:<br />
+          <code>49 → 01001001</code><br />
+          Make sure every byte stays exactly 8 bits long — include leading zeros.
+        </p>
+      </details>
+
+      <div class="footer no-select no-copy"
+           oncopy="return false"
+           oncut="return false"
+           onpaste="return false"
+           oncontextmenu="return false">
+        <span class="progress">Step 3 / 7</span>
+        <span class="reset-note">Incorrect answers restart the entire puzzle.</span>
+      </div>
+    </div>
+
+    <script>
+      const correctBinary =
+        "01001001 00111111 01011111 01101101";
+
+      function normalize(str) {
+        return str.trim().replace(/\s+/g, " ");
+      }
+
+      function checkBinary(event) {
+        event.preventDefault();
+        const input = document.getElementById("answer");
+        const user = normalize(input.value);
+        const expected = normalize(correctBinary);
+
+        if (user === expected) {
+          window.location.href = "q4.html";
+        } else {
+          alert("✖ Incorrect. Back to the beginning.");
+          window.location.href = "q1.html";
+        }
+      }
+    </script>
+  </body>
+</html>
