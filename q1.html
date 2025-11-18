@@ -107,6 +107,9 @@ How many elements does G have?
     </div>
 
     <script>
+      // Reset progress whenever someone lands on q1
+      localStorage.removeItem("puzzleProgress");
+
       function checkAnswer(event, correctAnswer, nextPage) {
         event.preventDefault();
 
@@ -117,6 +120,9 @@ How many elements does G have?
         const normCorrect = String(correctAnswer).toLowerCase();
 
         if (normValue === normCorrect) {
+          // Mark Q1 as completed
+          localStorage.setItem("puzzleProgress", "q1");
+
           if (nextPage) {
             window.location.href = nextPage;
           } else {

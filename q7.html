@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <title>Puzzle – Question 7</title>
     <link rel="stylesheet" href="style.css" />
+
+    <script>
+      // Gatekeeper: must have completed Q6
+      if (localStorage.getItem("puzzleProgress") !== "q6") {
+        window.location.href = "q1.html";
+      }
+    </script>
+
     <style>
       button {
         padding: 0.75rem 1.4rem;
@@ -114,13 +122,15 @@ tahW ma I?
            oncut="return false"
            onpaste="return false"
            oncontextmenu="return false">
-        <span class="progress">Step 7</span>
+        <span class="progress">Step 7 / 7</span>
         <span class="reset-note">Either button returns you to Question 1.</span>
       </div>
     </div>
 
     <script>
       function restart() {
+        // Nuke all progress and send them back to the start
+        localStorage.removeItem("puzzleProgress");
         window.location.href = "q1.html";
       }
     </script>

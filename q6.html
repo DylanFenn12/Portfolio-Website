@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <title>Puzzle – Question 6</title>
     <link rel="stylesheet" href="style.css" />
+
+    <script>
+      // Gatekeeper: must have completed Q5
+      if (localStorage.getItem("puzzleProgress") !== "q5") {
+        window.location.href = "q1.html";
+      }
+    </script>
+
     <style>
       /* Reuse input/button styling from other pages if needed */
       button {
@@ -114,19 +122,21 @@ Choose carefully:
            oncut="return false"
            onpaste="return false"
            oncontextmenu="return false">
-        <span class="progress">Step 6</span>
+        <span class="progress">Step 6 / 7</span>
         <span class="reset-note">Wrong direction sends you back to Question 1.</span>
       </div>
     </div>
 
     <script>
       function goForwards() {
-        // Wrong choice → back to start
+        // Wrong choice → reset progress & back to start
+        localStorage.removeItem("puzzleProgress");
         window.location.href = "q1.html";
       }
 
       function goBackwards() {
-        // Correct choice → move on
+        // Correct choice → mark Q6 complete & move on
+        localStorage.setItem("puzzleProgress", "q6");
         window.location.href = "q7.html";
       }
     </script>

@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <title>Puzzle – Question 5</title>
     <link rel="stylesheet" href="style.css" />
+
+    <script>
+      // Gatekeeper: must have completed Q4
+      if (localStorage.getItem("puzzleProgress") !== "q4") {
+        window.location.href = "q1.html";
+      }
+    </script>
+
     <style>
       input[type="text"] {
         width: 100%;
@@ -51,7 +59,7 @@
          oncontextmenu="return false">
         Below is the full binary sequence from earlier. Convert
         <strong>only the first five</strong> 8-bit chunks into ASCII.
-        This is **case- and symbol-sensitive**.
+        This is <strong>case- and symbol-sensitive</strong>.
       </p>
 
       <div class="question-block no-copy"
@@ -105,8 +113,10 @@
                oncut="return false"
                onpaste="return false"
                oncontextmenu="return false">
-        <summary>Hint</summary>
+        <summary>No free handouts!</summary>
         <p class="no-select">
+          Convert each binary chunk → decimal → ASCII.  
+          Then type all 5 characters together, exactly.
         </p>
       </details>
 
@@ -132,8 +142,12 @@
         const user = normalize(document.getElementById("answer").value);
 
         if (user === correctAnswer) {
+          // Mark Q5 as completed
+          localStorage.setItem("puzzleProgress", "q5");
           window.location.href = "q6.html";  // Redirect to next page
         } else {
+          // Reset progress and restart
+          localStorage.removeItem("puzzleProgress");
           alert("✖ Incorrect. Restarting puzzle.");
           window.location.href = "q1.html";
         }

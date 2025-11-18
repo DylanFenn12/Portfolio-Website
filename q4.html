@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <title>Puzzle – Question 4</title>
     <link rel="stylesheet" href="style.css" />
+
+    <script>
+      // Gatekeeper: must have completed Q3
+      if (localStorage.getItem("puzzleProgress") !== "q3") {
+        window.location.href = "q1.html";
+      }
+    </script>
+
     <style>
       input[type="text"] {
         width: 100%;
@@ -83,7 +91,7 @@ I am a crab, I am the lowest form on the island, I am useful only in my uselessn
         <input
           id="answer"
           type="text"
-          placeholder='Hurry Up.'
+          placeholder="Hurry Up."
           autocomplete="off"
           required
           onpaste="return false"
@@ -112,7 +120,7 @@ I am a crab, I am the lowest form on the island, I am useful only in my uselessn
            oncut="return false"
            onpaste="return false"
            oncontextmenu="return false">
-        <span class="progress">Step 4 / 5</span>
+        <span class="progress">Step 4 / 7</span>
         <span class="reset-note">Any typo sends you back to Question 1.</span>
       </div>
     </div>
@@ -126,8 +134,12 @@ I am a crab, I am the lowest form on the island, I am useful only in my uselessn
         const user = input.value; // case-sensitive, no trimming
 
         if (user === correctPhrase) {
+          // Mark Q4 as completed
+          localStorage.setItem("puzzleProgress", "q4");
           window.location.href = "q5.html";
         } else {
+          // Reset progress and send back to start
+          localStorage.removeItem("puzzleProgress");
           alert("✖ Incorrect (remember: case and period matter). Back to the beginning.");
           window.location.href = "q1.html";
         }

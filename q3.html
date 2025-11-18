@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <title>Puzzle – Question 3</title>
     <link rel="stylesheet" href="style.css" />
+
+    <script>
+      // Gatekeeper: must have completed Q2
+      if (localStorage.getItem("puzzleProgress") !== "q2") {
+        window.location.href = "q1.html";
+      }
+    </script>
+
     <style>
       input[type="text"] {
         width: 100%;
@@ -144,8 +152,12 @@
         const expected = normalize(correctBinary);
 
         if (user === expected) {
+          // Mark Q3 as completed
+          localStorage.setItem("puzzleProgress", "q3");
           window.location.href = "q4.html";
         } else {
+          // Reset progress and send back to start
+          localStorage.removeItem("puzzleProgress");
           alert("✖ Incorrect. Back to the beginning.");
           window.location.href = "q1.html";
         }
