@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dylan Fenn | Portfolio</title>
+  <meta name="description" content="Dylan Fenn — Creative Technology & Design (CU Boulder). Portfolio of fabrication, electronics, lighting/DMX, design, and projects." />
+  <link rel="icon" type="image/png" href="drf.png" />
+
+  <style>
+    :root{
+      /* Base scale bump (+4px feel across the site) */
+      --base: 20px;
+
+      /* Accent pops */
+      --yellow: #f6e27a;   /* warm pop yellow */
+      --lime: #b8f397;     /* subtle neon green */
+      --orange: #f4b266;   /* warm orange */
+
+      --bg: #0b0f14;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.09);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --faint: rgba(255,255,255,.50);
+      --line: rgba(255,255,255,.12);
+      --shadow: 0 24px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 24px;
+      --max: 1120px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    /* Accent palette inspired by “earthy pastels” */
+    .theme {
+      --a1: #7dd3c7;  /* pastel teal */
+      --a2: #f2b3c5;  /* pastel pink */
+      --a3: #f5d08c;  /* soft amber */
+      --a4: #9ab6ff;  /* periwinkle */
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% 10%, rgba(125,211,199,.14), transparent 60%),
+        radial-gradient(1000px 700px at 95% 15%, rgba(154,182,255,.16), transparent 55%),
+        radial-gradient(900px 700px at 15% 95%, rgba(242,179,197,.12), transparent 50%),
+        radial-gradient(900px 700px at 90% 95%, rgba(245,208,140,.10), transparent 50%),
+        linear-gradient(180deg, #06080c 0%, #0b0f14 40%, #070a0f 100%);
+      overflow-x:hidden;
+      font-size: var(--base);
+      line-height: 1.7;
+    }
+
+    a{color:inherit; text-decoration:none}
+    button{font-family:inherit}
+
+    .wrap{max-width: var(--max); margin: 0 auto; padding: 26px 18px 70px;}
+
+    /* Top nav */
+    .nav{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(11,15,20,.56);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav .inner{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    /* ✅ Dylan logo image */
+    .logo{
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display:block;
+      object-fit: contain;          /* use cover if you want it cropped to fill */
+      padding: 6px;                 /* remove if your PNG already has padding */
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+
+    .brand .who{
+      display:flex; flex-direction:column; line-height:1.05;
+    }
+    .brand .who strong{font-size: 20px; letter-spacing:.2px; color: var(--lime);}
+    .brand .who span{font-size: 18px; color: var(--muted)}
+
+    .cta{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      font-size: 16px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.05);
+      transition: .18s ease;
+      color: var(--text);
+    }
+    .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+    .pill.primary{
+      border-color: var(--yellow);
+      background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Hero */
+    .hero{
+      margin-top: 28px;
+      display:grid;
+      grid-template-columns: 1.25fr .85fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .heroMain{padding: 22px 22px 18px; position:relative}
+    .heroMain::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 240px at 25% 0%, rgba(125,211,199,.22), transparent 60%),
+        radial-gradient(460px 240px at 75% 0%, rgba(154,182,255,.22), transparent 60%);
+      opacity:.85;
+      pointer-events:none;
+    }
+    .heroMain > *{position:relative}
+
+    h1{
+      margin: 16px 0 14px;
+      font-size: clamp(42px, 4.6vw, 64px);
+      line-height: 1.04;
+      letter-spacing: -0.8px;
+      background: linear-gradient(90deg, var(--yellow), var(--a1), var(--a4));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .sub{
+      margin: 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.75;
+      max-width: 72ch;
+    }
+
+    .heroActions{display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px;}
+
+    .chips{margin-top: 18px; display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      font-size: 15px;
+      color: rgba(255,255,255,.90);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+    }
+    .chip b{font-family: var(--mono); font-weight: 700; color: rgba(255,255,255,.88)}
+
+    .heroSide{padding: 18px; display:flex; flex-direction:column; gap: 12px}
+
+    .sideBox{
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      padding: 14px;
+    }
+    .sideBox h3{margin:0 0 8px; font-size: 20px; color: rgba(255,255,255,.88); letter-spacing:.2px}
+    .sideBox p{margin:0; font-size: 18px; color: var(--muted); line-height: 1.45}
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 12px;
+    }
+    .stat .num{
+      font-family: var(--mono);
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: .2px;
+    }
+    .stat .lbl{font-size: 19px; color: var(--muted); margin-top: 4px}
+
+    /* Sections */
+    section{scroll-margin-top: 84px;}
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      margin: 36px 0 12px;
+    }
+    .sectionHead h2{margin:0; font-size: 26px; letter-spacing: .3px; color: var(--yellow)}
+    .sectionHead p{margin:0; color: var(--muted); font-size: 17px}
+
+    .toolbar{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .search{
+      position:relative;
+      min-width: 220px;
+      flex: 1;
+      max-width: 360px;
+    }
+    .search input{
+      width:100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      padding: 12px 14px 12px 40px;
+      color: var(--text);
+      outline:none;
+      font-size: 16px;
+    }
+    .search input::placeholder{color: rgba(255,255,255,.45)}
+    .search .icon{
+      position:absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; opacity:.65;
+    }
+
+    .filters{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .fbtn{
+      cursor:pointer;
+      user-select:none;
+      font-size: 15px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.90);
+      transition: .16s ease;
+    }
+    .fbtn:hover{background: rgba(255,255,255,.06)}
+    .fbtn.active{
+      border-color: rgba(125,211,199,.45);
+      background: rgba(125,211,199,.11);
+      color: rgba(255,255,255,.92);
+    }
+
+    /* Project grid */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+
+    .project{
+      grid-column: span 6;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      position:relative;
+      transition: .18s ease;
+      cursor:pointer;
+    }
+    .project:hover{transform: translateY(-2px); border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.055)}
+
+    .thumb{
+      height: 150px;
+      background:
+        radial-gradient(300px 160px at 30% 40%, rgba(125,211,199,.25), transparent 60%),
+        radial-gradient(260px 160px at 70% 40%, rgba(242,179,197,.18), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      position:relative;
+    }
+    .thumb::after{
+      content: attr(data-badge);
+      position:absolute;
+      top: 12px; left: 12px;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.88);
+    }
+
+    .pbody{padding: 14px 14px 16px}
+    .ptitle{margin:0; font-size: 19px; letter-spacing:.3px}
+    .pdesc{margin:12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65}
+    .meta{margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap}
+    .tag{
+      font-size: 13px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(246,226,122,.12), rgba(125,211,199,.10));
+      color: rgba(255,255,255,.92);
+    }
+
+    /* About + Contact */
+    .twoCol{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
+    .pad{padding: 18px}
+
+    .list{
+      margin: 12px 0 0;
+      padding: 0;
+      list-style:none;
+      display:grid;
+      gap: 10px;
+    }
+    .li{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 12px;
+      display:flex; gap: 10px;
+      align-items:flex-start;
+    }
+    .li .ic{
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(245,208,140,.85);
+      margin-top: 6px;
+      box-shadow: 0 0 0 6px rgba(245,208,140,.12);
+      flex: 0 0 auto;
+    }
+    .li strong{display:block; font-size: 18px}
+    .li span{display:block; font-size: 16px; color: var(--muted); margin-top: 4px; line-height: 1.55}
+
+    .contactGrid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
+    .contactItem{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 12px;
+      display:flex; flex-direction:column; gap: 6px;
+    }
+    .contactItem .k{font-size: 20px; color: var(--muted)}
+    .contactItem .v{font-size: 19px; font-family: var(--mono)}
+
+    /* Modal */
+    dialog{
+      width: min(760px, calc(100% - 28px));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      padding: 0;
+      background: rgba(14,18,25,.92);
+      box-shadow: 0 40px 120px rgba(0,0,0,.70);
+      color: var(--text);
+      overflow:hidden;
+    }
+    dialog::backdrop{background: rgba(0,0,0,.60)}
+    .modalTop{padding: 16px 16px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.12)}
+    .modalTop .title{display:flex; flex-direction:column; gap: 2px;}
+    .modalTop .title strong{font-size: 18px; letter-spacing:.2px}
+    .modalTop .title span{font-size: 16px; color: var(--muted)}
+    .x{
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 16px;
+    }
+    .modalBody{padding: 16px; display:grid; gap: 12px}
+    .modalHero{
+      height: 220px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background:
+        radial-gradient(400px 240px at 30% 30%, rgba(125,211,199,.25), transparent 60%),
+        radial-gradient(420px 260px at 70% 70%, rgba(154,182,255,.22), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+    .modalCopy{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    .modalLinks{display:flex; gap:10px; flex-wrap:wrap}
+
+    /* Footer */
+    footer{margin-top: 42px; color: var(--faint); font-size: 14px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .hero{grid-template-columns: 1fr;}
+      .project{grid-column: span 12;}
+      .twoCol{grid-template-columns: 1fr;}
+      .brand{min-width: unset;}
+    }
+    @media (max-width: 520px){
+      .stats{grid-template-columns: 1fr;}
+      .contactGrid{grid-template-columns: 1fr;}
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{scroll-behavior:auto !important}
+      .project:hover,.pill:hover{transform:none}
+    }
+  </style>
+</head>
+
+<body class="theme">
+  <header class="nav">
+    <div class="inner">
+      <a class="brand" href="#top" aria-label="Go to top">
+        <!-- ✅ swapped gradient div logo for your drf.png -->
+        <img class="logo" src="drf.png" alt="DRF logo" />
+        <div class="who">
+          <strong>Dylan Fenn</strong>
+          <span>Creative Technology & Design • CU Boulder</span>
+        </div>
+      </a>
+
+      <!-- Removed the basic nav links. Everything is in the CTA cluster now. -->
+      <div class="cta">
+        <a class="pill" href="#about">About</a>
+        <a class="pill" href="#contact">Contact</a>
+        <a class="pill primary" href="#projects">View Projects</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="wrap">
+    <div class="hero">
+      <section class="card heroMain" aria-label="Intro">
+        <h1>Visual and Product Design that blends hardware, visuals, and chaos (the good kind).</h1>
+        <p class="sub">
+          I’m Dylan — CTD at CU Boulder. I prototype physical products, design packaging/branding,
+          and build electronics + DMX lighting rigs for live events. This site is a starter portfolio
+          with placeholders you can swap for real projects as you finish them.
+        </p>
+
+        <div class="heroActions">
+          <a class="pill primary" href="#projects">Browse 10 Projects</a>
+          <a class="pill" href="#about">What I do</a>
+          <a class="pill" href="#contact">Get in touch</a>
+        </div>
+
+        <div class="chips" aria-label="Highlights">
+          <span class="chip"><b>DMX</b> lighting + mapping</span>
+          <span class="chip"><b>Arduino</b> sensors + relays</span>
+          <span class="chip"><b>Fusion 360</b> CAD + 3D print</span>
+          <span class="chip"><b>Illustrator</b> packaging</span>
+          <span class="chip"><b>RSO</b> club leadership</span>
+        </div>
+      </section>
+
+      <aside class="card heroSide" aria-label="Quick info">
+        <div class="sideBox">
+          <h3>Currently into</h3>
+          <p>
+            Large-scale LED bar arrays, wireless DMX, physical interaction (buttons/sensors),
+            and clean-but-playful packaging systems.
+          </p>
+          <div class="stats" aria-label="Stats">
+            <div class="stat"><div class="num">10</div><div class="lbl">portfolio placeholders</div></div>
+            <div class="stat"><div class="num">4</div><div class="lbl">project categories</div></div>
+          </div>
+        </div>
+        <div class="sideBox">
+          <h3>Fast links</h3>
+          <p>
+            Swap these later with your real links.
+          </p>
+          <div class="contactGrid" style="margin-top:12px">
+            <div class="contactItem"><div class="k">Email</div><div class="v">you@example.com</div></div>
+            <div class="contactItem"><div class="k">Instagram</div><div class="v">@yourhandle</div></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section id="projects" aria-label="Projects">
+      <div class="sectionHead">
+        <div>
+          <h2>Projects</h2>
+          <p>Search + filter. Click a card to open details.</p>
+        </div>
+
+        <div class="toolbar" aria-label="Project filters">
+          <div class="search">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".9"/>
+              <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+            </svg>
+            <input id="q" type="search" placeholder="Search projects (e.g., DMX, Arduino, packaging)" aria-label="Search projects" />
+          </div>
+          <div class="filters" role="group" aria-label="Category filters">
+            <button class="fbtn active" data-filter="all" type="button">All</button>
+            <button class="fbtn" data-filter="electronics" type="button">Electronics</button>
+            <button class="fbtn" data-filter="lighting" type="button">Lighting/DMX</button>
+            <button class="fbtn" data-filter="design" type="button">Design</button>
+            <button class="fbtn" data-filter="fabrication" type="button">Fabrication</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="grid" class="grid" aria-live="polite"></div>
+    </section>
+
+    <section id="about" aria-label="About">
+      <div class="sectionHead">
+        <div>
+          <h2>About</h2>
+          <p>Quick snapshot — keep it short, keep it real.</p>
+        </div>
+      </div>
+
+      <div class="twoCol">
+        <div class="card pad">
+          <h3 style="margin:0; font-size:20px; letter-spacing:.2px">What I bring</h3>
+          <ul class="list">
+            <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Prototype speed</strong><span>From sketch → CAD → print → wire → iterate (and repeat).</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Systems thinking</strong><span>Power, signal, enclosures, usability, and aesthetics in one build.</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Design taste</strong><span>Packaging layouts, typography, grids, and brand consistency.</span></div></li>
+          </ul>
+        </div>
+
+        <div class="card pad">
+          <h3 style="margin:0; font-size:20px; letter-spacing:.2px">Toolbox</h3>
+          <ul class="list">
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(154,182,255,.85); box-shadow: 0 0 0 6px rgba(154,182,255,.12)"></span><div><strong>CAD & fabrication</strong><span>Fusion 360 • 3D printing • laser cutting • fast fixtures</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(125,211,199,.85); box-shadow: 0 0 0 6px rgba(125,211,199,.12)"></span><div><strong>Electronics</strong><span>Arduino • sensors • relays • power distribution • troubleshooting</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(242,179,197,.85); box-shadow: 0 0 0 6px rgba(242,179,197,.12)"></span><div><strong>Visuals</strong><span>Illustrator • InDesign • mockups • presentation-ready deliverables</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" aria-label="Contact">
+      <div class="sectionHead">
+        <div>
+          <h2>Contact</h2>
+          <p>Replace placeholders with your real info.</p>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="contactGrid">
+          <div class="contactItem">
+            <div class="k">Email</div>
+            <div class="v">you@example.com</div>
+            <div style="font-size:16px; color:var(--muted)">Tip: make this your CU email or a professional alias.</div>
+          </div>
+          <div class="contactItem">
+            <div class="k">LinkedIn</div>
+            <div class="v">linkedin.com/in/yourname</div>
+            <div style="font-size:16px; color:var(--muted)">Tip: add 3–5 featured projects.</div>
+          </div>
+          <div class="contactItem">
+            <div class="k">GitHub</div>
+            <div class="v">github.com/yourhandle</div>
+            <div style="font-size:16px; color:var(--muted)">Tip: pin your Arduino + web projects.</div>
+          </div>
+          <div class="contactItem">
+            <div class="k">Instagram</div>
+            <div class="v">@yourhandle</div>
+            <div style="font-size:16px; color:var(--muted)">Tip: post build photos + short reels.</div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div>© <span id="year"></span> Dylan Fenn • Built with HTML/CSS/JS</div>
+        <div style="font-family:var(--mono)">v0.1 • placeholders → real projects</div>
+      </footer>
+    </section>
+  </main>
+
+  <!-- Project modal -->
+  <dialog id="modal" aria-label="Project details">
+    <div class="modalTop">
+      <div class="title">
+        <strong id="mTitle">Project Title</strong>
+        <span id="mMeta">Category • Tools</span>
+      </div>
+      <button class="x" id="close" type="button" aria-label="Close">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="modalHero" id="mHero" aria-hidden="true"></div>
+      <div class="modalCopy" id="mDesc">Project description goes here.</div>
+      <div class="modalLinks">
+        <a class="pill primary" id="mPrimary" href="#" target="_blank" rel="noreferrer">Project link</a>
+        <a class="pill" id="mSecondary" href="#" target="_blank" rel="noreferrer">More media</a>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // Minimal JS for filtering/search + modal.
+
+    const projects = [
+      {
+        id: 'trash-panda',
+        title: 'Trash Panda Defense Mechanism',
+        category: 'electronics',
+        badge: 'Arduino + Sensors',
+        tools: ['Arduino', 'Ultrasonic', 'Relay', 'OLED'],
+        desc: 'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Placeholder for photos, wiring diagram, and code snippets.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'iot-relay',
+        title: 'IoT Power Relay Button Control',
+        category: 'electronics',
+        badge: 'Power Control',
+        tools: ['Arduino', 'Relay', 'Debounce'],
+        desc: 'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'dmx-led-wall',
+        title: 'DMX LED Bar Matrix (10×9 Concept)',
+        category: 'lighting',
+        badge: '11+ Universes',
+        tools: ['DMX', 'Art-Net', 'MadMapper', 'Power'],
+        desc: 'Designing a scalable LED bar array with universes, addressing, and power injection planning. Placeholder for mapping screenshots and wiring topology.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'qlc-show',
+        title: 'Live Show Lighting Scenes + Timecode',
+        category: 'lighting',
+        badge: 'Show Control',
+        tools: ['QLC+', 'Scenes', 'Chases', 'MIDI'],
+        desc: 'A practical showfile workflow: build scenes, chases, and triggers for DJ sets. Placeholder for cue list + demo video.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'puffworks-pack',
+        title: 'Puffworks Packaging System',
+        category: 'design',
+        badge: 'Brand + Layout',
+        tools: ['Illustrator', 'InDesign', 'Mockups'],
+        desc: 'A playful pastel packaging concept: dielines, typography, back-of-pack content, and render-ready mockups. Placeholder for final files + style guide.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'campfire-gusset',
+        title: 'Gusset Illustration (2-Tone Cartoon)',
+        category: 'design',
+        badge: 'Illustration',
+        tools: ['Illustrator', 'Vector'],
+        desc: 'A small but useful asset: a campfire gusset illustration that matches a packaging system. Placeholder for iterations + export specs.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'fusion-m3',
+        title: 'Fusion 360 Hardware Standards (M3 Ecosystem)',
+        category: 'fabrication',
+        badge: 'CAD Standards',
+        tools: ['Fusion 360', 'Parametric'],
+        desc: 'A parametric set of hole sizes, clearances, and countersinks for fast prototyping. Placeholder for a cheat sheet and example parts.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'laser-kerf',
+        title: 'Laser Kerf Compensation Toolkit',
+        category: 'fabrication',
+        badge: 'Precision Fit',
+        tools: ['Laser Cut', 'Test Coupons'],
+        desc: 'A repeatable method to dial in press-fit joints and line weights across materials. Placeholder for test results and templates.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'oled-scoreboard',
+        title: 'OLED Scoreboard / Display Experiments',
+        category: 'electronics',
+        badge: 'UI on Microcontrollers',
+        tools: ['OLED', 'I2C', 'Graphics'],
+        desc: 'Microcontroller display experiments: clean layouts, icons, and simple animations. Placeholder for code + photos.',
+        links: { primary: '#', secondary: '#' }
+      },
+      {
+        id: 'club-ops',
+        title: 'CU Paintball Club Ops Toolkit',
+        category: 'design',
+        badge: 'Leadership + Systems',
+        tools: ['Spreadsheets', 'Budgeting', 'Docs'],
+        desc: 'A practical operations bundle: budgeting templates, membership tracking, sponsorship deck, and onboarding emails. Placeholder for docs + examples.',
+        links: { primary: '#', secondary: '#' }
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+    const q = document.getElementById('q');
+    const filterButtons = Array.from(document.querySelectorAll('.fbtn'));
+
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('close');
+    const mTitle = document.getElementById('mTitle');
+    const mMeta = document.getElementById('mMeta');
+    const mDesc = document.getElementById('mDesc');
+    const mPrimary = document.getElementById('mPrimary');
+    const mSecondary = document.getElementById('mSecondary');
+
+    let activeFilter = 'all';
+
+    function normalize(s){ return (s || '').toLowerCase(); }
+
+    function matches(p, query){
+      if(!query) return true;
+      const hay = normalize([p.title, p.category, p.badge, p.desc, ...(p.tools||[])].join(' '));
+      return hay.includes(normalize(query));
+    }
+
+    function catLabel(cat){
+      const map = {
+        electronics: 'Electronics',
+        lighting: 'Lighting/DMX',
+        design: 'Design',
+        fabrication: 'Fabrication'
+      };
+      return map[cat] || cat;
+    }
+
+    function render(){
+      const query = q.value.trim();
+      const filtered = projects.filter(p => (activeFilter === 'all' || p.category === activeFilter) && matches(p, query));
+
+      grid.innerHTML = '';
+
+      if(filtered.length === 0){
+        const empty = document.createElement('div');
+        empty.className = 'card pad';
+        empty.style.gridColumn = '1 / -1';
+        empty.innerHTML = `<div style="color:rgba(255,255,255,.85); font-size:18px;">No matches.</div>
+          <div style="margin-top:6px; color:rgba(255,255,255,.65); font-size:16px;">Try a different keyword or switch the category filter.</div>`;
+        grid.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach((p, idx) => {
+        const el = document.createElement('article');
+        el.className = 'project';
+        el.tabIndex = 0;
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', `Open ${p.title}`);
+        el.dataset.id = p.id;
+
+        const tools = (p.tools || []).slice(0, 3);
+
+        el.innerHTML = `
+          <div class="thumb" data-badge="${p.badge || ('Project ' + (idx+1))}"></div>
+          <div class="pbody">
+            <h3 class="ptitle">${p.title}</h3>
+            <p class="pdesc">${p.desc}</p>
+            <div class="meta">
+              <span class="tag">${catLabel(p.category)}</span>
+              ${tools.map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        `;
+
+        const open = () => openModal(p);
+        el.addEventListener('click', open);
+        el.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+
+        grid.appendChild(el);
+      });
+    }
+
+    function openModal(p){
+      mTitle.textContent = p.title;
+      mMeta.textContent = `${catLabel(p.category)} • ${(p.tools||[]).join(' · ')}`;
+      mDesc.textContent = p.desc + ' (Replace this with: problem → approach → build → results → what you’d improve.)';
+
+      mPrimary.href = p.links?.primary || '#';
+      mSecondary.href = p.links?.secondary || '#';
+
+      if(mPrimary.href.endsWith('#')) mPrimary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
+      if(mSecondary.href.endsWith('#')) mSecondary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
+
+      if(typeof modal.showModal === 'function') modal.showModal();
+      else alert(p.title + "\n\n" + p.desc);
+    }
+
+    function setFilter(next){
+      activeFilter = next;
+      filterButtons.forEach(b => b.classList.toggle('active', b.dataset.filter === next));
+      render();
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+    });
+
+    q.addEventListener('input', render);
+
+    closeBtn.addEventListener('click', () => modal.close());
+    modal.addEventListener('click', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const inDialog = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if(!inDialog) modal.close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && modal.open) modal.close();
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    render();
+  </script>
+</body>
+</html>
