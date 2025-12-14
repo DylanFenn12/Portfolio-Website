@@ -9,8 +9,16 @@
 
   <style>
     :root{
-      /* Base scale bump (+4px feel across the site) */
-      --base: 20px;
+      /* Responsive base size (smaller on phones, comfy on desktop) */
+      --base: clamp(16px, 1.1vw + 12px, 19px);
+
+      /* Responsive type steps */
+      --fs-xxs: clamp(12px, .35vw + 10px, 13px);
+      --fs-xs:  clamp(13px, .45vw + 10px, 14px);
+      --fs-sm:  clamp(14px, .55vw + 10px, 16px);
+      --fs-md:  clamp(16px, .70vw + 10px, 18px);
+      --fs-lg:  clamp(18px, .95vw + 10px, 22px);
+      --fs-xl:  clamp(22px, 1.30vw + 10px, 28px);
 
       /* Accent pops */
       --yellow: #f6e27a;   /* warm pop yellow */
@@ -46,15 +54,42 @@
       margin:0;
       font-family: var(--sans);
       color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+      font-size: var(--base);
+      line-height: 1.7;
+      position: relative;
+      isolation: isolate;
+    }
+
+    /* ✅ Fluid background across the whole page (no “stop/loop” feel) */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
       background:
         radial-gradient(1200px 800px at 10% 10%, rgba(125,211,199,.14), transparent 60%),
         radial-gradient(1000px 700px at 95% 15%, rgba(154,182,255,.16), transparent 55%),
         radial-gradient(900px 700px at 15% 95%, rgba(242,179,197,.12), transparent 50%),
         radial-gradient(900px 700px at 90% 95%, rgba(245,208,140,.10), transparent 50%),
-        linear-gradient(180deg, #06080c 0%, #0b0f14 40%, #070a0f 100%);
-      overflow-x:hidden;
-      font-size: var(--base);
-      line-height: 1.7;
+        radial-gradient(1200px 900px at 55% 55%, rgba(246,226,122,.06), transparent 65%),
+        linear-gradient(180deg, #06080c 0%, #0b0f14 55%, #070a0f 100%);
+      transform: translateZ(0);
+    }
+    body::after{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 600px at 50% 10%, rgba(0,0,0,.10), transparent 60%),
+        radial-gradient(900px 600px at 50% 100%, rgba(0,0,0,.18), transparent 65%),
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
+      mix-blend-mode: multiply;
+      opacity: .55;
     }
 
     a{color:inherit; text-decoration:none}
@@ -88,14 +123,14 @@
       min-width: 220px;
     }
 
-    /* ✅ Dylan logo image */
+    /* ✅ drf.png logo */
     .logo{
       width: 48px;
       height: 48px;
       border-radius: 14px;
       display:block;
-      object-fit: contain;          /* use cover if you want it cropped to fill */
-      padding: 6px;                 /* remove if your PNG already has padding */
+      object-fit: contain;      /* swap to cover for full-bleed */
+      padding: 6px;             /* remove if your logo already has padding */
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.18);
       box-shadow: 0 12px 30px rgba(0,0,0,.35);
@@ -104,8 +139,8 @@
     .brand .who{
       display:flex; flex-direction:column; line-height:1.05;
     }
-    .brand .who strong{font-size: 20px; letter-spacing:.2px; color: var(--lime);}
-    .brand .who span{font-size: 18px; color: var(--muted)}
+    .brand .who strong{letter-spacing:.2px; color: var(--lime);}
+    .brand .who span{color: var(--muted)}
 
     .cta{
       display:flex;
@@ -115,7 +150,6 @@
       justify-content:flex-end;
     }
     .pill{
-      font-size: 16px;
       padding: 13px 18px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.18);
@@ -124,11 +158,13 @@
       color: var(--text);
     }
     .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+
+    /* ✅ Contact is now the highlighted CTA */
     .pill.primary{
       border-color: var(--yellow);
       background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
       color: #ffffff;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     /* Hero */
@@ -162,7 +198,7 @@
 
     h1{
       margin: 16px 0 14px;
-      font-size: clamp(42px, 4.6vw, 64px);
+      font-size: clamp(34px, 4.1vw, 60px);
       line-height: 1.04;
       letter-spacing: -0.8px;
       background: linear-gradient(90deg, var(--yellow), var(--a1), var(--a4));
@@ -170,10 +206,10 @@
       background-clip: text;
       color: transparent;
     }
+
     .sub{
       margin: 0;
       color: var(--muted);
-      font-size: 19px;
       line-height: 1.75;
       max-width: 72ch;
     }
@@ -182,7 +218,6 @@
 
     .chips{margin-top: 18px; display:flex; gap:8px; flex-wrap:wrap}
     .chip{
-      font-size: 15px;
       color: rgba(255,255,255,.90);
       padding: 10px 14px;
       border-radius: 999px;
@@ -199,8 +234,6 @@
       background: rgba(255,255,255,.04);
       padding: 14px;
     }
-    .sideBox h3{margin:0 0 8px; font-size: 20px; color: rgba(255,255,255,.88); letter-spacing:.2px}
-    .sideBox p{margin:0; font-size: 18px; color: var(--muted); line-height: 1.45}
 
     .stats{
       display:grid;
@@ -217,10 +250,8 @@
     .stat .num{
       font-family: var(--mono);
       font-weight: 800;
-      font-size: 20px;
       letter-spacing: .2px;
     }
-    .stat .lbl{font-size: 19px; color: var(--muted); margin-top: 4px}
 
     /* Sections */
     section{scroll-margin-top: 84px;}
@@ -231,8 +262,6 @@
       gap: 12px;
       margin: 36px 0 12px;
     }
-    .sectionHead h2{margin:0; font-size: 26px; letter-spacing: .3px; color: var(--yellow)}
-    .sectionHead p{margin:0; color: var(--muted); font-size: 17px}
 
     .toolbar{
       display:flex;
@@ -256,7 +285,6 @@
       padding: 12px 14px 12px 40px;
       color: var(--text);
       outline:none;
-      font-size: 16px;
     }
     .search input::placeholder{color: rgba(255,255,255,.45)}
     .search .icon{
@@ -273,7 +301,6 @@
     .fbtn{
       cursor:pointer;
       user-select:none;
-      font-size: 15px;
       padding: 12px 16px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.16);
@@ -322,7 +349,6 @@
       top: 12px; left: 12px;
       font-family: var(--mono);
       font-weight: 700;
-      font-size: 13px;
       padding: 8px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.14);
@@ -331,11 +357,10 @@
     }
 
     .pbody{padding: 14px 14px 16px}
-    .ptitle{margin:0; font-size: 19px; letter-spacing:.3px}
-    .pdesc{margin:12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65}
+    .ptitle{margin:0; letter-spacing:.3px}
+    .pdesc{margin:12px 0 0; color: var(--muted); line-height: 1.65}
     .meta{margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap}
     .tag{
-      font-size: 13px;
       padding: 8px 11px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.12);
@@ -369,8 +394,6 @@
       box-shadow: 0 0 0 6px rgba(245,208,140,.12);
       flex: 0 0 auto;
     }
-    .li strong{display:block; font-size: 18px}
-    .li span{display:block; font-size: 16px; color: var(--muted); margin-top: 4px; line-height: 1.55}
 
     .contactGrid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
     .contactItem{
@@ -380,8 +403,7 @@
       padding: 12px;
       display:flex; flex-direction:column; gap: 6px;
     }
-    .contactItem .k{font-size: 20px; color: var(--muted)}
-    .contactItem .v{font-size: 19px; font-family: var(--mono)}
+    .contactItem .v{font-family: var(--mono)}
 
     /* Modal */
     dialog{
@@ -397,8 +419,6 @@
     dialog::backdrop{background: rgba(0,0,0,.60)}
     .modalTop{padding: 16px 16px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.12)}
     .modalTop .title{display:flex; flex-direction:column; gap: 2px;}
-    .modalTop .title strong{font-size: 18px; letter-spacing:.2px}
-    .modalTop .title span{font-size: 16px; color: var(--muted)}
     .x{
       cursor:pointer;
       border: 1px solid rgba(255,255,255,.14);
@@ -406,7 +426,6 @@
       color: var(--text);
       border-radius: 999px;
       padding: 10px 12px;
-      font-size: 16px;
     }
     .modalBody{padding: 16px; display:grid; gap: 12px}
     .modalHero{
@@ -425,12 +444,53 @@
       padding: 14px;
       color: var(--muted);
       line-height: 1.65;
-      font-size: 16px;
     }
     .modalLinks{display:flex; gap:10px; flex-wrap:wrap}
 
     /* Footer */
-    footer{margin-top: 42px; color: var(--faint); font-size: 14px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    footer{margin-top: 42px; color: var(--faint); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+    /* -----------------------------
+       RESPONSIVE FONT OVERRIDES
+       (forces all text sizes to scale)
+    ------------------------------ */
+    .brand .who strong{ font-size: var(--fs-md) !important; }
+    .brand .who span{   font-size: var(--fs-sm) !important; }
+
+    .pill{ font-size: var(--fs-sm) !important; }
+    .fbtn{ font-size: var(--fs-sm) !important; }
+
+    .sub{ font-size: var(--fs-md) !important; }
+
+    .sectionHead h2{ font-size: var(--fs-lg) !important; color: var(--yellow); }
+    .sectionHead p{ font-size: var(--fs-sm) !important; color: var(--muted); }
+
+    .chip{ font-size: var(--fs-xs) !important; }
+    .tag{  font-size: var(--fs-xs) !important; }
+    .thumb::after{ font-size: var(--fs-xs) !important; }
+
+    .sideBox h3{ font-size: var(--fs-md) !important; }
+    .sideBox p{  font-size: var(--fs-sm) !important; }
+    .stat .num{  font-size: var(--fs-md) !important; }
+    .stat .lbl{  font-size: var(--fs-sm) !important; color: var(--muted); }
+
+    .ptitle{ font-size: var(--fs-md) !important; }
+    .pdesc{  font-size: var(--fs-sm) !important; }
+
+    .search input{ font-size: var(--fs-sm) !important; }
+
+    .li strong{ font-size: var(--fs-sm) !important; }
+    .li span{   font-size: var(--fs-sm) !important; color: var(--muted); }
+
+    .contactItem .k{ font-size: var(--fs-sm) !important; color: var(--muted); }
+    .contactItem .v{ font-size: var(--fs-md) !important; }
+
+    .modalTop .title strong{ font-size: var(--fs-md) !important; }
+    .modalTop .title span{  font-size: var(--fs-sm) !important; color: var(--muted); }
+    .modalCopy{             font-size: var(--fs-sm) !important; }
+    .x{                     font-size: var(--fs-sm) !important; }
+
+    footer{ font-size: var(--fs-xs) !important; }
 
     /* Responsive */
     @media (max-width: 920px){
@@ -442,6 +502,9 @@
     @media (max-width: 520px){
       .stats{grid-template-columns: 1fr;}
       .contactGrid{grid-template-columns: 1fr;}
+      :root{
+        --base: clamp(15px, 1.0vw + 12px, 17px);
+      }
     }
 
     /* Reduced motion */
@@ -456,7 +519,6 @@
   <header class="nav">
     <div class="inner">
       <a class="brand" href="#top" aria-label="Go to top">
-        <!-- ✅ swapped gradient div logo for your drf.png -->
         <img class="logo" src="drf.png" alt="DRF logo" />
         <div class="who">
           <strong>Dylan Fenn</strong>
@@ -464,11 +526,10 @@
         </div>
       </a>
 
-      <!-- Removed the basic nav links. Everything is in the CTA cluster now. -->
+      <!-- ✅ Removed "View Projects". Contact is the highlighted CTA. -->
       <div class="cta">
         <a class="pill" href="#about">About</a>
-        <a class="pill" href="#contact">Contact</a>
-        <a class="pill primary" href="#projects">View Projects</a>
+        <a class="pill primary" href="#contact">Contact</a>
       </div>
     </div>
   </header>
@@ -512,9 +573,7 @@
         </div>
         <div class="sideBox">
           <h3>Fast links</h3>
-          <p>
-            Swap these later with your real links.
-          </p>
+          <p>Swap these later with your real links.</p>
           <div class="contactGrid" style="margin-top:12px">
             <div class="contactItem"><div class="k">Email</div><div class="v">you@example.com</div></div>
             <div class="contactItem"><div class="k">Instagram</div><div class="v">@yourhandle</div></div>
@@ -561,7 +620,7 @@
 
       <div class="twoCol">
         <div class="card pad">
-          <h3 style="margin:0; font-size:20px; letter-spacing:.2px">What I bring</h3>
+          <h3 style="margin:0; font-size:var(--fs-md); letter-spacing:.2px">What I bring</h3>
           <ul class="list">
             <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Prototype speed</strong><span>From sketch → CAD → print → wire → iterate (and repeat).</span></div></li>
             <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Systems thinking</strong><span>Power, signal, enclosures, usability, and aesthetics in one build.</span></div></li>
@@ -570,7 +629,7 @@
         </div>
 
         <div class="card pad">
-          <h3 style="margin:0; font-size:20px; letter-spacing:.2px">Toolbox</h3>
+          <h3 style="margin:0; font-size:var(--fs-md); letter-spacing:.2px">Toolbox</h3>
           <ul class="list">
             <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(154,182,255,.85); box-shadow: 0 0 0 6px rgba(154,182,255,.12)"></span><div><strong>CAD & fabrication</strong><span>Fusion 360 • 3D printing • laser cutting • fast fixtures</span></div></li>
             <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(125,211,199,.85); box-shadow: 0 0 0 6px rgba(125,211,199,.12)"></span><div><strong>Electronics</strong><span>Arduino • sensors • relays • power distribution • troubleshooting</span></div></li>
@@ -593,22 +652,22 @@
           <div class="contactItem">
             <div class="k">Email</div>
             <div class="v">you@example.com</div>
-            <div style="font-size:16px; color:var(--muted)">Tip: make this your CU email or a professional alias.</div>
+            <div style="font-size:var(--fs-sm); color:var(--muted)">Tip: make this your CU email or a professional alias.</div>
           </div>
           <div class="contactItem">
             <div class="k">LinkedIn</div>
             <div class="v">linkedin.com/in/yourname</div>
-            <div style="font-size:16px; color:var(--muted)">Tip: add 3–5 featured projects.</div>
+            <div style="font-size:var(--fs-sm); color:var(--muted)">Tip: add 3–5 featured projects.</div>
           </div>
           <div class="contactItem">
             <div class="k">GitHub</div>
             <div class="v">github.com/yourhandle</div>
-            <div style="font-size:16px; color:var(--muted)">Tip: pin your Arduino + web projects.</div>
+            <div style="font-size:var(--fs-sm); color:var(--muted)">Tip: pin your Arduino + web projects.</div>
           </div>
           <div class="contactItem">
             <div class="k">Instagram</div>
             <div class="v">@yourhandle</div>
-            <div style="font-size:16px; color:var(--muted)">Tip: post build photos + short reels.</div>
+            <div style="font-size:var(--fs-sm); color:var(--muted)">Tip: post build photos + short reels.</div>
           </div>
         </div>
       </div>
@@ -643,96 +702,16 @@
     // Minimal JS for filtering/search + modal.
 
     const projects = [
-      {
-        id: 'trash-panda',
-        title: 'Trash Panda Defense Mechanism',
-        category: 'electronics',
-        badge: 'Arduino + Sensors',
-        tools: ['Arduino', 'Ultrasonic', 'Relay', 'OLED'],
-        desc: 'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Placeholder for photos, wiring diagram, and code snippets.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'iot-relay',
-        title: 'IoT Power Relay Button Control',
-        category: 'electronics',
-        badge: 'Power Control',
-        tools: ['Arduino', 'Relay', 'Debounce'],
-        desc: 'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'dmx-led-wall',
-        title: 'DMX LED Bar Matrix (10×9 Concept)',
-        category: 'lighting',
-        badge: '11+ Universes',
-        tools: ['DMX', 'Art-Net', 'MadMapper', 'Power'],
-        desc: 'Designing a scalable LED bar array with universes, addressing, and power injection planning. Placeholder for mapping screenshots and wiring topology.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'qlc-show',
-        title: 'Live Show Lighting Scenes + Timecode',
-        category: 'lighting',
-        badge: 'Show Control',
-        tools: ['QLC+', 'Scenes', 'Chases', 'MIDI'],
-        desc: 'A practical showfile workflow: build scenes, chases, and triggers for DJ sets. Placeholder for cue list + demo video.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'puffworks-pack',
-        title: 'Puffworks Packaging System',
-        category: 'design',
-        badge: 'Brand + Layout',
-        tools: ['Illustrator', 'InDesign', 'Mockups'],
-        desc: 'A playful pastel packaging concept: dielines, typography, back-of-pack content, and render-ready mockups. Placeholder for final files + style guide.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'campfire-gusset',
-        title: 'Gusset Illustration (2-Tone Cartoon)',
-        category: 'design',
-        badge: 'Illustration',
-        tools: ['Illustrator', 'Vector'],
-        desc: 'A small but useful asset: a campfire gusset illustration that matches a packaging system. Placeholder for iterations + export specs.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'fusion-m3',
-        title: 'Fusion 360 Hardware Standards (M3 Ecosystem)',
-        category: 'fabrication',
-        badge: 'CAD Standards',
-        tools: ['Fusion 360', 'Parametric'],
-        desc: 'A parametric set of hole sizes, clearances, and countersinks for fast prototyping. Placeholder for a cheat sheet and example parts.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'laser-kerf',
-        title: 'Laser Kerf Compensation Toolkit',
-        category: 'fabrication',
-        badge: 'Precision Fit',
-        tools: ['Laser Cut', 'Test Coupons'],
-        desc: 'A repeatable method to dial in press-fit joints and line weights across materials. Placeholder for test results and templates.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'oled-scoreboard',
-        title: 'OLED Scoreboard / Display Experiments',
-        category: 'electronics',
-        badge: 'UI on Microcontrollers',
-        tools: ['OLED', 'I2C', 'Graphics'],
-        desc: 'Microcontroller display experiments: clean layouts, icons, and simple animations. Placeholder for code + photos.',
-        links: { primary: '#', secondary: '#' }
-      },
-      {
-        id: 'club-ops',
-        title: 'CU Paintball Club Ops Toolkit',
-        category: 'design',
-        badge: 'Leadership + Systems',
-        tools: ['Spreadsheets', 'Budgeting', 'Docs'],
-        desc: 'A practical operations bundle: budgeting templates, membership tracking, sponsorship deck, and onboarding emails. Placeholder for docs + examples.',
-        links: { primary: '#', secondary: '#' }
-      }
+      { id:'trash-panda', title:'Trash Panda Defense Mechanism', category:'electronics', badge:'Arduino + Sensors', tools:['Arduino','Ultrasonic','Relay','OLED'], desc:'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Placeholder for photos, wiring diagram, and code snippets.', links:{primary:'#', secondary:'#'} },
+      { id:'iot-relay', title:'IoT Power Relay Button Control', category:'electronics', badge:'Power Control', tools:['Arduino','Relay','Debounce'], desc:'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.', links:{primary:'#', secondary:'#'} },
+      { id:'dmx-led-wall', title:'DMX LED Bar Matrix (10×9 Concept)', category:'lighting', badge:'11+ Universes', tools:['DMX','Art-Net','MadMapper','Power'], desc:'Designing a scalable LED bar array with universes, addressing, and power injection planning. Placeholder for mapping screenshots and wiring topology.', links:{primary:'#', secondary:'#'} },
+      { id:'qlc-show', title:'Live Show Lighting Scenes + Timecode', category:'lighting', badge:'Show Control', tools:['QLC+','Scenes','Chases','MIDI'], desc:'A practical showfile workflow: build scenes, chases, and triggers for DJ sets. Placeholder for cue list + demo video.', links:{primary:'#', secondary:'#'} },
+      { id:'puffworks-pack', title:'Puffworks Packaging System', category:'design', badge:'Brand + Layout', tools:['Illustrator','InDesign','Mockups'], desc:'A playful pastel packaging concept: dielines, typography, back-of-pack content, and render-ready mockups. Placeholder for final files + style guide.', links:{primary:'#', secondary:'#'} },
+      { id:'campfire-gusset', title:'Gusset Illustration (2-Tone Cartoon)', category:'design', badge:'Illustration', tools:['Illustrator','Vector'], desc:'A small but useful asset: a campfire gusset illustration that matches a packaging system. Placeholder for iterations + export specs.', links:{primary:'#', secondary:'#'} },
+      { id:'fusion-m3', title:'Fusion 360 Hardware Standards (M3 Ecosystem)', category:'fabrication', badge:'CAD Standards', tools:['Fusion 360','Parametric'], desc:'A parametric set of hole sizes, clearances, and countersinks for fast prototyping. Placeholder for a cheat sheet and example parts.', links:{primary:'#', secondary:'#'} },
+      { id:'laser-kerf', title:'Laser Kerf Compensation Toolkit', category:'fabrication', badge:'Precision Fit', tools:['Laser Cut','Test Coupons'], desc:'A repeatable method to dial in press-fit joints and line weights across materials. Placeholder for test results and templates.', links:{primary:'#', secondary:'#'} },
+      { id:'oled-scoreboard', title:'OLED Scoreboard / Display Experiments', category:'electronics', badge:'UI on Microcontrollers', tools:['OLED','I2C','Graphics'], desc:'Microcontroller display experiments: clean layouts, icons, and simple animations. Placeholder for code + photos.', links:{primary:'#', secondary:'#'} },
+      { id:'club-ops', title:'CU Paintball Club Ops Toolkit', category:'design', badge:'Leadership + Systems', tools:['Spreadsheets','Budgeting','Docs'], desc:'A practical operations bundle: budgeting templates, membership tracking, sponsorship deck, and onboarding emails. Placeholder for docs + examples.', links:{primary:'#', secondary:'#'} }
     ];
 
     const grid = document.getElementById('grid');
@@ -758,12 +737,7 @@
     }
 
     function catLabel(cat){
-      const map = {
-        electronics: 'Electronics',
-        lighting: 'Lighting/DMX',
-        design: 'Design',
-        fabrication: 'Fabrication'
-      };
+      const map = { electronics:'Electronics', lighting:'Lighting/DMX', design:'Design', fabrication:'Fabrication' };
       return map[cat] || cat;
     }
 
@@ -777,8 +751,8 @@
         const empty = document.createElement('div');
         empty.className = 'card pad';
         empty.style.gridColumn = '1 / -1';
-        empty.innerHTML = `<div style="color:rgba(255,255,255,.85); font-size:18px;">No matches.</div>
-          <div style="margin-top:6px; color:rgba(255,255,255,.65); font-size:16px;">Try a different keyword or switch the category filter.</div>`;
+        empty.innerHTML = `<div style="color:rgba(255,255,255,.85); font-size:var(--fs-md);">No matches.</div>
+          <div style="margin-top:6px; color:rgba(255,255,255,.65); font-size:var(--fs-sm);">Try a different keyword or switch the category filter.</div>`;
         grid.appendChild(empty);
         return;
       }
@@ -836,10 +810,7 @@
       render();
     }
 
-    filterButtons.forEach(btn => {
-      btn.addEventListener('click', () => setFilter(btn.dataset.filter));
-    });
-
+    filterButtons.forEach(btn => btn.addEventListener('click', () => setFilter(btn.dataset.filter)));
     q.addEventListener('input', render);
 
     closeBtn.addEventListener('click', () => modal.close());
