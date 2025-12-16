@@ -505,16 +505,78 @@
       .heroPhoto{margin-left:auto; margin-right:auto;}
       .heroPhoto{min-height: 260px;}
     }
-    @media (max-width: 520px){
-      .contactGrid{grid-template-columns: 1fr;}
-      :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
-    }
+  @media (max-width: 520px){
+  .nav .inner{
+    padding: 10px 12px;
+    gap: 10px;
+  }
 
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce){
-      *{scroll-behavior:auto !important}
-      .project:hover,.pill:hover{transform:none}
-    }
+  .brand{
+    min-width: 0;
+    gap: 8px;
+    overflow: hidden;             /* allow truncation inside */
+  }
+
+  /* keep the subtitle, but keep it on ONE line and cut it off nicely */
+  .brand .who{
+    min-width: 0;                 /* critical for ellipsis in flex */
+  }
+  .brand .who strong{
+    font-size: var(--fs-sm) !important;
+  }
+  .brand .who span{
+    display: block;               /* keep it */
+    font-size: var(--fs-xs) !important;
+    white-space: nowrap;          /* no wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;      /* … instead of making the nav tall */
+    max-width: 22ch;              /* tweak this number if you want */
+  }
+
+  .logo{
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .cta{
+    flex-wrap: nowrap;
+    gap: 8px;
+    max-width: 52%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cta::-webkit-scrollbar{ display: none; }
+
+  .pill{
+    padding: 9px 12px;
+    font-size: var(--fs-xs) !important;
+    white-space: nowrap;
+  }
+
+  .contactGrid{grid-template-columns: 1fr;}
+  :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
+}
+.heroText .name{
+  margin: 8px 0 6px;
+  font-size: clamp(60px, 5vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.9px;
+}
+
+.heroText .title{
+  margin: 0 0 14px;
+  font-size: clamp(18px, 2.1vw, 24px);
+  font-weight: 600;
+  letter-spacing: .35px;
+  color: rgba(255,255,255,.88);
+}
+
+.heroText .sub{
+  margin-top: 0;
+}
   </style>
 </head>
 
@@ -542,17 +604,17 @@
       <section class="card heroMain" aria-label="Intro">
         <div class="heroSplit">
           <div class="heroText">
-            <h1>Visual and Product Design that blends hardware, visuals, and chaos (the good kind).</h1>
+            <h1 class="name">Dylan Fenn</h1>
+<p class="title">Creative Technologist &amp; Product Designer</p>
             <p class="sub">
-              I’m Dylan — CTD at CU Boulder. I prototype physical products, design packaging/branding,
-              and build electronics + DMX lighting rigs for live events. This site is a starter portfolio
-              with placeholders you can swap for real projects as you finish them.
+              I’m Dylan — A Sophomore in Creative Technology and Design Engineering at the University of Colorado, Boulder. I prototype physical products, design packaging/branding,
+              and build electronics along eith  other technology. This site provides a look into some of the projects I have completed and other work I am currently participating in.
             </p>
 
             <div class="heroActions">
-              <a class="pill primary" href="#projects">Browse 10 Projects</a>
-              <a class="pill" href="#about">What I do</a>
-              <a class="pill" href="#contact">Get in touch</a>
+              <a class="pill primary" href="#projects">Browse My Projects</a>
+              <a class="pill" href="#about">My Skills</a>
+              <a class="pill" href="#contact">Get in Touch</a>
             </div>
 
             <!-- ✅ Removed the labels/chips at the bottom -->
