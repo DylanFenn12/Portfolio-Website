@@ -21,9 +21,9 @@
       --fs-xl:  clamp(22px, 1.30vw + 10px, 28px);
 
       /* Accent pops */
-      --yellow: #f6e27a;   /* warm pop yellow */
-      --lime: #b8f397;     /* subtle neon green */
-      --orange: #f4b266;   /* warm orange */
+      --yellow: #f6e27a;
+      --lime: #b8f397;
+      --orange: #f4b266;
 
       --bg: #0b0f14;
       --panel: rgba(255,255,255,.06);
@@ -41,7 +41,7 @@
     }
 
     /* Accent palette inspired by “earthy pastels” */
-    .theme {
+    .theme{
       --a1: #7dd3c7;  /* pastel teal */
       --a2: #f2b3c5;  /* pastel pink */
       --a3: #f5d08c;  /* soft amber */
@@ -62,7 +62,7 @@
       isolation: isolate;
     }
 
-    /* ✅ Fluid background across the whole page (no “stop/loop” feel) */
+    /* Fluid background across the whole page */
     body::before{
       content:"";
       position: fixed;
@@ -123,14 +123,14 @@
       min-width: 220px;
     }
 
-    /* ✅ drf.png logo */
+    /* drf.png logo */
     .logo{
       width: 48px;
       height: 48px;
       border-radius: 14px;
       display:block;
-      object-fit: contain;      /* swap to cover for full-bleed */
-      padding: 6px;             /* remove if your logo already has padding */
+      object-fit: contain;
+      padding: 6px;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.18);
       box-shadow: 0 12px 30px rgba(0,0,0,.35);
@@ -139,8 +139,8 @@
     .brand .who{
       display:flex; flex-direction:column; line-height:1.05;
     }
-    .brand .who strong{letter-spacing:.2px; color: var(--lime);}
-    .brand .who span{color: var(--muted)}
+    .brand .who strong{letter-spacing:.2px; color: var(--lime); font-size: var(--fs-md) !important;}
+    .brand .who span{color: var(--muted); font-size: var(--fs-sm) !important;}
 
     .cta{
       display:flex;
@@ -156,10 +156,9 @@
       background: rgba(255,255,255,.05);
       transition: .18s ease;
       color: var(--text);
+      font-size: var(--fs-sm) !important;
     }
     .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
-
-    /* ✅ Contact is now the highlighted CTA */
     .pill.primary{
       border-color: var(--yellow);
       background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
@@ -171,7 +170,7 @@
     .hero{
       margin-top: 28px;
       display:grid;
-      grid-template-columns: 1.25fr .85fr;
+      grid-template-columns: 1fr; /* ✅ remove right box */
       gap: 18px;
       align-items: stretch;
     }
@@ -196,6 +195,74 @@
     }
     .heroMain > *{position:relative}
 
+    /* ✅ New split layout inside the left card: text + profile image */
+    .heroSplit{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: stretch;
+
+      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
+      place-items: center;
+    }
+    .heroText{
+      min-width:0;
+
+      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .heroActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 16px;
+
+      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
+      justify-content: center;
+    }
+
+    .heroPhoto{
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      position: relative;
+      width: 75%;
+      height: 90%;
+      max-width: 70%;
+      min-width: 70%;
+      margin-left: auto;
+      align-self: center;
+
+      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .heroPhoto img{
+      width: 100%;
+      height: 100%;
+      object-fit: fill;   /* ✅ no cropping */
+      object-position: center;
+      display: block;
+      background: rgba(0,0,0,.18); /* optional: fills empty space if aspect ratios differ */
+    }
+
+    }
+    .heroPhoto::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(700px 420px at 30% 10%, rgba(246,226,122,.18), transparent 55%);
+      pointer-events:none;
+      opacity:.55;
+      mix-blend-mode: screen;
+    }
+
     h1{
       margin: 16px 0 14px;
       font-size: clamp(34px, 4.1vw, 60px);
@@ -212,45 +279,7 @@
       color: var(--muted);
       line-height: 1.75;
       max-width: 72ch;
-    }
-
-    .heroActions{display:flex; gap:10px; flex-wrap:wrap; margin-top: 16px;}
-
-    .chips{margin-top: 18px; display:flex; gap:8px; flex-wrap:wrap}
-    .chip{
-      color: rgba(255,255,255,.90);
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.04);
-    }
-    .chip b{font-family: var(--mono); font-weight: 700; color: rgba(255,255,255,.88)}
-
-    .heroSide{padding: 18px; display:flex; flex-direction:column; gap: 12px}
-
-    .sideBox{
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      padding: 14px;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .stat{
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
-      padding: 12px;
-    }
-    .stat .num{
-      font-family: var(--mono);
-      font-weight: 800;
-      letter-spacing: .2px;
+      font-size: var(--fs-md) !important;
     }
 
     /* Sections */
@@ -262,6 +291,8 @@
       gap: 12px;
       margin: 36px 0 12px;
     }
+    .sectionHead h2{margin:0; font-size: var(--fs-lg) !important; letter-spacing:.3px; color: var(--yellow)}
+    .sectionHead p{margin:0; color: var(--muted); font-size: var(--fs-sm) !important}
 
     .toolbar{
       display:flex;
@@ -285,6 +316,7 @@
       padding: 12px 14px 12px 40px;
       color: var(--text);
       outline:none;
+      font-size: var(--fs-sm) !important;
     }
     .search input::placeholder{color: rgba(255,255,255,.45)}
     .search .icon{
@@ -307,6 +339,7 @@
       background: rgba(255,255,255,.05);
       color: rgba(255,255,255,.90);
       transition: .16s ease;
+      font-size: var(--fs-sm) !important;
     }
     .fbtn:hover{background: rgba(255,255,255,.06)}
     .fbtn.active{
@@ -354,11 +387,12 @@
       border: 1px solid rgba(255,255,255,.14);
       background: rgba(0,0,0,.22);
       color: rgba(255,255,255,.88);
+      font-size: var(--fs-xs) !important;
     }
 
     .pbody{padding: 14px 14px 16px}
-    .ptitle{margin:0; letter-spacing:.3px}
-    .pdesc{margin:12px 0 0; color: var(--muted); line-height: 1.65}
+    .ptitle{margin:0; letter-spacing:.3px; font-size: var(--fs-md) !important;}
+    .pdesc{margin:12px 0 0; color: var(--muted); line-height: 1.65; font-size: var(--fs-sm) !important;}
     .meta{margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap}
     .tag{
       padding: 8px 11px;
@@ -366,6 +400,7 @@
       border: 1px solid rgba(255,255,255,.12);
       background: linear-gradient(135deg, rgba(246,226,122,.12), rgba(125,211,199,.10));
       color: rgba(255,255,255,.92);
+      font-size: var(--fs-xs) !important;
     }
 
     /* About + Contact */
@@ -394,6 +429,8 @@
       box-shadow: 0 0 0 6px rgba(245,208,140,.12);
       flex: 0 0 auto;
     }
+    .li strong{display:block; font-size: var(--fs-sm) !important;}
+    .li span{display:block; font-size: var(--fs-sm) !important; color: var(--muted); margin-top: 4px; line-height: 1.55}
 
     .contactGrid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
     .contactItem{
@@ -403,7 +440,8 @@
       padding: 12px;
       display:flex; flex-direction:column; gap: 6px;
     }
-    .contactItem .v{font-family: var(--mono)}
+    .contactItem .k{font-size: var(--fs-sm) !important; color: var(--muted)}
+    .contactItem .v{font-size: var(--fs-md) !important; font-family: var(--mono)}
 
     /* Modal */
     dialog{
@@ -419,6 +457,8 @@
     dialog::backdrop{background: rgba(0,0,0,.60)}
     .modalTop{padding: 16px 16px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.12)}
     .modalTop .title{display:flex; flex-direction:column; gap: 2px;}
+    .modalTop .title strong{font-size: var(--fs-md) !important;}
+    .modalTop .title span{font-size: var(--fs-sm) !important; color: var(--muted)}
     .x{
       cursor:pointer;
       border: 1px solid rgba(255,255,255,.14);
@@ -426,6 +466,7 @@
       color: var(--text);
       border-radius: 999px;
       padding: 10px 12px;
+      font-size: var(--fs-sm) !important;
     }
     .modalBody{padding: 16px; display:grid; gap: 12px}
     .modalHero{
@@ -444,67 +485,29 @@
       padding: 14px;
       color: var(--muted);
       line-height: 1.65;
+      font-size: var(--fs-sm) !important;
     }
     .modalLinks{display:flex; gap:10px; flex-wrap:wrap}
 
     /* Footer */
-    footer{margin-top: 42px; color: var(--faint); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
-
-    /* -----------------------------
-       RESPONSIVE FONT OVERRIDES
-       (forces all text sizes to scale)
-    ------------------------------ */
-    .brand .who strong{ font-size: var(--fs-md) !important; }
-    .brand .who span{   font-size: var(--fs-sm) !important; }
-
-    .pill{ font-size: var(--fs-sm) !important; }
-    .fbtn{ font-size: var(--fs-sm) !important; }
-
-    .sub{ font-size: var(--fs-md) !important; }
-
-    .sectionHead h2{ font-size: var(--fs-lg) !important; color: var(--yellow); }
-    .sectionHead p{ font-size: var(--fs-sm) !important; color: var(--muted); }
-
-    .chip{ font-size: var(--fs-xs) !important; }
-    .tag{  font-size: var(--fs-xs) !important; }
-    .thumb::after{ font-size: var(--fs-xs) !important; }
-
-    .sideBox h3{ font-size: var(--fs-md) !important; }
-    .sideBox p{  font-size: var(--fs-sm) !important; }
-    .stat .num{  font-size: var(--fs-md) !important; }
-    .stat .lbl{  font-size: var(--fs-sm) !important; color: var(--muted); }
-
-    .ptitle{ font-size: var(--fs-md) !important; }
-    .pdesc{  font-size: var(--fs-sm) !important; }
-
-    .search input{ font-size: var(--fs-sm) !important; }
-
-    .li strong{ font-size: var(--fs-sm) !important; }
-    .li span{   font-size: var(--fs-sm) !important; color: var(--muted); }
-
-    .contactItem .k{ font-size: var(--fs-sm) !important; color: var(--muted); }
-    .contactItem .v{ font-size: var(--fs-md) !important; }
-
-    .modalTop .title strong{ font-size: var(--fs-md) !important; }
-    .modalTop .title span{  font-size: var(--fs-sm) !important; color: var(--muted); }
-    .modalCopy{             font-size: var(--fs-sm) !important; }
-    .x{                     font-size: var(--fs-sm) !important; }
-
-    footer{ font-size: var(--fs-xs) !important; }
+    footer{margin-top: 42px; color: var(--faint); font-size: var(--fs-xs) !important; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
 
     /* Responsive */
     @media (max-width: 920px){
-      .hero{grid-template-columns: 1fr;}
       .project{grid-column: span 12;}
       .twoCol{grid-template-columns: 1fr;}
       .brand{min-width: unset;}
+      .heroSplit{grid-template-columns: 1fr;} /* ✅ stack text over photo */
+
+      /* === ONLY CHANGE YOU ASKED FOR: keep hero centered even stacked === */
+      .heroText{align-items:center; text-align:center;}
+      .heroActions{justify-content:center;}
+      .heroPhoto{margin-left:auto; margin-right:auto;}
+      .heroPhoto{min-height: 260px;}
     }
     @media (max-width: 520px){
-      .stats{grid-template-columns: 1fr;}
       .contactGrid{grid-template-columns: 1fr;}
-      :root{
-        --base: clamp(15px, 1.0vw + 12px, 17px);
-      }
+      :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
     }
 
     /* Reduced motion */
@@ -526,7 +529,6 @@
         </div>
       </a>
 
-      <!-- ✅ Removed "View Projects". Contact is the highlighted CTA. -->
       <div class="cta">
         <a class="pill" href="#about">About</a>
         <a class="pill primary" href="#contact">Contact</a>
@@ -536,50 +538,32 @@
 
   <main id="top" class="wrap">
     <div class="hero">
+      <!-- ✅ Only one hero card now -->
       <section class="card heroMain" aria-label="Intro">
-        <h1>Visual and Product Design that blends hardware, visuals, and chaos (the good kind).</h1>
-        <p class="sub">
-          I’m Dylan — CTD at CU Boulder. I prototype physical products, design packaging/branding,
-          and build electronics + DMX lighting rigs for live events. This site is a starter portfolio
-          with placeholders you can swap for real projects as you finish them.
-        </p>
+        <div class="heroSplit">
+          <div class="heroText">
+            <h1>Visual and Product Design that blends hardware, visuals, and chaos (the good kind).</h1>
+            <p class="sub">
+              I’m Dylan — CTD at CU Boulder. I prototype physical products, design packaging/branding,
+              and build electronics + DMX lighting rigs for live events. This site is a starter portfolio
+              with placeholders you can swap for real projects as you finish them.
+            </p>
 
-        <div class="heroActions">
-          <a class="pill primary" href="#projects">Browse 10 Projects</a>
-          <a class="pill" href="#about">What I do</a>
-          <a class="pill" href="#contact">Get in touch</a>
-        </div>
+            <div class="heroActions">
+              <a class="pill primary" href="#projects">Browse 10 Projects</a>
+              <a class="pill" href="#about">What I do</a>
+              <a class="pill" href="#contact">Get in touch</a>
+            </div>
 
-        <div class="chips" aria-label="Highlights">
-          <span class="chip"><b>DMX</b> lighting + mapping</span>
-          <span class="chip"><b>Arduino</b> sensors + relays</span>
-          <span class="chip"><b>Fusion 360</b> CAD + 3D print</span>
-          <span class="chip"><b>Illustrator</b> packaging</span>
-          <span class="chip"><b>RSO</b> club leadership</span>
+            <!-- ✅ Removed the labels/chips at the bottom -->
+          </div>
+
+          <!-- ✅ Your profile image on the right -->
+          <div class="heroPhoto" aria-label="Profile photo">
+            <img src="dylan1.png" alt="Dylan Fenn profile photo" />
+          </div>
         </div>
       </section>
-
-      <aside class="card heroSide" aria-label="Quick info">
-        <div class="sideBox">
-          <h3>Currently into</h3>
-          <p>
-            Large-scale LED bar arrays, wireless DMX, physical interaction (buttons/sensors),
-            and clean-but-playful packaging systems.
-          </p>
-          <div class="stats" aria-label="Stats">
-            <div class="stat"><div class="num">10</div><div class="lbl">portfolio placeholders</div></div>
-            <div class="stat"><div class="num">4</div><div class="lbl">project categories</div></div>
-          </div>
-        </div>
-        <div class="sideBox">
-          <h3>Fast links</h3>
-          <p>Swap these later with your real links.</p>
-          <div class="contactGrid" style="margin-top:12px">
-            <div class="contactItem"><div class="k">Email</div><div class="v">you@example.com</div></div>
-            <div class="contactItem"><div class="k">Instagram</div><div class="v">@yourhandle</div></div>
-          </div>
-        </div>
-      </aside>
     </div>
 
     <section id="projects" aria-label="Projects">
@@ -700,7 +684,6 @@
 
   <script>
     // Minimal JS for filtering/search + modal.
-
     const projects = [
       { id:'trash-panda', title:'Trash Panda Defense Mechanism', category:'electronics', badge:'Arduino + Sensors', tools:['Arduino','Ultrasonic','Relay','OLED'], desc:'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Placeholder for photos, wiring diagram, and code snippets.', links:{primary:'#', secondary:'#'} },
       { id:'iot-relay', title:'IoT Power Relay Button Control', category:'electronics', badge:'Power Control', tools:['Arduino','Relay','Debounce'], desc:'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.', links:{primary:'#', secondary:'#'} },
@@ -729,13 +712,11 @@
     let activeFilter = 'all';
 
     function normalize(s){ return (s || '').toLowerCase(); }
-
     function matches(p, query){
       if(!query) return true;
       const hay = normalize([p.title, p.category, p.badge, p.desc, ...(p.tools||[])].join(' '));
       return hay.includes(normalize(query));
     }
-
     function catLabel(cat){
       const map = { electronics:'Electronics', lighting:'Lighting/DMX', design:'Design', fabrication:'Fabrication' };
       return map[cat] || cat;
@@ -744,7 +725,6 @@
     function render(){
       const query = q.value.trim();
       const filtered = projects.filter(p => (activeFilter === 'all' || p.category === activeFilter) && matches(p, query));
-
       grid.innerHTML = '';
 
       if(filtered.length === 0){
@@ -827,7 +807,6 @@
     });
 
     document.getElementById('year').textContent = new Date().getFullYear();
-
     render();
   </script>
 </body>
