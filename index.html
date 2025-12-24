@@ -252,7 +252,6 @@
       background: rgba(0,0,0,.18); /* optional: fills empty space if aspect ratios differ */
     }
 
-    }
     .heroPhoto::after{
       content:"";
       position:absolute;
@@ -375,6 +374,16 @@
         linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border-bottom: 1px solid rgba(255,255,255,.10);
       position:relative;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .thumb.hasImg::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.28));
+      pointer-events:none;
     }
     .thumb::after{
       content: attr(data-badge);
@@ -388,6 +397,7 @@
       background: rgba(0,0,0,.22);
       color: rgba(255,255,255,.88);
       font-size: var(--fs-xs) !important;
+      z-index: 1;
     }
 
     .pbody{padding: 14px 14px 16px}
@@ -477,7 +487,20 @@
         radial-gradient(400px 240px at 30% 30%, rgba(125,211,199,.25), transparent 60%),
         radial-gradient(420px 260px at 70% 70%, rgba(154,182,255,.22), transparent 60%),
         linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      overflow: hidden;
     }
+    .modalHero.hasImg::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.28));
+      pointer-events:none;
+    }
+
     .modalCopy{
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
@@ -505,78 +528,79 @@
       .heroPhoto{margin-left:auto; margin-right:auto;}
       .heroPhoto{min-height: 260px;}
     }
-  @media (max-width: 520px){
-  .nav .inner{
-    padding: 10px 12px;
-    gap: 10px;
-  }
+    @media (max-width: 520px){
+      .nav .inner{
+        padding: 10px 12px;
+        gap: 10px;
+      }
 
-  .brand{
-    min-width: 0;
-    gap: 8px;
-    overflow: hidden;             /* allow truncation inside */
-  }
+      .brand{
+        min-width: 0;
+        gap: 8px;
+        overflow: hidden;             /* allow truncation inside */
+      }
 
-  /* keep the subtitle, but keep it on ONE line and cut it off nicely */
-  .brand .who{
-    min-width: 0;                 /* critical for ellipsis in flex */
-  }
-  .brand .who strong{
-    font-size: var(--fs-sm) !important;
-  }
-  .brand .who span{
-    display: block;               /* keep it */
-    font-size: var(--fs-xs) !important;
-    white-space: nowrap;          /* no wrapping */
-    overflow: hidden;
-    text-overflow: ellipsis;      /* … instead of making the nav tall */
-    max-width: 22ch;              /* tweak this number if you want */
-  }
+      /* keep the subtitle, but keep it on ONE line and cut it off nicely */
+      .brand .who{
+        min-width: 0;                 /* critical for ellipsis in flex */
+      }
+      .brand .who strong{
+        font-size: var(--fs-sm) !important;
+      }
+      .brand .who span{
+        display: block;               /* keep it */
+        font-size: var(--fs-xs) !important;
+        white-space: nowrap;          /* no wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis;      /* … instead of making the nav tall */
+        max-width: 22ch;              /* tweak this number if you want */
+      }
 
-  .logo{
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    padding: 5px;
-  }
+      .logo{
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        padding: 5px;
+      }
 
-  .cta{
-    flex-wrap: nowrap;
-    gap: 8px;
-    max-width: 52%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .cta::-webkit-scrollbar{ display: none; }
+      .cta{
+        flex-wrap: nowrap;
+        gap: 8px;
+        max-width: 52%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .cta::-webkit-scrollbar{ display: none; }
 
-  .pill{
-    padding: 9px 12px;
-    font-size: var(--fs-xs) !important;
-    white-space: nowrap;
-  }
+      .pill{
+        padding: 9px 12px;
+        font-size: var(--fs-xs) !important;
+        white-space: nowrap;
+      }
 
-  .contactGrid{grid-template-columns: 1fr;}
-  :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
-}
-.heroText .name{
-  margin: 8px 0 6px;
-  font-size: clamp(60px, 5vw, 64px);
-  line-height: 1.02;
-  letter-spacing: -0.9px;
-}
+      .contactGrid{grid-template-columns: 1fr;}
+      :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
+    }
 
-.heroText .title{
-  margin: 0 0 14px;
-  font-size: clamp(18px, 2.1vw, 24px);
-  font-weight: 600;
-  letter-spacing: .35px;
-  color: rgba(255,255,255,.88);
-}
+    .heroText .name{
+      margin: 8px 0 6px;
+      font-size: clamp(60px, 5vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -0.9px;
+    }
 
-.heroText .sub{
-  margin-top: 0;
-}
+    .heroText .title{
+      margin: 0 0 14px;
+      font-size: clamp(18px, 2.1vw, 24px);
+      font-weight: 600;
+      letter-spacing: .35px;
+      color: rgba(255,255,255,.88);
+    }
+
+    .heroText .sub{
+      margin-top: 0;
+    }
   </style>
 </head>
 
@@ -587,7 +611,7 @@
         <img class="logo" src="drf.png" alt="DRF logo" />
         <div class="who">
           <strong>Dylan Fenn</strong>
-          <span>Creative Technology & Design • CU Boulder</span>
+          <span>Creative Technology &amp; Design • CU Boulder</span>
         </div>
       </a>
 
@@ -600,15 +624,14 @@
 
   <main id="top" class="wrap">
     <div class="hero">
-      <!-- ✅ Only one hero card now -->
       <section class="card heroMain" aria-label="Intro">
         <div class="heroSplit">
           <div class="heroText">
             <h1 class="name">Dylan Fenn</h1>
-<p class="title">Creative Technologist &amp; Product Designer</p>
+            <p class="title">Creative Technologist &amp; Product Designer</p>
             <p class="sub">
               I’m Dylan — A Sophomore in Creative Technology and Design Engineering at the University of Colorado, Boulder. I prototype physical products, design packaging/branding,
-              and build electronics along eith  other technology. This site provides a look into some of the projects I have completed and other work I am currently participating in.
+              and build electronics along with other technology. This site provides a look into some of the projects I have completed and other work I am currently participating in.
             </p>
 
             <div class="heroActions">
@@ -616,11 +639,8 @@
               <a class="pill" href="#about">My Skills</a>
               <a class="pill" href="#contact">Get in Touch</a>
             </div>
-
-            <!-- ✅ Removed the labels/chips at the bottom -->
           </div>
 
-          <!-- ✅ Your profile image on the right -->
           <div class="heroPhoto" aria-label="Profile photo">
             <img src="dylan1.png" alt="Dylan Fenn profile photo" />
           </div>
@@ -739,7 +759,7 @@
       <div class="modalCopy" id="mDesc">Project description goes here.</div>
       <div class="modalLinks">
         <a class="pill primary" id="mPrimary" href="#" target="_blank" rel="noreferrer">Project link</a>
-        <a class="pill" id="mSecondary" href="#" target="_blank" rel="noreferrer">More media</a>
+        <a class="pill" id="mSecondary" href="#" target="_blank" rel="noreferrer">Documentation</a>
       </div>
     </div>
   </dialog>
@@ -747,7 +767,16 @@
   <script>
     // Minimal JS for filtering/search + modal.
     const projects = [
-      { id:'trash-panda', title:'Trash Panda Defense Mechanism', category:'electronics', badge:'Arduino + Sensors', tools:['Arduino','Ultrasonic','Relay','OLED'], desc:'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Placeholder for photos, wiring diagram, and code snippets.', links:{primary:'#', secondary:'#'} },
+      {
+        id:'trash-panda',
+        title:'Trash Panda Defense Mechanism',
+        category:'electronics',
+        badge:'Arduino + Sensors',
+        tools:['Arduino','Ultrasonic','Relay','OLED'],
+        desc:'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Developed using an Arduino Uno, HC-SR04 ultrasonic sensor, a relay module, and an OLED display for status updates. Created as a final project for CU Boulder\'s Creative Technology and Design course, OBJECT.',
+        img:'TPDM_Header.png',              // ✅ added
+        links:{primary:'https://youtube.com/shorts/KGrYp7xILqo?feature=share', secondary:'https://youtube.com/shorts/KlmSBUuoIRs?feature=share'}
+      },
       { id:'iot-relay', title:'IoT Power Relay Button Control', category:'electronics', badge:'Power Control', tools:['Arduino','Relay','Debounce'], desc:'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.', links:{primary:'#', secondary:'#'} },
       { id:'dmx-led-wall', title:'DMX LED Bar Matrix (10×9 Concept)', category:'lighting', badge:'11+ Universes', tools:['DMX','Art-Net','MadMapper','Power'], desc:'Designing a scalable LED bar array with universes, addressing, and power injection planning. Placeholder for mapping screenshots and wiring topology.', links:{primary:'#', secondary:'#'} },
       { id:'qlc-show', title:'Live Show Lighting Scenes + Timecode', category:'lighting', badge:'Show Control', tools:['QLC+','Scenes','Chases','MIDI'], desc:'A practical showfile workflow: build scenes, chases, and triggers for DJ sets. Placeholder for cue list + demo video.', links:{primary:'#', secondary:'#'} },
@@ -770,6 +799,7 @@
     const mDesc = document.getElementById('mDesc');
     const mPrimary = document.getElementById('mPrimary');
     const mSecondary = document.getElementById('mSecondary');
+    const mHero = document.getElementById('mHero');
 
     let activeFilter = 'all';
 
@@ -809,8 +839,13 @@
 
         const tools = (p.tools || []).slice(0, 3);
 
+        const hasImg = !!p.img;
+        const thumbStyle = hasImg
+          ? `style="background-image:url('${p.img}');"`
+          : '';
+
         el.innerHTML = `
-          <div class="thumb" data-badge="${p.badge || ('Project ' + (idx+1))}"></div>
+          <div class="thumb ${hasImg ? 'hasImg' : ''}" ${thumbStyle} data-badge="${p.badge || ('Project ' + (idx+1))}"></div>
           <div class="pbody">
             <h3 class="ptitle">${p.title}</h3>
             <p class="pdesc">${p.desc}</p>
@@ -838,6 +873,15 @@
 
       mPrimary.href = p.links?.primary || '#';
       mSecondary.href = p.links?.secondary || '#';
+
+      // ✅ modal header image support (uses same p.img if present)
+      if(p.img){
+        mHero.classList.add('hasImg');
+        mHero.style.backgroundImage = `url('${p.img}')`;
+      }else{
+        mHero.classList.remove('hasImg');
+        mHero.style.backgroundImage = '';
+      }
 
       if(mPrimary.href.endsWith('#')) mPrimary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
       if(mSecondary.href.endsWith('#')) mSecondary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
