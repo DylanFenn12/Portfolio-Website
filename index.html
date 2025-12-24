@@ -157,6 +157,9 @@
       transition: .18s ease;
       color: var(--text);
       font-size: var(--fs-sm) !important;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
     .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
     .pill.primary{
@@ -164,6 +167,14 @@
       background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
       color: #ffffff;
       font-weight: 800;
+    }
+
+    /* ✅ Disabled pill (for projects that only have 1 link) */
+    .pill.disabled{
+      opacity: .45;
+      cursor: not-allowed;
+      pointer-events: none;
+      filter: grayscale(20%);
     }
 
     /* Hero */
@@ -758,8 +769,8 @@
       <div class="modalHero" id="mHero" aria-hidden="true"></div>
       <div class="modalCopy" id="mDesc">Project description goes here.</div>
       <div class="modalLinks">
-        <a class="pill primary" id="mPrimary" href="#" target="_blank" rel="noreferrer">Project link</a>
-        <a class="pill" id="mSecondary" href="#" target="_blank" rel="noreferrer">Documentation</a>
+        <a class="pill primary" id="mPrimary" href="#" target="_blank" rel="noreferrer">Project Media</a>
+        <a class="pill" id="mSecondary" href="#" target="_blank" rel="noreferrer">Extras/Documentation</a>
       </div>
     </div>
   </dialog>
@@ -774,10 +785,22 @@
         badge:'Arduino + Sensors',
         tools:['Arduino','Ultrasonic','Relay','OLED'],
         desc:'A sensor-driven raccoon deterrent concept: detect motion, trigger alerts/sounds, and control outputs safely. Developed using an Arduino Uno, HC-SR04 ultrasonic sensor, a relay module, and an OLED display for status updates. Created as a final project for CU Boulder\'s Creative Technology and Design course, OBJECT.',
-        img:'TPDM_Header.png',              // ✅ added
+        img:'TPDM_Header.png',
         links:{primary:'https://youtube.com/shorts/KGrYp7xILqo?feature=share', secondary:'https://youtube.com/shorts/KlmSBUuoIRs?feature=share'}
       },
-      { id:'iot-relay', title:'IoT Power Relay Button Control', category:'electronics', badge:'Power Control', tools:['Arduino','Relay','Debounce'], desc:'A simple, robust physical button interface to control a smart power relay. Placeholder for schematic, enclosure, and safety notes.', links:{primary:'#', secondary:'#'} },
+
+      {
+        id:'cu-secure-spoof',
+        title:'CU Secure Wi-Fi Spoof Poster',
+        category:'design',
+        badge:'Poster / Social Engineering',
+        tools:['Illustrator','Typography','Print'],
+        desc:'A satirical “CU Spyware” poster that mimics official campus signage to highlight how “secure” Wi-Fi onboarding can feel like installing surveillance. A satirical design for high visibility: bold hierarchy, punchy copy, and QR placement for scanability at distance.',
+        img:'Spoof_Header.png',
+        // ✅ Secondary intentionally disabled for this project:
+        links:{primary:'https://dylanfenn.com/cu-wifi-spoof.html', secondary:null}
+      },
+
       { id:'dmx-led-wall', title:'DMX LED Bar Matrix (10×9 Concept)', category:'lighting', badge:'11+ Universes', tools:['DMX','Art-Net','MadMapper','Power'], desc:'Designing a scalable LED bar array with universes, addressing, and power injection planning. Placeholder for mapping screenshots and wiring topology.', links:{primary:'#', secondary:'#'} },
       { id:'qlc-show', title:'Live Show Lighting Scenes + Timecode', category:'lighting', badge:'Show Control', tools:['QLC+','Scenes','Chases','MIDI'], desc:'A practical showfile workflow: build scenes, chases, and triggers for DJ sets. Placeholder for cue list + demo video.', links:{primary:'#', secondary:'#'} },
       { id:'puffworks-pack', title:'Puffworks Packaging System', category:'design', badge:'Brand + Layout', tools:['Illustrator','InDesign','Mockups'], desc:'A playful pastel packaging concept: dielines, typography, back-of-pack content, and render-ready mockups. Placeholder for final files + style guide.', links:{primary:'#', secondary:'#'} },
@@ -866,13 +889,29 @@
       });
     }
 
+    function setLinkState(aEl, href){
+      const bad = (!href || href === '#' || href.trim() === '');
+      if(bad){
+        aEl.href = '#';
+        aEl.classList.add('disabled');
+        aEl.setAttribute('aria-disabled', 'true');
+        aEl.tabIndex = -1;
+      }else{
+        aEl.href = href;
+        aEl.classList.remove('disabled');
+        aEl.removeAttribute('aria-disabled');
+        aEl.tabIndex = 0;
+      }
+    }
+
     function openModal(p){
       mTitle.textContent = p.title;
       mMeta.textContent = `${catLabel(p.category)} • ${(p.tools||[]).join(' · ')}`;
-      mDesc.textContent = p.desc + ' (Replace this with: problem → approach → build → results → what you’d improve.)';
+      mDesc.textContent = p.desc;
 
-      mPrimary.href = p.links?.primary || '#';
-      mSecondary.href = p.links?.secondary || '#';
+      // ✅ Link handling (supports disabling either button per project)
+      setLinkState(mPrimary, p.links?.primary || '');
+      setLinkState(mSecondary, p.links?.secondary || '');
 
       // ✅ modal header image support (uses same p.img if present)
       if(p.img){
@@ -882,9 +921,6 @@
         mHero.classList.remove('hasImg');
         mHero.style.backgroundImage = '';
       }
-
-      if(mPrimary.href.endsWith('#')) mPrimary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
-      if(mSecondary.href.endsWith('#')) mSecondary.addEventListener('click', (e)=>e.preventDefault(), { once:true });
 
       if(typeof modal.showModal === 'function') modal.showModal();
       else alert(p.title + "\n\n" + p.desc);

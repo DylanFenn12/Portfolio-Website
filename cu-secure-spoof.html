@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CU Secure Wi-Fi Spoof Poster | Dylan Fenn</title>
+  <meta name="description" content="Project page: CU Secure Wi-Fi spoof poster — original, copy, spoof, and placement documentation." />
+  <link rel="icon" type="image/png" href="drf.png" />
+
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.09);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --line: rgba(255,255,255,.12);
+      --shadow: 0 24px 70px rgba(0,0,0,.55);
+      --r: 18px;
+      --r2: 24px;
+      --max: 1100px;
+
+      --fs-xs: clamp(13px, .45vw + 10px, 14px);
+      --fs-sm: clamp(14px, .55vw + 10px, 16px);
+      --fs-md: clamp(16px, .70vw + 10px, 18px);
+      --fs-lg: clamp(18px, .95vw + 10px, 22px);
+      --fs-xl: clamp(26px, 1.8vw + 14px, 34px);
+
+      --yellow:#f6e27a;
+      --lime:#b8f397;
+      --a1:#7dd3c7;
+      --a2:#f2b3c5;
+      --a3:#f5d08c;
+      --a4:#9ab6ff;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+      line-height:1.65;
+      position:relative;
+      isolation:isolate;
+    }
+
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(1200px 800px at 10% 10%, rgba(125,211,199,.14), transparent 60%),
+        radial-gradient(1000px 700px at 95% 15%, rgba(154,182,255,.16), transparent 55%),
+        radial-gradient(900px 700px at 15% 95%, rgba(242,179,197,.12), transparent 50%),
+        radial-gradient(900px 700px at 90% 95%, rgba(245,208,140,.10), transparent 50%),
+        radial-gradient(1200px 900px at 55% 55%, rgba(246,226,122,.06), transparent 65%),
+        linear-gradient(180deg, #06080c 0%, #0b0f14 55%, #070a0f 100%);
+      transform: translateZ(0);
+    }
+    body::after{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 600px at 50% 10%, rgba(0,0,0,.10), transparent 60%),
+        radial-gradient(900px 600px at 50% 100%, rgba(0,0,0,.18), transparent 65%),
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
+      mix-blend-mode: multiply;
+      opacity: .55;
+    }
+
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width: var(--max); margin: 0 auto; padding: 20px 18px 70px;}
+
+    /* mini top bar */
+    .top{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(11,15,20,.56);
+      border-bottom: 1px solid var(--line);
+    }
+    .top .inner{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; min-width: 0;
+    }
+    .logo{
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      object-fit: contain;
+      padding: 6px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    .who{display:flex; flex-direction:column; line-height:1.05; min-width:0}
+    .who strong{color: var(--lime); letter-spacing:.2px; font-size: var(--fs-sm)}
+    .who span{
+      color: rgba(255,255,255,.70);
+      font-size: var(--fs-xs);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 28ch;
+    }
+    .actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .pill{
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.05);
+      transition: .18s ease;
+      font-size: var(--fs-xs);
+      white-space: nowrap;
+    }
+    .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+    .pill.primary{
+      border-color: var(--yellow);
+      background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
+      font-weight: 800;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-width: 0; /* ✅ prevents overflow in grid/flex */
+    }
+    .pad{padding: 18px;}
+
+    header.hero{
+      margin-top: 22px;
+      padding: 18px;
+      position: relative;
+    }
+    header.hero::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 240px at 20% 0%, rgba(125,211,199,.22), transparent 60%),
+        radial-gradient(460px 240px at 80% 0%, rgba(154,182,255,.22), transparent 60%);
+      opacity:.85;
+      pointer-events:none;
+    }
+    header.hero > *{position:relative}
+    h1{
+      margin: 0 0 8px;
+      font-size: clamp(34px, 4.1vw, 54px);
+      line-height:1.05;
+      letter-spacing: -0.8px;
+      background: linear-gradient(90deg, var(--yellow), var(--a1), var(--a4));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .kicker{
+      font-family: var(--mono);
+      font-size: var(--fs-xs);
+      color: rgba(255,255,255,.75);
+      letter-spacing: .2px;
+      margin-bottom: 10px;
+    }
+    .lede{
+      margin: 0;
+      color: rgba(255,255,255,.78);
+      font-size: var(--fs-md);
+      max-width: 80ch;
+    }
+    .chips{
+      margin-top: 12px;
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .chip{
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(246,226,122,.12), rgba(125,211,199,.10));
+      font-size: var(--fs-xs);
+      color: rgba(255,255,255,.92);
+    }
+
+    .sectionHead{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      margin: 26px 0 10px;
+    }
+    .sectionHead h2{
+      margin:0;
+      font-size: var(--fs-lg);
+      letter-spacing:.3px;
+      color: var(--yellow);
+    }
+    .sectionHead p{
+      margin:0;
+      color: rgba(255,255,255,.70);
+      font-size: var(--fs-sm);
+    }
+
+    /* image grids */
+    .grid3{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+    .col4{grid-column: span 4;}
+    .col6{grid-column: span 6;}
+    .col12{grid-column: span 12;}
+
+    /* ✅ CLICKABLE THUMB WRAPPER (keeps image inside container at all sizes) */
+    .imgBtn{
+      display:block;
+      width:100%;
+      border:0;
+      padding:0;
+      background: transparent;
+      cursor: zoom-in;
+      min-width: 0;
+    }
+    .imgBtn:focus{outline: none}
+    .imgBtn:focus-visible{
+      outline: 2px solid rgba(246,226,122,.55);
+      outline-offset: 3px;
+      border-radius: 18px;
+    }
+
+    /* VERTICAL poster viewer: fully fits (no cropping) */
+    .posterFrame{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 12px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      height: min(78vh, 820px);
+      min-height: 380px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden; /* ✅ keeps thumbnail inside */
+    }
+    .posterFrame img{
+      display:block;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* ✅ fully fits */
+      object-position: center;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+    }
+
+    /* placement images */
+    .photoFrame{
+      border-top: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height: 280px;
+      min-height: 240px;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden; /* ✅ keeps thumbnail inside */
+    }
+    .photoFrame img{
+      display:block;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover; /* placement shots can crop a bit */
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+    }
+
+    .caption{
+      padding: 14px 16px 16px;
+      min-width: 0;
+    }
+    .caption h3{
+      margin:0 0 6px;
+      font-size: var(--fs-md);
+      letter-spacing:.2px;
+    }
+    .caption p{
+      margin:0;
+      color: rgba(255,255,255,.72);
+      font-size: var(--fs-sm);
+      line-height:1.6;
+    }
+    .note{
+      margin-top: 10px;
+      color: rgba(255,255,255,.60);
+      font-size: var(--fs-xs);
+      font-family: var(--mono);
+      word-break: break-word;
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 12px;
+    }
+    .callout{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .callout h3{margin:0 0 8px; font-size: var(--fs-md)}
+    .callout p{margin:0; color: rgba(255,255,255,.72); font-size: var(--fs-sm)}
+    .callout ul{
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: rgba(255,255,255,.74);
+      font-size: var(--fs-sm);
+    }
+    .callout li{margin: 8px 0}
+
+    footer{
+      margin-top: 26px;
+      color: rgba(255,255,255,.55);
+      font-size: var(--fs-xs);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    /* ✅ Lightbox (fits inside container; not full-screen image) */
+    .lightbox{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.72);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 999;
+    }
+    .lightbox.open{display:flex;}
+    .lbPanel{
+      width: min(980px, calc(100% - 24px));
+      height: min(86vh, 820px);
+      background: rgba(14,18,25,.92);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      box-shadow: 0 40px 120px rgba(0,0,0,.70);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .lbTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+    .lbTitle{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+    }
+    .lbTitle strong{font-size: var(--fs-sm); color: rgba(255,255,255,.92);}
+    .lbTitle span{
+      font-size: var(--fs-xs);
+      color: rgba(255,255,255,.65);
+      font-family: var(--mono);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 80ch;
+    }
+    .lbClose{
+      cursor:pointer;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: var(--fs-xs);
+      line-height: 1;
+    }
+    .lbClose:hover{background: rgba(255,255,255,.06)}
+    .lbBody{
+      padding: 12px;
+      flex: 1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .lbBody img{
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* ✅ fit inside panel */
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      display:block;
+    }
+
+    @media (max-width: 920px){
+      .col4,.col6{grid-column: span 12;}
+      .twoCol{grid-template-columns: 1fr;}
+      .posterFrame{height: min(72vh, 760px);}
+      .lbPanel{height: min(88vh, 860px);}
+    }
+    @media (max-width: 520px){
+      .actions{gap:8px}
+      .pill{padding: 9px 12px}
+      .posterFrame{height: min(70vh, 680px); min-height: 340px;}
+      .photoFrame{height: 240px;}
+      .lbPanel{width: calc(100% - 14px); height: min(90vh, 860px);}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <div class="inner">
+      <a class="brand" href="index.html#projects" aria-label="Back to portfolio">
+        <img class="logo" src="drf.png" alt="DRF logo" />
+        <div class="who">
+          <strong>Dylan Fenn</strong>
+          <span>Project page • CU Secure Wi-Fi Spoof Poster</span>
+        </div>
+      </a>
+      <div class="actions">
+        <a class="pill" href="index.html#projects">← Back</a>
+        <a class="pill primary" href="#gallery">See Images</a>
+        <a class="pill" href="#process">Process</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <header class="card hero">
+      <div class="kicker">ATLAS • Counterfeit / Subversion Assignment</div>
+      <h1>CU Secure Wi-Fi Spoof Poster</h1>
+      <p class="lede">
+        A convincing counterfeit of a publicly displayed campus Wi-Fi poster — recreated from scratch — then subtly rewritten
+        to flip the message into a “wait… are we sure this is fine?” moment. (Yes, it’s a little goofy. That’s the point.)
+      </p>
+      <div class="chips">
+        <span class="chip">Typography mimicry</span>
+        <span class="chip">Layout + scale matching</span>
+        <span class="chip">Subversion + satire</span>
+        <span class="chip">Placement documentation</span>
+      </div>
+    </header>
+
+    <section id="process" class="twoCol" style="margin-top:14px;">
+      <div class="card pad">
+        <h2 style="margin:0 0 10px; color:var(--yellow); font-size:var(--fs-lg);">Overview</h2>
+        <p style="margin:0; color:rgba(255,255,255,.74); font-size:var(--fs-sm);">
+          Using the design skills and judgement built in the course, I selected a publicly displayed campus poster with a clear,
+          authoritative message. I rebuilt it from scratch (no “slap a rectangle over the text” shortcuts), matching fonts, spacing,
+          hierarchy, and print feel. Then I modified the copy to subvert the original intent — keeping it believable, but letting the
+          new message sneak up on the viewer.
+        </p>
+
+        <div class="callout" style="margin-top:12px;">
+          <h3>Why this target?</h3>
+          <p>
+            It’s official-looking, highly visible, and it relies on trust. That made it perfect for a subtle “authority remix”
+            where the form stays the same but the meaning flips.
+          </p>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <h2 style="margin:0 0 10px; color:var(--yellow); font-size:var(--fs-lg);">Process</h2>
+        <div class="callout">
+          <h3>Rules I followed (no funny business)</h3>
+          <ul>
+            <li><strong>Publicly displayed target:</strong> a campus poster.</li>
+            <li><strong>Rebuilt from scratch:</strong> replicated layout/type/image placement carefully.</li>
+            <li><strong>Subtle, relevant change:</strong> not a dramatic redesign — a believable message twist.</li>
+            <li><strong>Documented placement:</strong> installed + photographed in context.</li>
+          </ul>
+          <div class="note">Design crime level: misdemeanor satire (allegedly).</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gallery" aria-label="Images">
+      <div class="sectionHead">
+        <div>
+          <h2>Original → Copy → Spoof</h2>
+          <p>Click any image to enlarge (fits inside the popup).</p>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <!-- ORIGINAL -->
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Original.jpeg"
+            data-title="Original (Target)"
+            data-sub="CUWiFi_Original.jpeg"
+            aria-label="Enlarge: Original (Target)">
+            <div class="posterFrame">
+              <img src="CUWiFi_Original.jpeg" alt="Original CU Wi-Fi poster" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Original (Target)</h3>
+            <p>The real poster: official, clear hierarchy, and a confident “do this to connect” vibe.</p>
+            <div class="note">File: CUWiFi_Original.jpeg</div>
+          </div>
+        </article>
+
+        <!-- COPY -->
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Copy.jpeg"
+            data-title="Direct Copy (Rebuilt)"
+            data-sub="CUWiFi_Copy.jpeg"
+            aria-label="Enlarge: Direct Copy (Rebuilt)">
+            <div class="posterFrame">
+              <img src="CUWiFi_Copy.jpeg" alt="Recreated copy of the original poster" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Direct Copy (Rebuilt)</h3>
+            <p>A from-scratch recreation: typography, spacing, and overall “yep that’s campus signage” energy.</p>
+            <div class="note">File: CUWiFi_Copy.jpeg</div>
+          </div>
+        </article>
+
+        <!-- SPOOF -->
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Spoof.jpeg"
+            data-title="Spoof (Subverted)"
+            data-sub="CUWiFi_Spoof.jpeg"
+            aria-label="Enlarge: Spoof (Subverted)">
+            <div class="posterFrame">
+              <img src="CUWiFi_Spoof.jpeg" alt="Spoof version of the poster with subverted message" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Spoof (Subverted)</h3>
+            <p>Same visual authority — but the rewritten copy nudges the viewer to question the tradeoffs and power dynamics.</p>
+            <div class="note">File: CUWiFi_Spoof.jpeg</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="sectionHead" style="margin-top:22px;">
+        <div>
+          <h2>Placement Photos</h2>
+          <p>Three shots showing the install in the wild (click to enlarge).</p>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Placement1.jpeg"
+            data-title="Placement 1"
+            data-sub="CUWiFi_Placement1.jpeg"
+            aria-label="Enlarge: Placement 1">
+            <div class="photoFrame">
+              <img src="CUWiFi_Placement1.jpeg" alt="Placement photo 1 of the spoof poster in context" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Placement 1</h3>
+            <p>Context shot: distance + environment. The goal is “blends in until it doesn’t.”</p>
+            <div class="note">File: CUWiFi_Placement1.jpeg</div>
+          </div>
+        </article>
+
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Placement2.jpeg"
+            data-title="Placement 2"
+            data-sub="CUWiFi_Placement2.jpeg"
+            aria-label="Enlarge: Placement 2">
+            <div class="photoFrame">
+              <img src="CUWiFi_Placement2.jpeg" alt="Placement photo 2 of the spoof poster in context" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Placement 2</h3>
+            <p>Closer view: shows scale and legibility where real people actually stop and read.</p>
+            <div class="note">File: CUWiFi_Placement2.jpeg</div>
+          </div>
+        </article>
+
+        <article class="card col4">
+          <button class="imgBtn" type="button"
+            data-src="CUWiFi_Placement3.jpeg"
+            data-title="Placement 3"
+            data-sub="CUWiFi_Placement3.jpeg"
+            aria-label="Enlarge: Placement 3">
+            <div class="photoFrame">
+              <img src="CUWiFi_Placement3.jpeg" alt="Placement photo 3 of the spoof poster in context" />
+            </div>
+          </button>
+          <div class="caption">
+            <h3>Placement 3</h3>
+            <p>Angle/lighting variation: confirms it still “passes” under different conditions.</p>
+            <div class="note">File: CUWiFi_Placement3.jpeg</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-label="Writeup" style="margin-top:16px;">
+      <div class="sectionHead">
+        <div>
+          <h2>Justification</h2>
+          <p>Message, modification, and connection to subversion.</p>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <p style="margin:0; color:rgba(255,255,255,.74); font-size:var(--fs-sm);">
+          The original poster communicates authority through consistency: institutional branding, clean hierarchy, and
+          instruction-like language. It assumes compliance and frames the connection process as routine and harmless.
+          My counterfeit maintains that same “official” visual logic while altering the copy to highlight the tension between
+          convenience and surveillance/trust. The subversion is intentionally subtle: the format remains credible, but the
+          rewritten message reframes the situation so viewers reconsider what they’re agreeing to and who benefits.
+          In the context of class themes (power, authority, vandalism, subversion), the work uses the poster’s own design
+          language as the delivery mechanism. The intervention isn’t about destroying the original — it’s about borrowing its
+          legitimacy to expose how legitimacy can be manufactured.
+        </p>
+
+        <div class="callout" style="margin-top:12px;">
+          <h3>Goofy-but-true takeaway</h3>
+          <p>
+            If the design looks official enough, most people will believe it. Which is… funny. And also not funny.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> Dylan Fenn</div>
+      <div style="font-family:var(--mono)">subpage: cu-wifi-spoof.html</div>
+    </footer>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lbPanel" role="dialog" aria-modal="true" aria-label="Image preview">
+      <div class="lbTop">
+        <div class="lbTitle">
+          <strong id="lbTitle">Image</strong>
+          <span id="lbSub">filename.jpeg</span>
+        </div>
+        <button class="lbClose" id="lbClose" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="lbBody">
+        <img id="lbImg" src="" alt="" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // lightbox
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbTitle = document.getElementById('lbTitle');
+    const lbSub = document.getElementById('lbSub');
+    const lbClose = document.getElementById('lbClose');
+
+    function openLightbox(src, title, sub, alt){
+      lbImg.src = src;
+      lbImg.alt = alt || title || 'Image preview';
+      lbTitle.textContent = title || 'Image';
+      lbSub.textContent = sub || src;
+
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden', 'false');
+
+      // focus close for keyboard users
+      lbClose.focus({ preventScroll: true });
+    }
+
+    function closeLightbox(){
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden', 'true');
+      // don't clear src; avoids flicker on rapid re-open
+    }
+
+    document.querySelectorAll('.imgBtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const src = btn.dataset.src;
+        const title = btn.dataset.title;
+        const sub = btn.dataset.sub;
+        const img = btn.querySelector('img');
+        openLightbox(src, title, sub, img ? img.alt : title);
+      });
+
+      // keyboard: Enter/Space already works on <button>
+    });
+
+    lbClose.addEventListener('click', closeLightbox);
+
+    // click outside panel closes
+    lb.addEventListener('click', (e) => {
+      const panel = e.target.closest('.lbPanel');
+      if(!panel) closeLightbox();
+    });
+
+    // ESC closes
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && lb.classList.contains('open')) closeLightbox();
+    });
+  </script>
+
+  <!--
+    Filenames used (all .jpeg):
+      CUWiFi_Original.jpeg
+      CUWiFi_Copy.jpeg
+      CUWiFi_Spoof.jpeg
+      CUWiFi_Placement1.jpeg
+      CUWiFi_Placement2.jpeg
+      CUWiFi_Placement3.jpeg
+  -->
+</body>
+</html>
