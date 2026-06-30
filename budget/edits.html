@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraternity semester budget planner</title>
+<style>
+:root{
+  --surface-2:#ffffff;--surface-1:#f5f4f1;--surface-0:#ececea;
+  --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#898781;
+  --text-success:#27500a;--text-danger:#791f1f;--text-accent:#0c447c;
+  --border:rgba(11,11,11,0.10);--border-strong:rgba(11,11,11,0.18);--border-stronger:rgba(11,11,11,0.30);
+  --border-accent:#85b7eb;--bg-accent:#e6f1fb;--radius:8px;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-2:#262624;--surface-1:#1e1e1c;--surface-0:#181816;
+    --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#898781;
+    --text-success:#8fc15a;--text-danger:#e88;--text-accent:#85b7eb;
+    --border:rgba(255,255,255,0.10);--border-strong:rgba(255,255,255,0.18);--border-stronger:rgba(255,255,255,0.30);
+    --border-accent:#185fa5;--bg-accent:#0c2d4a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface-0);font-family:var(--font-sans);color:var(--text-primary);padding:2rem 1rem}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.page{max-width:880px;margin:0 auto}
+.page-title{font-size:22px;font-weight:500;margin-bottom:1.25rem;color:var(--text-primary)}
+.sec-title{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.card{background:var(--surface-2);border:.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:var(--surface-1);border-radius:var(--radius);padding:.85rem}
+.metric-label{font-size:12px;color:var(--text-muted);margin-bottom:3px}
+.metric-value{font-size:20px;font-weight:500;color:var(--text-primary)}
+.metric-value.green{color:var(--text-success)}
+.metric-value.red{color:var(--text-danger)}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem}
+.class-card{background:var(--surface-1);border-radius:var(--radius);padding:.85rem;border:.5px solid var(--border)}
+.class-name{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:8px}
+.class-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.class-row label{font-size:12px;color:var(--text-secondary)}
+input,select,textarea,button{font-family:var(--font-sans);color:var(--text-primary)}
+.class-card input{width:68px;font-size:13px;text-align:right;padding:3px 6px;height:28px;background:var(--surface-2);border:.5px solid var(--border-strong);border-radius:var(--radius)}
+.class-dues-pill{margin-top:8px;padding:4px 8px;border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:12px;font-weight:500;text-align:center}
+table.bt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+table.bt th{text-align:left;font-size:11px;font-weight:500;color:var(--text-muted);padding:3px 6px 7px}
+table.bt th.r{text-align:right}
+table.bt th.sm{width:100px}
+table.bt th.cat{width:120px}
+table.bt th.mo{width:100px}
+table.bt th.xs{width:28px}
+table.bt td{padding:5px 6px;color:var(--text-primary);vertical-align:middle}
+table.bt td.r{text-align:right}
+table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
+.label-input{width:100%;font-size:13px;padding:3px 6px;height:28px;text-align:left;background:var(--surface-2);border:.5px solid var(--border-strong);border-radius:var(--radius)}
+.amt-input{width:90px;font-size:13px;padding:3px 6px;height:28px;text-align:right;background:var(--surface-2);border:.5px solid var(--border-strong);border-radius:var(--radius)}
+.cat-select,.mo-select{width:100%;font-size:13px;padding:3px 6px;height:28px;background:var(--surface-2);border:.5px solid var(--border-strong);border-radius:var(--radius)}
+.add-btn{font-size:13px;color:var(--text-accent);border:none;background:none;cursor:pointer;padding:7px 0;display:flex;align-items:center;gap:4px}
+.add-btn:hover{color:var(--text-primary)}
+.rm-btn{font-size:15px;color:var(--text-muted);border:none;background:none;cursor:pointer;padding:0 2px;line-height:1}
+.rm-btn:hover{color:var(--text-danger)}
+.summary-box{background:var(--bg-accent);border:.5px solid var(--border-accent);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.summary-box-title{font-size:13px;color:var(--text-accent);font-weight:500;margin-bottom:10px}
+.dues-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:.5px solid var(--border-accent)}
+.dues-row:last-child{border-bottom:none}
+.dues-row-label{font-size:13px;color:var(--text-accent)}
+.dues-row-val{font-size:15px;font-weight:500;color:var(--text-accent)}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-secondary);cursor:pointer}
+.tab.active{background:var(--surface-2);color:var(--text-primary);border-color:var(--border-stronger)}
+.section{display:none}
+.section.visible{display:block}
+.toggle-row{display:flex;gap:4px;margin-bottom:1rem}
+.toggle-btn{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-secondary);cursor:pointer}
+.toggle-btn.active{background:var(--bg-accent);color:var(--text-accent);border-color:var(--border-accent)}
+.backup-bar{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding:.65rem 1rem;background:var(--surface-1);border-radius:var(--radius);border:.5px solid var(--border);flex-wrap:wrap}
+.backup-btn{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:6px}
+.backup-btn:hover{background:var(--surface-2)}
+.backup-status{font-size:12px;color:var(--text-muted)}
+.backup-status.ok{color:var(--text-success)}
+.backup-status.err{color:var(--text-danger)}
+.backup-area{width:100%;font-size:12px;font-family:var(--font-mono);padding:8px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);min-height:80px;display:none}
+.cf-month{margin-bottom:1rem}
+.cf-month-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.cf-month-name{font-size:14px;font-weight:500;color:var(--text-primary)}
+.cf-month-net{font-size:13px;font-weight:500}
+.cf-line{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;color:var(--text-secondary)}
+.cf-line .amt{color:var(--text-primary)}
+.cf-running{font-size:12px;color:var(--text-muted);margin-top:4px;padding-top:4px;border-top:.5px solid var(--border)}
+.due-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.due-item:last-child{border-bottom:none}
+.due-date{width:64px;flex-shrink:0;text-align:center}
+.due-date-day{font-size:18px;font-weight:500;color:var(--text-primary);line-height:1.1}
+.due-date-mon{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.due-label{flex:1;font-size:13px;color:var(--text-primary)}
+.due-amt{font-size:14px;font-weight:500;color:var(--text-primary);white-space:nowrap}
+.due-month-head{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;padding:14px 0 6px}
+.due-month-head:first-child{padding-top:0}
+.footer-note{font-size:12px;color:var(--text-muted);text-align:center;margin-top:1.5rem}
+</style>
+</head>
+<body>
+<div class="page">
+<h1 class="page-title">Fraternity semester budget planner</h1>
+
+<div class="backup-bar">
+  <span style="font-size:13px;color:var(--text-secondary)">Back up your data as text any time.</span>
+  <button class="backup-btn" onclick="exportData()">Copy backup</button>
+  <button class="backup-btn" onclick="toggleImport()">Paste backup</button>
+  <span class="backup-status" id="backup-status"></span>
+</div>
+<textarea class="backup-area" id="backup-area" placeholder="Paste your backup text here, then click Restore"></textarea>
+<div id="restore-row" style="display:none;margin-bottom:1rem;gap:8px">
+  <button class="backup-btn" onclick="importData()">Restore from text</button>
+  <button class="backup-btn" onclick="hideBackupArea()">Hide</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('members',this)">Members and dues</button>
+  <button class="tab" onclick="showTab('income',this)">Other income</button>
+  <button class="tab" onclick="showTab('expenses',this)">Expenses</button>
+  <button class="tab" onclick="showTab('chart',this)">Expense chart</button>
+  <button class="tab" onclick="showTab('cashflow',this)">Cash flow by month</button>
+  <button class="tab" onclick="showTab('housing',this)">Housing due dates</button>
+  <button class="tab" onclick="showTab('summary',this)">Summary</button>
+</div>
+
+<div id="tab-members" class="section visible">
+  <div class="card">
+    <div class="sec-title">Class year breakdown</div>
+    <div class="class-grid" id="class-grid"></div>
+  </div>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total members</div><div class="metric-value" id="m-total">0</div></div>
+    <div class="metric"><div class="metric-label">Dues income</div><div class="metric-value green" id="m-dues-income">$0</div></div>
+    <div class="metric"><div class="metric-label">Other income</div><div class="metric-value green" id="m-other-income">$0</div></div>
+    <div class="metric"><div class="metric-label">Total income</div><div class="metric-value green" id="m-total-income">$0</div></div>
+    <div class="metric"><div class="metric-label">Total expenses</div><div class="metric-value" id="m-expenses">$0</div></div>
+    <div class="metric"><div class="metric-label">Surplus / deficit</div><div class="metric-value" id="m-gap">$0</div></div>
+  </div>
+</div>
+
+<div id="tab-income" class="section">
+  <div class="card">
+    <div class="sec-title">Other income sources</div>
+    <table class="bt">
+      <thead><tr><th>Source</th><th class="mo">Month</th><th class="r sm">Amount</th><th class="xs"></th></tr></thead>
+      <tbody id="inc-tbody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addIncome()">+ Add income source</button>
+  </div>
+</div>
+
+<div id="tab-expenses" class="section">
+  <div class="card">
+    <div class="sec-title">Expense categories</div>
+    <table class="bt">
+      <thead><tr><th>Item</th><th class="cat">Category</th><th class="mo">Month</th><th class="r sm">Amount</th><th class="xs"></th></tr></thead>
+      <tbody id="exp-tbody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addExpense()">+ Add expense</button>
+  </div>
+</div>
+
+<div id="tab-chart" class="section">
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="toggle-item" onclick="setChartMode('item')">By expense</button>
+    <button class="toggle-btn" id="toggle-cat" onclick="setChartMode('category')">By category</button>
+  </div>
+  <div class="card">
+    <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--text-secondary)"></div>
+    <div style="position:relative;width:100%;height:320px">
+      <canvas id="expChart" role="img" aria-label="Pie chart of expenses"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="tab-cashflow" class="section">
+  <div class="card">
+    <div class="sec-title">Running balance by month</div>
+    <div style="position:relative;width:100%;height:240px;margin-bottom:1rem">
+      <canvas id="cfChart" role="img" aria-label="Line chart of running cash balance by month"></canvas>
+    </div>
+  </div>
+  <div class="card" id="cf-months"></div>
+</div>
+
+<div id="tab-housing" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total housing payments</div><div class="metric-value" id="h-total">$0</div></div>
+    <div class="metric"><div class="metric-label">Number of payments</div><div class="metric-value" id="h-count">0</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Payment due dates</div>
+    <div id="housing-list"></div>
+  </div>
+</div>
+
+<div id="tab-summary" class="section">
+  <div class="summary-box" id="dues-summary"></div>
+  <div class="metric-grid" id="sum-metrics"></div>
+  <div class="card">
+    <div class="sec-title">Expense breakdown by category</div>
+    <div id="sum-exp-list"></div>
+  </div>
+</div>
+
+<p class="footer-note">All data lives in this file's memory while open. Use "Copy backup" to save your numbers as text before closing.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const PALETTE=['#2a78d6','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834','#5f5e5a','#993556'];
+const CATEGORIES=['Housing/Lounge','National dues','Social','Brotherhood','Formal','Apparel','Recruitment','Philanthropy','Operations','Other'];
+const MONTHS=['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_ORDER={May:0,Jun:1,Jul:2,Aug:3,Sep:4,Oct:5,Nov:6,Dec:7};
+
+let classes=[
+  {label:'Freshman',count:25,dues:1755,month:'Sep'},
+  {label:'Sophomore',count:17,dues:1475,month:'Jul'},
+  {label:'Junior',count:10,dues:1315,month:'Jul'},
+  {label:'Senior',count:14,dues:975,month:'Jul'},
+];
+
+let otherIncome=[
+  {label:'Lost check reimbursement',amount:14500,month:'Oct'},
+  {label:'Additional payment from Trese',amount:1800,month:'Jul'},
+  {label:'Other half of backlog (deferred)',amount:4637.25,month:'Oct'},
+];
+
+let expenses=[
+  {label:'Backlog of Feb/March lounge rent (half now, half Oct)',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
+  {label:'Backlog remainder',amount:4637.35,category:'Housing/Lounge',month:'Oct',day:10},
+  {label:'Big fundraiser (July 27)',amount:3250,category:'Social',month:'Jul'},
+  {label:'July housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27},
+  {label:'August housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10},
+  {label:'September housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10},
+  {label:'October housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10},
+  {label:'November housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10},
+  {label:'December housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Dec',day:10},
+  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:5},
+  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:5},
+  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:5},
+  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:5},
+  {label:'Parlor fee',amount:3000,category:'Operations',month:'Aug'},
+  {label:'Pig dinner',amount:12800,category:'Social',month:'Sep'},
+  {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
+  {label:'IFC dues - half in October',amount:2850,category:'National dues',month:'Oct'},
+  {label:'Total national payment',amount:18500,category:'National dues',month:'Oct'},
+  {label:'Formal',amount:0,category:'Formal',month:'Nov'},
+  {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
+  {label:'Brotherhood',amount:2000,category:'Brotherhood',month:'Sep'},
+  {label:'Social',amount:12000,category:'Social',month:'Sep'},
+  {label:'Recruitment',amount:3800,category:'Recruitment',month:'Aug'},
+  {label:'Philo',amount:150,category:'Philanthropy',month:'Oct'},
+  {label:'Legfi backlog (May+June, $264/mo)',amount:528,category:'Operations',month:'Jul'},
+  {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul'},
+  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug'},
+  {label:'Legfi - September',amount:264,category:'Operations',month:'Sep'},
+  {label:'Legfi - October',amount:264,category:'Operations',month:'Oct'},
+  {label:'Legfi - November',amount:264,category:'Operations',month:'Nov'},
+  {label:'Legfi - December',amount:264,category:'Operations',month:'Dec'},
+  {label:'Paramount+ - July ($14/mo)',amount:14,category:'Operations',month:'Jul'},
+  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug'},
+  {label:'Paramount+ - September',amount:14,category:'Operations',month:'Sep'},
+  {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct'},
+  {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov'},
+  {label:'Paramount+ - December',amount:14,category:'Operations',month:'Dec'},
+  {label:'Youtube TV - August ($101.99/mo)',amount:101.99,category:'Operations',month:'Aug'},
+  {label:'Youtube TV - September',amount:101.99,category:'Operations',month:'Sep'},
+  {label:'Youtube TV - October',amount:101.99,category:'Operations',month:'Oct'},
+  {label:'Youtube TV - November',amount:101.99,category:'Operations',month:'Nov'},
+  {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec'},
+  {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug'},
+  {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep'},
+];
+
+let chartMode='item';
+let chartInstance=null;
+let cfChartInstance=null;
+
+function totalDuesIncome(){return classes.reduce((s,c)=>s+(c.count||0)*(c.dues||0),0)}
+function totalMembers(){return classes.reduce((s,c)=>s+(c.count||0),0)}
+function totalOtherIncome(){return otherIncome.reduce((s,e)=>s+(e.amount||0),0)}
+function totalIncome(){return totalDuesIncome()+totalOtherIncome()}
+function totalExpenses(){return expenses.reduce((s,e)=>s+(e.amount||0),0)}
+function gap(){return totalIncome()-totalExpenses()}
+
+function moOptions(selected){
+  return MONTHS.map(m=>'<option value="'+m+'" '+(m===selected?'selected':'')+'>'+m+'</option>').join('');
+}
+
+function buildClasses(){
+  const grid=document.getElementById('class-grid');
+  grid.innerHTML='';
+  classes.forEach((c,i)=>{
+    const div=document.createElement('div');
+    div.className='class-card';
+    div.innerHTML='<div class="class-name">'+c.label+'</div>'+
+      '<div class="class-row"><label>Members</label><input type="number" min="0" value="'+c.count+'" data-ci="'+i+'" data-field="count" /></div>'+
+      '<div class="class-row"><label>Dues ($)</label><input type="number" min="0" step="0.01" value="'+c.dues+'" data-ci="'+i+'" data-field="dues" /></div>'+
+      '<div class="class-row"><label>Paid month</label><select class="mo-select" style="width:68px" data-ci="'+i+'" data-field="month">'+moOptions(c.month)+'</select></div>'+
+      '<div class="class-dues-pill" id="pill-'+i+'">$'+((c.count||0)*(c.dues||0)).toLocaleString()+' total</div>';
+    grid.appendChild(div);
+  });
+  grid.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const i=+inp.dataset.ci,field=inp.dataset.field;
+      classes[i][field]=parseFloat(inp.value)||0;
+      document.getElementById('pill-'+i).textContent='$'+((classes[i].count||0)*(classes[i].dues||0)).toLocaleString()+' total';
+      updateMetrics();
+    });
+  });
+  grid.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const i=+sel.dataset.ci,field=sel.dataset.field;
+      classes[i][field]=sel.value;
+      updateMetrics();
+    });
+  });
+}
+
+function buildIncome(){
+  const tbody=document.getElementById('inc-tbody');
+  tbody.innerHTML='';
+  otherIncome.forEach((e,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><input class="label-input" type="text" value="'+e.label+'" data-ii="'+i+'" data-field="label" /></td>'+
+      '<td><select class="mo-select" data-ii="'+i+'" data-field="month">'+moOptions(e.month)+'</select></td>'+
+      '<td class="r"><input class="amt-input" type="number" min="0" step="0.01" value="'+e.amount+'" data-ii="'+i+'" data-field="amount" /></td>'+
+      '<td><button class="rm-btn" onclick="removeIncome('+i+')" aria-label="Remove">×</button></td>';
+    tbody.appendChild(tr);
+  });
+  const tfoot=document.createElement('tr');
+  tfoot.innerHTML='<td style="padding-top:8px;font-weight:500;color:var(--text-primary);border-top:.5px solid var(--border-stronger)">Total</td><td style="border-top:.5px solid var(--border-stronger)"></td><td class="r" style="padding-top:8px;font-weight:500;color:var(--text-success);border-top:.5px solid var(--border-stronger)" id="inc-total-cell">$'+totalOtherIncome().toLocaleString()+'</td><td style="border-top:.5px solid var(--border-stronger)"></td>';
+  tbody.appendChild(tfoot);
+  tbody.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const i=+inp.dataset.ii,field=inp.dataset.field;
+      otherIncome[i][field]=field==='label'?inp.value:(parseFloat(inp.value)||0);
+      document.getElementById('inc-total-cell').textContent='$'+totalOtherIncome().toLocaleString();
+      updateMetrics();
+    });
+  });
+  tbody.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const i=+sel.dataset.ii,field=sel.dataset.field;
+      otherIncome[i][field]=sel.value;
+      updateMetrics();
+    });
+  });
+}
+
+function catOptions(selected){
+  return CATEGORIES.map(c=>'<option value="'+c+'" '+(c===selected?'selected':'')+'>'+c+'</option>').join('');
+}
+
+function buildExpenses(){
+  const tbody=document.getElementById('exp-tbody');
+  tbody.innerHTML='';
+  expenses.forEach((e,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><input class="label-input" type="text" value="'+e.label+'" data-ei="'+i+'" data-field="label" /></td>'+
+      '<td><select class="cat-select" data-ei="'+i+'" data-field="category">'+catOptions(e.category)+'</select></td>'+
+      '<td><select class="mo-select" data-ei="'+i+'" data-field="month">'+moOptions(e.month)+'</select></td>'+
+      '<td class="r"><input class="amt-input" type="number" min="0" step="0.01" value="'+e.amount+'" data-ei="'+i+'" data-field="amount" /></td>'+
+      '<td><button class="rm-btn" onclick="removeExp('+i+')" aria-label="Remove">×</button></td>';
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const i=+inp.dataset.ei,field=inp.dataset.field;
+      expenses[i][field]=field==='amount'?(parseFloat(inp.value)||0):inp.value;
+      updateMetrics(); renderChart();
+    });
+  });
+  tbody.querySelectorAll('select').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const i=+sel.dataset.ei,field=sel.dataset.field;
+      expenses[i][field]=sel.value;
+      updateMetrics(); renderChart();
+    });
+  });
+}
+
+function updateMetrics(){
+  const g=gap();
+  document.getElementById('m-total').textContent=totalMembers();
+  document.getElementById('m-dues-income').textContent='$'+totalDuesIncome().toLocaleString();
+  document.getElementById('m-other-income').textContent='$'+totalOtherIncome().toLocaleString();
+  document.getElementById('m-total-income').textContent='$'+totalIncome().toLocaleString();
+  document.getElementById('m-expenses').textContent='$'+totalExpenses().toLocaleString();
+  const el=document.getElementById('m-gap');
+  el.textContent=(g>=0?'+':'-')+'$'+Math.abs(Math.round(g*100)/100).toLocaleString();
+  el.className='metric-value '+(g>=0?'green':'red');
+}
+
+function addIncome(){otherIncome.push({label:'New source',amount:0,month:'Jul'});buildIncome();updateMetrics()}
+function removeIncome(i){otherIncome.splice(i,1);buildIncome();updateMetrics()}
+function addExpense(){expenses.push({label:'New expense',amount:0,category:'Other',month:'Jul'});buildExpenses();updateMetrics();renderChart()}
+function removeExp(i){expenses.splice(i,1);buildExpenses();updateMetrics();renderChart()}
+
+function setChartMode(mode){
+  chartMode=mode;
+  document.getElementById('toggle-item').classList.toggle('active',mode==='item');
+  document.getElementById('toggle-cat').classList.toggle('active',mode==='category');
+  renderChart();
+}
+
+function renderChart(){
+  const canvas=document.getElementById('expChart');
+  if(!canvas) return;
+  let labels,data;
+  if(chartMode==='item'){
+    labels=expenses.map(e=>e.label);
+    data=expenses.map(e=>e.amount||0);
+  } else {
+    const byCat={};
+    expenses.forEach(e=>{ byCat[e.category||'Other']=(byCat[e.category||'Other']||0)+(e.amount||0); });
+    labels=Object.keys(byCat);
+    data=Object.values(byCat);
+  }
+  const total=data.reduce((a,b)=>a+b,0)||1;
+  const colors=labels.map((_,i)=>PALETTE[i%PALETTE.length]);
+
+  const legend=document.getElementById('chart-legend');
+  legend.innerHTML=labels.map((l,i)=>{
+    const pct=Math.round((data[i]/total)*100);
+    return '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0"></span>'+l+' — $'+data[i].toLocaleString()+' ('+pct+'%)</span>';
+  }).join('');
+
+  if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+  chartInstance=new Chart(canvas,{
+    type:'pie',
+    data:{ labels, datasets:[{ data, backgroundColor: colors, borderWidth:2, borderColor:'#fff' }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>{ const v=ctx.raw||0; return ' $'+v.toLocaleString()+' ('+Math.round(v/total*100)+'%)'; } } } }
+    }
+  });
+}
+
+function renderCashflow(){
+  const incByMonth={}, expByMonth={};
+  MONTHS.forEach(m=>{incByMonth[m]=[];expByMonth[m]=[]});
+  classes.forEach(c=>{
+    const amt=(c.count||0)*(c.dues||0);
+    if(amt>0) incByMonth[c.month||'Jul'].push({label:c.label+' dues',amount:amt});
+  });
+  otherIncome.forEach(e=>{
+    if((e.amount||0)>0) incByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
+  });
+  expenses.forEach(e=>{
+    if((e.amount||0)>0) expByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
+  });
+
+  let running=0;
+  const runningByMonth=[];
+  const container=document.getElementById('cf-months');
+  container.innerHTML='';
+  MONTHS.forEach(m=>{
+    const inc=incByMonth[m].reduce((s,x)=>s+x.amount,0);
+    const exp=expByMonth[m].reduce((s,x)=>s+x.amount,0);
+    const net=inc-exp;
+    running+=net;
+    runningByMonth.push(running);
+    const div=document.createElement('div');
+    div.className='cf-month';
+    let linesHtml='';
+    incByMonth[m].forEach(x=>{ linesHtml+='<div class="cf-line"><span>+ '+x.label+'</span><span class="amt" style="color:var(--text-success)">$'+x.amount.toLocaleString()+'</span></div>'; });
+    expByMonth[m].forEach(x=>{ linesHtml+='<div class="cf-line"><span>− '+x.label+'</span><span class="amt">$'+x.amount.toLocaleString()+'</span></div>'; });
+    div.innerHTML='<div class="cf-month-head"><span class="cf-month-name">'+m+'</span><span class="cf-month-net" style="color:'+(net>=0?'var(--text-success)':'var(--text-danger)')+'">'+(net>=0?'+':'-')+'$'+Math.abs(Math.round(net*100)/100).toLocaleString()+'</span></div>'+
+      (linesHtml || '<div class="cf-line" style="color:var(--text-muted)">No activity</div>')+
+      '<div class="cf-running" style="color:'+(running>=0?'var(--text-secondary)':'var(--text-danger)')+'">Running balance: '+(running>=0?'+':'-')+'$'+Math.abs(Math.round(running*100)/100).toLocaleString()+'</div>';
+    container.appendChild(div);
+  });
+
+  const canvas=document.getElementById('cfChart');
+  if(cfChartInstance){ cfChartInstance.destroy(); cfChartInstance=null; }
+  const minVal=Math.min(0,...runningByMonth);
+  cfChartInstance=new Chart(canvas,{
+    type:'line',
+    data:{ labels:MONTHS, datasets:[{ label:'Running balance', data:runningByMonth, borderColor:'#2a78d6', backgroundColor:'rgba(42,120,214,0.1)', fill:true, tension:0, pointRadius:4, pointBackgroundColor:runningByMonth.map(v=>v<0?'#e34948':'#2a78d6') }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' $'+Math.round(ctx.raw).toLocaleString() } } },
+      scales:{ y:{ min: minVal<0?minVal*1.15:0, ticks:{ callback:v=>'$'+v.toLocaleString() } } }
+    }
+  });
+}
+
+function renderHousing(){
+  const housingExpenses=expenses.filter(e=>e.category==='Housing/Lounge');
+  const sorted=[...housingExpenses].sort((a,b)=>{
+    const moA=MONTH_ORDER[a.month]??99, moB=MONTH_ORDER[b.month]??99;
+    if(moA!==moB) return moA-moB;
+    return (a.day||99)-(b.day||99);
+  });
+  const total=housingExpenses.reduce((s,e)=>s+(e.amount||0),0);
+  document.getElementById('h-total').textContent='$'+total.toLocaleString();
+  document.getElementById('h-count').textContent=housingExpenses.length;
+
+  const list=document.getElementById('housing-list');
+  let html='';
+  let lastMonth=null;
+  sorted.forEach(e=>{
+    if(e.month!==lastMonth){
+      html+='<div class="due-month-head">'+e.month+'</div>';
+      lastMonth=e.month;
+    }
+    const day=e.day?e.day:'—';
+    html+='<div class="due-item">'+
+      '<div class="due-date"><div class="due-date-day">'+day+'</div><div class="due-date-mon">'+e.month+'</div></div>'+
+      '<div class="due-label">'+e.label+'</div>'+
+      '<div class="due-amt">$'+(e.amount||0).toLocaleString()+'</div>'+
+    '</div>';
+  });
+  list.innerHTML=html || '<div style="font-size:13px;color:var(--text-muted)">No housing expenses found.</div>';
+}
+
+function renderSummary(){
+  let html='<div class="summary-box-title">Income breakdown</div>';
+  classes.forEach(c=>{
+    html+='<div class="dues-row"><span class="dues-row-label">'+c.label+' — '+(c.count||0)+' × $'+(c.dues||0).toLocaleString()+' ('+c.month+')</span><span class="dues-row-val">$'+((c.count||0)*(c.dues||0)).toLocaleString()+'</span></div>';
+  });
+  if(otherIncome.length){
+    html+='<div class="dues-row" style="margin-top:4px"><span class="dues-row-label" style="font-weight:500">Other income</span><span class="dues-row-val">$'+totalOtherIncome().toLocaleString()+'</span></div>';
+    otherIncome.forEach(e=>{
+      html+='<div class="dues-row" style="padding-left:12px"><span class="dues-row-label" style="font-size:12px">'+e.label+' ('+e.month+')</span><span class="dues-row-val" style="font-size:13px">$'+(e.amount||0).toLocaleString()+'</span></div>';
+    });
+  }
+  document.getElementById('dues-summary').innerHTML=html;
+
+  const g=gap();
+  document.getElementById('sum-metrics').innerHTML=
+    '<div class="metric"><div class="metric-label">Total members</div><div class="metric-value">'+totalMembers()+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Total income</div><div class="metric-value green">$'+totalIncome().toLocaleString()+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Total expenses</div><div class="metric-value">$'+totalExpenses().toLocaleString()+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Surplus / deficit</div><div class="metric-value '+(g>=0?'green':'red')+'">'+(g>=0?'+':'-')+'$'+Math.abs(Math.round(g*100)/100).toLocaleString()+'</div></div>';
+
+  const byCat={};
+  expenses.forEach(e=>{ byCat[e.category||'Other']=(byCat[e.category||'Other']||0)+(e.amount||0); });
+  const total=totalExpenses()||1;
+  document.getElementById('sum-exp-list').innerHTML=Object.entries(byCat).map(([cat,amt],i)=>{
+    const pct=Math.round((amt/total)*100);
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--border);font-size:13px">'+
+      '<span style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:'+PALETTE[i%PALETTE.length]+';flex-shrink:0"></span><span style="color:var(--text-primary)">'+cat+'</span></span>'+
+      '<span style="display:flex;align-items:center;gap:16px"><span style="color:var(--text-muted);font-size:12px">'+pct+'%</span><span style="color:var(--text-primary);font-weight:500;min-width:70px;text-align:right">$'+amt.toLocaleString()+'</span></span>'+
+    '</div>';
+  }).join('')+'<div style="display:flex;justify-content:space-between;padding:8px 0 2px;font-size:13px;font-weight:500;color:var(--text-primary)"><span>Total</span><span>$'+total.toLocaleString()+'</span></div>';
+}
+
+function showTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('visible');
+  btn.classList.add('active');
+  if(name==='summary') renderSummary();
+  if(name==='chart') renderChart();
+  if(name==='cashflow') renderCashflow();
+  if(name==='housing') renderHousing();
+}
+
+function exportData(){
+  const payload=JSON.stringify({classes,otherIncome,expenses});
+  const area=document.getElementById('backup-area');
+  const row=document.getElementById('restore-row');
+  area.style.display='block';
+  row.style.display='flex';
+  area.value=payload;
+  area.focus();
+  area.select();
+  try{
+    document.execCommand('copy');
+    setBackupStatus('Copied — paste it somewhere safe','ok',3000);
+  }catch(e){
+    setBackupStatus('Select the text above and copy manually','err',4000);
+  }
+}
+
+function toggleImport(){
+  const area=document.getElementById('backup-area');
+  const row=document.getElementById('restore-row');
+  const showing=area.style.display==='block';
+  area.style.display=showing?'none':'block';
+  row.style.display=showing?'none':'flex';
+  if(!showing){ area.value=''; area.placeholder='Paste your backup text here, then click Restore'; area.focus(); }
+}
+
+function hideBackupArea(){
+  document.getElementById('backup-area').style.display='none';
+  document.getElementById('restore-row').style.display='none';
+}
+
+function importData(){
+  const area=document.getElementById('backup-area');
+  try{
+    const d=JSON.parse(area.value);
+    if(!d.classes||!d.expenses) throw new Error('missing fields');
+    classes=(d.classes||[]).map(c=>({label:c.label,count:c.count,dues:c.dues,month:c.month||'Jul'}));
+    otherIncome=(d.otherIncome||[]).map(e=>({label:e.label,amount:e.amount,month:e.month||'Jul'}));
+    expenses=(d.expenses||[]).map(e=>({label:e.label,amount:e.amount,category:e.category||'Other',month:e.month||'Jul',day:e.day}));
+    buildClasses(); buildIncome(); buildExpenses(); updateMetrics();
+    hideBackupArea();
+    setBackupStatus('Restored','ok',3000);
+  }catch(e){
+    setBackupStatus('Could not read that text — check it was pasted in full','err',4000);
+  }
+}
+
+function setBackupStatus(msg,type,duration){
+  const el=document.getElementById('backup-status');
+  el.textContent=msg; el.className='backup-status '+(type||'');
+  if(duration) setTimeout(()=>{el.textContent='';el.className='backup-status'},duration);
+}
+
+buildClasses();
+buildIncome();
+buildExpenses();
+updateMetrics();
+</script>
+</body>
+</html>
