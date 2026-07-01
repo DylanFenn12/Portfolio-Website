@@ -122,7 +122,7 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Total Active members</div><div class="metric-value" id="m-total">0</div></div>
     <div class="metric"><div class="metric-label">Total anticipated New Members</div><div class="metric-value" id="m-anticipated">0</div></div>
-    <div class="metric"><div class="metric-label">Total paid members</div><div class="metric-value" id="m-paid">0</div></div>
+    <div class="metric"><div class="metric-label">Total unpaid active members</div><div class="metric-value" id="m-paid">0</div></div>
     <div class="metric"><div class="metric-label">Total Anticipated members</div><div class="metric-value" id="m-total-total">0</div></div>
   </div>
   <div class="card">
@@ -266,7 +266,7 @@ const expenses=[
   {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec',group:'youtube'},
   {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug',group:'sunday'},
   {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep',group:'sunday'},
-  {label:'Fundraising',amount:500,category:'Other',month:'Sep'},
+  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
 ];
 
 let chartMode='item';
@@ -283,6 +283,7 @@ function totalDuesIncome(){return classes.reduce((s,c)=>s+(c.count||0)*(c.dues||
 function totalMembers(){return classes.reduce((s,c)=>s+(c.count||0),0)}
 function totalAnticipatedMembers(){const fr=classes.find(c=>c.label==='Freshman');return fr?(fr.count||0):0}
 function totalPaidMembers(){return Object.values(ROSTERS).reduce((s,names)=>s+names.length,0)}
+function totalUnpaidActiveMembers(){return classes.filter(c=>['Sophomore','Junior','Senior'].includes(c.label)).reduce((s,c)=>s+(c.count||0),0)}
 function totalTotalMembers(){return 74+totalAnticipatedMembers()}
 function totalOtherIncome(){return otherIncome.reduce((s,e)=>s+(e.amount||0),0)}
 function totalIncome(){return totalDuesIncome()+totalOtherIncome()}
@@ -390,7 +391,7 @@ function updateMetrics(){
   const g=gap();
   document.getElementById('m-total').textContent=74;
   document.getElementById('m-anticipated').textContent=totalAnticipatedMembers();
-  document.getElementById('m-paid').textContent=totalPaidMembers();
+  document.getElementById('m-paid').textContent=totalUnpaidActiveMembers();
   document.getElementById('m-total-total').textContent=totalTotalMembers();
   document.getElementById('m-dues-income').textContent='$'+totalDuesIncome().toLocaleString();
   document.getElementById('m-other-income').textContent='$'+totalOtherIncome().toLocaleString();
