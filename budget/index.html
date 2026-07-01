@@ -187,32 +187,30 @@ const MONTH_ORDER={May:0,Jun:1,Jul:2,Aug:3,Sep:4,Oct:5,Nov:6,Dec:7};
 const MONTHS=['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const classes=[
-  {label:'Freshman',count:25,dues:1755,month:'Sep'},
-  {label:'Sophomore',count:17,dues:1475,month:'Jul'},
-  {label:'Junior',count:10,dues:1315,month:'Jul'},
-  {label:'Senior',count:14,dues:975,month:'Jul'},
+  {label:'Freshman',count:25,dues:1950,month:'Sep'},
+  {label:'Sophomore',count:17,dues:1550,month:'Jul'},
+  {label:'Junior',count:10,dues:1350,month:'Jul'},
+  {label:'Senior',count:14,dues:950,month:'Jul'},
 ];
 
 const otherIncome=[
   {label:'Lost check reimbursement',amount:14500,month:'Oct'},
   {label:'Additional payment from Trese',amount:1800,month:'Jul'},
-  {label:'Other half of backlog (deferred)',amount:4637.25,month:'Oct'},
 ];
 
 const expenses=[
-  {label:'Backlog of Feb/March lounge rent (half now, half Oct)',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
-  {label:'Backlog remainder',amount:4637.35,category:'Housing/Lounge',month:'Oct',day:10},
-  {label:'Big fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul'},
-  {label:'July housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27},
-  {label:'August housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10},
-  {label:'September housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10},
-  {label:'October housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10},
-  {label:'November housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10},
-  {label:'December housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Dec',day:10},
-  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:5},
-  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:5},
-  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:5},
-  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:5},
+  {label:'Backlog FEB',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
+  {label:'Big fundraiser (July 27)',amount:3250,category:'Operations',month:'Jul'},
+  {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27},
+  {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10},
+  {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10},
+  {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10},
+  {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10},
+  {label:'December housing corp payment (DEC 10)',amount:5412.35,category:'Housing/Lounge',month:'Dec',day:10},
+  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:1},
+  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:1},
+  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:1},
+  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:1},
   {label:'Parlor fee',amount:3000,category:'Operations',month:'Aug'},
   {label:'Pig dinner',amount:12800,category:'Operations',month:'Sep'},
   {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
@@ -220,11 +218,11 @@ const expenses=[
   {label:'Total national payment',amount:18500,category:'National dues',month:'Oct'},
   {label:'Formal',amount:0,category:'Formal',month:'Nov'},
   {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
-  {label:'Brotherhood',amount:2000,category:'Brotherhood',month:'Sep'},
+  {label:'Brotherhood',amount:2300,category:'Brotherhood',month:'Sep'},
   {label:'Social',amount:12000,category:'Social',month:'Sep'},
-  {label:'Recruitment',amount:3800,category:'Recruitment',month:'Aug'},
-  {label:'Philo',amount:150,category:'Philanthropy',month:'Oct'},
-  {label:'Legfi backlog (May+June, $264/mo)',amount:528,category:'Operations',month:'Jul'},
+  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug'},
+  {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
+  {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul'},
   {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul'},
   {label:'Legfi - August',amount:264,category:'Operations',month:'Aug'},
   {label:'Legfi - September',amount:264,category:'Operations',month:'Sep'},
@@ -244,6 +242,7 @@ const expenses=[
   {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec'},
   {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug'},
   {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep'},
+  {label:'Fundraising',amount:500,category:'Other',month:'Sep'},
 ];
 
 let chartMode='item';
@@ -287,7 +286,7 @@ function buildExpenses(){
 
 function updateMetrics(){
   const g=gap();
-  document.getElementById('m-total').textContent= 99;
+  document.getElementById('m-total').textContent=totalMembers();
   document.getElementById('m-dues-income').textContent='$'+totalDuesIncome().toLocaleString();
   document.getElementById('m-other-income').textContent='$'+totalOtherIncome().toLocaleString();
   document.getElementById('m-total-income').textContent='$'+totalIncome().toLocaleString();
