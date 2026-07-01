@@ -99,6 +99,22 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 .due-month-head{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;padding:14px 0 6px}
 .due-month-head:first-child{padding-top:0}
 .footer-note{font-size:12px;color:var(--text-muted);text-align:center;margin-top:1.5rem}
+.grp-row{cursor:pointer}
+.grp-row:hover td{background:var(--surface-1)}
+.grp-row td{font-weight:500}
+.grp-arrow{display:inline-block;margin-right:6px;font-size:10px;color:var(--text-muted)}
+.grp-count{color:var(--text-muted);font-size:11px;font-weight:400}
+.grp-detail{display:none}
+.grp-detail.open{display:table-row}
+.grp-detail-cell{padding-left:16px}
+.grp-detail-cell:first-child{padding-left:24px}
+.roster-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:.5px solid var(--border);cursor:pointer}
+.roster-row:last-child{border-bottom:none}
+.roster-row-label{font-size:13px;color:var(--text-primary);display:flex;align-items:center}
+.roster-row-count{font-size:13px;color:var(--text-muted);font-weight:500}
+.roster-names{display:none;padding:4px 0 12px 20px;columns:2;column-gap:24px}
+.roster-names.open{display:block}
+.roster-name{font-size:12px;color:var(--text-secondary);padding:2px 0;break-inside:avoid}
 </style>
 </head>
 <body>
@@ -133,7 +149,16 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
     <div class="class-grid" id="class-grid"></div>
   </div>
   <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Total members</div><div class="metric-value" id="m-total">0</div></div>
+    <div class="metric"><div class="metric-label">Total Active members</div><div class="metric-value" id="m-total">0</div></div>
+    <div class="metric"><div class="metric-label">Total anticipated New Members</div><div class="metric-value" id="m-anticipated">0</div></div>
+    <div class="metric"><div class="metric-label">Total unpaid active members</div><div class="metric-value" id="m-paid">0</div></div>
+    <div class="metric"><div class="metric-label">Total Anticipated members</div><div class="metric-value" id="m-total-total">0</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Total paid members — class breakdown</div>
+    <div id="roster-list"></div>
+  </div>
+  <div class="metric-grid">
     <div class="metric"><div class="metric-label">Dues income</div><div class="metric-value green" id="m-dues-income">$0</div></div>
     <div class="metric"><div class="metric-label">Other income</div><div class="metric-value green" id="m-other-income">$0</div></div>
     <div class="metric"><div class="metric-label">Total income</div><div class="metric-value green" id="m-total-income">$0</div></div>
@@ -213,68 +238,81 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 const PALETTE=['#2a78d6','#1baf7a','#eda100','#008300','#4a3aa7','#e34948','#e87ba4','#eb6834','#5f5e5a','#993556'];
-const CATEGORIES=['Housing/Lounge','National dues','Social','Brotherhood','Formal','Apparel','Recruitment','Philanthropy','Operations','Other'];
+const CATEGORIES=['Housing/Lounge','National dues','Social','Brotherhood','Formal','Apparel','Recruitment','Philanthropy','Operations','Fundraising','Other'];
 const MONTHS=['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_ORDER={May:0,Jun:1,Jul:2,Aug:3,Sep:4,Oct:5,Nov:6,Dec:7};
+const GROUP_LABELS={
+  lounge:'Housing corp rent',
+  apartment:'Apartment rent',
+  legfi:'Legfi',
+  youtube:'YouTube TV',
+  sunday:'NFL Sunday Ticket',
+  paramount:'Paramount+',
+};
+
+const ROSTERS={
+  Sophomore:['Parker Chang','Chase Eveleth','Carson Gould','Brandon Grunfeld','Tai Hui','Andrew Robeson','Vello Rande','Jesse Van Oort','Keller Case','Henry Kight','Ryan Newton','Parker Schwartz','Noah Veazey'],
+  Junior:['Spencer Broussard','Augustin Cameron','Devin Friedman','Jimmy Humrichouse','CJ Ness','Wyatt Ricci','Joaquin Uribe','Darren Weinstein','Dylan Fenn'],
+  Senior:['John Cairns','Eli Thayer','Charlie Walker','Kyle Walker'],
+};
 
 let classes=[
-  {label:'Freshman',count:25,dues:1755,month:'Sep'},
-  {label:'Sophomore',count:17,dues:1475,month:'Jul'},
-  {label:'Junior',count:10,dues:1315,month:'Jul'},
-  {label:'Senior',count:14,dues:975,month:'Jul'},
+  {label:'Freshman',count:25,dues:1950,month:'Sep'},
+  {label:'Sophomore',count:17,dues:1550,month:'Jul'},
+  {label:'Junior',count:10,dues:1350,month:'Jul'},
+  {label:'Senior',count:14,dues:950,month:'Jul'},
 ];
 
 let otherIncome=[
   {label:'Lost check reimbursement',amount:14500,month:'Oct'},
   {label:'Additional payment from Trese',amount:1800,month:'Jul'},
-  {label:'Other half of backlog (deferred)',amount:4637.25,month:'Oct'},
 ];
 
 let expenses=[
-  {label:'Backlog of Feb/March lounge rent (half now, half Oct)',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
-  {label:'Backlog remainder',amount:4637.35,category:'Housing/Lounge',month:'Oct',day:10},
-  {label:'Big fundraiser (July 27)',amount:3250,category:'Social',month:'Jul'},
-  {label:'July housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27},
-  {label:'August housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10},
-  {label:'September housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10},
-  {label:'October housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10},
-  {label:'November housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10},
-  {label:'December housing corp payment',amount:5412.35,category:'Housing/Lounge',month:'Dec',day:10},
-  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:5},
-  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:5},
-  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:5},
-  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:5},
+  {label:'Backlog FEB',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
+  {label:'Big fundraiser (July 27)',amount:3250,category:'Operations',month:'Jul'},
+  {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge'},
+  {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge'},
+  {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge'},
+  {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10,group:'lounge'},
+  {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge'},
+  {label:'December housing corp payment (DEC 10)',amount:5412.35,category:'Housing/Lounge',month:'Dec',day:10,group:'lounge'},
+  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:1,group:'apartment'},
+  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:1,group:'apartment'},
+  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
+  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
   {label:'Parlor fee',amount:3000,category:'Operations',month:'Aug'},
-  {label:'Pig dinner',amount:12800,category:'Social',month:'Sep'},
+  {label:'Pig dinner',amount:12800,category:'Operations',month:'Sep'},
   {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
   {label:'IFC dues - half in October',amount:2850,category:'National dues',month:'Oct'},
   {label:'Total national payment',amount:18500,category:'National dues',month:'Oct'},
   {label:'Formal',amount:0,category:'Formal',month:'Nov'},
   {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
-  {label:'Brotherhood',amount:2000,category:'Brotherhood',month:'Sep'},
+  {label:'Brotherhood',amount:2300,category:'Brotherhood',month:'Sep'},
   {label:'Social',amount:12000,category:'Social',month:'Sep'},
-  {label:'Recruitment',amount:3800,category:'Recruitment',month:'Aug'},
-  {label:'Philo',amount:150,category:'Philanthropy',month:'Oct'},
-  {label:'Legfi backlog (May+June, $264/mo)',amount:528,category:'Operations',month:'Jul'},
-  {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul'},
-  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug'},
-  {label:'Legfi - September',amount:264,category:'Operations',month:'Sep'},
-  {label:'Legfi - October',amount:264,category:'Operations',month:'Oct'},
-  {label:'Legfi - November',amount:264,category:'Operations',month:'Nov'},
-  {label:'Legfi - December',amount:264,category:'Operations',month:'Dec'},
-  {label:'Paramount+ - July ($14/mo)',amount:14,category:'Operations',month:'Jul'},
-  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug'},
-  {label:'Paramount+ - September',amount:14,category:'Operations',month:'Sep'},
-  {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct'},
-  {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov'},
-  {label:'Paramount+ - December',amount:14,category:'Operations',month:'Dec'},
-  {label:'Youtube TV - August ($101.99/mo)',amount:101.99,category:'Operations',month:'Aug'},
-  {label:'Youtube TV - September',amount:101.99,category:'Operations',month:'Sep'},
-  {label:'Youtube TV - October',amount:101.99,category:'Operations',month:'Oct'},
-  {label:'Youtube TV - November',amount:101.99,category:'Operations',month:'Nov'},
-  {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec'},
-  {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug'},
-  {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep'},
+  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug'},
+  {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
+  {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul',group:'legfi'},
+  {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul',group:'legfi'},
+  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi'},
+  {label:'Legfi - September',amount:264,category:'Operations',month:'Sep',group:'legfi'},
+  {label:'Legfi - October',amount:264,category:'Operations',month:'Oct',group:'legfi'},
+  {label:'Legfi - November',amount:264,category:'Operations',month:'Nov',group:'legfi'},
+  {label:'Legfi - December',amount:264,category:'Operations',month:'Dec',group:'legfi'},
+  {label:'Paramount+ - July ($14/mo)',amount:14,category:'Operations',month:'Jul',group:'paramount'},
+  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug',group:'paramount'},
+  {label:'Paramount+ - September',amount:14,category:'Operations',month:'Sep',group:'paramount'},
+  {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct',group:'paramount'},
+  {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov',group:'paramount'},
+  {label:'Paramount+ - December',amount:14,category:'Operations',month:'Dec',group:'paramount'},
+  {label:'Youtube TV - August ($101.99/mo)',amount:101.99,category:'Operations',month:'Aug',group:'youtube'},
+  {label:'Youtube TV - September',amount:101.99,category:'Operations',month:'Sep',group:'youtube'},
+  {label:'Youtube TV - October',amount:101.99,category:'Operations',month:'Oct',group:'youtube'},
+  {label:'Youtube TV - November',amount:101.99,category:'Operations',month:'Nov',group:'youtube'},
+  {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec',group:'youtube'},
+  {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug',group:'sunday'},
+  {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep',group:'sunday'},
+  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
 ];
 
 let chartMode='item';
@@ -283,6 +321,10 @@ let cfChartInstance=null;
 
 function totalDuesIncome(){return classes.reduce((s,c)=>s+(c.count||0)*(c.dues||0),0)}
 function totalMembers(){return classes.reduce((s,c)=>s+(c.count||0),0)}
+function totalAnticipatedMembers(){const fr=classes.find(c=>c.label==='Freshman');return fr?(fr.count||0):0}
+function totalPaidMembers(){return Object.values(ROSTERS).reduce((s,names)=>s+names.length,0)}
+function totalUnpaidActiveMembers(){return classes.filter(c=>['Sophomore','Junior','Senior'].includes(c.label)).reduce((s,c)=>s+(c.count||0),0)}
+function totalTotalMembers(){return 74+totalAnticipatedMembers()}
 function totalOtherIncome(){return otherIncome.reduce((s,e)=>s+(e.amount||0),0)}
 function totalIncome(){return totalDuesIncome()+totalOtherIncome()}
 function totalExpenses(){return expenses.reduce((s,e)=>s+(e.amount||0),0)}
@@ -290,6 +332,10 @@ function gap(){return totalIncome()-totalExpenses()}
 
 function moOptions(selected){
   return MONTHS.map(m=>'<option value="'+m+'" '+(m===selected?'selected':'')+'>'+m+'</option>').join('');
+}
+
+function catOptions(selected){
+  return CATEGORIES.map(c=>'<option value="'+c+'" '+(c===selected?'selected':'')+'>'+c+'</option>').join('');
 }
 
 function buildClasses(){
@@ -320,6 +366,40 @@ function buildClasses(){
       updateMetrics();
     });
   });
+}
+
+function buildRosters(){
+  const container=document.getElementById('roster-list');
+  let html='';
+  Object.entries(ROSTERS).forEach(([cls,names])=>{
+    const rid='roster-'+cls.toLowerCase();
+    html+='<div class="roster-row" onclick="toggleRoster(\''+rid+'\')">'+
+      '<span class="roster-row-label"><span class="grp-arrow" id="arrow-'+rid+'">&#9656;</span>'+cls+'</span>'+
+      '<span class="roster-row-count">'+names.length+'</span>'+
+    '</div>'+
+    '<div class="roster-names" id="'+rid+'">'+
+      names.map(n=>'<div class="roster-name">'+n+'</div>').join('')+
+    '</div>';
+  });
+  html+='<div class="roster-row" style="cursor:default"><span class="roster-row-label" style="font-weight:500">Total paid members</span><span class="roster-row-count" style="color:var(--text-primary);font-weight:500">'+totalPaidMembers()+'</span></div>';
+  container.innerHTML=html;
+}
+
+function toggleRoster(rid){
+  const namesEl=document.getElementById(rid);
+  const arrow=document.getElementById('arrow-'+rid);
+  const opening=!namesEl.classList.contains('open');
+  namesEl.classList.toggle('open',opening);
+  if(arrow) arrow.innerHTML=opening?'&#9662;':'&#9656;';
+}
+
+function toggleGroup(gid){
+  const rows=document.querySelectorAll('.'+gid);
+  const arrow=document.getElementById('arrow-'+gid);
+  if(!rows.length) return;
+  const opening=!rows[0].classList.contains('open');
+  rows.forEach(r=>r.classList.toggle('open',opening));
+  if(arrow) arrow.innerHTML=opening?'&#9662;':'&#9656;';
 }
 
 function buildIncome(){
@@ -353,26 +433,65 @@ function buildIncome(){
   });
 }
 
-function catOptions(selected){
-  return CATEGORIES.map(c=>'<option value="'+c+'" '+(c===selected?'selected':'')+'>'+c+'</option>').join('');
-}
-
 function buildExpenses(){
   const tbody=document.getElementById('exp-tbody');
   tbody.innerHTML='';
+  const seen=new Set();
   expenses.forEach((e,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td><input class="label-input" type="text" value="'+e.label+'" data-ei="'+i+'" data-field="label" /></td>'+
-      '<td><select class="cat-select" data-ei="'+i+'" data-field="category">'+catOptions(e.category)+'</select></td>'+
-      '<td><select class="mo-select" data-ei="'+i+'" data-field="month">'+moOptions(e.month)+'</select></td>'+
-      '<td class="r"><input class="amt-input" type="number" min="0" step="0.01" value="'+e.amount+'" data-ei="'+i+'" data-field="amount" /></td>'+
-      '<td><button class="rm-btn" onclick="removeExp('+i+')" aria-label="Remove">×</button></td>';
-    tbody.appendChild(tr);
+    if(e.group){
+      if(seen.has(e.group)) return;
+      seen.add(e.group);
+      const idxs=[];
+      expenses.forEach((x,xi)=>{ if(x.group===e.group) idxs.push(xi); });
+      const total=idxs.reduce((s,xi)=>s+(expenses[xi].amount||0),0);
+      const gid='grp-'+e.group;
+      const first=expenses[idxs[0]], last=expenses[idxs[idxs.length-1]];
+      const monthRange= idxs.length>1 ? (first.month+'–'+last.month) : first.month;
+      const trh=document.createElement('tr');
+      trh.className='grp-row';
+      trh.onclick=()=>toggleGroup(gid);
+      trh.innerHTML='<td><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+(GROUP_LABELS[e.group]||e.group)+' <span class="grp-count">('+idxs.length+')</span></td>'+
+        '<td>'+e.category+'</td>'+
+        '<td>'+monthRange+'</td>'+
+        '<td class="r" id="gsum-'+gid+'">$'+total.toLocaleString()+'</td>'+
+        '<td></td>';
+      tbody.appendChild(trh);
+      idxs.forEach(xi=>{
+        const it=expenses[xi];
+        const tr=document.createElement('tr');
+        tr.className='grp-detail '+gid;
+        tr.innerHTML='<td class="grp-detail-cell"><input class="label-input" type="text" value="'+it.label+'" data-ei="'+xi+'" data-field="label" /></td>'+
+          '<td class="grp-detail-cell"><select class="cat-select" data-ei="'+xi+'" data-field="category">'+catOptions(it.category)+'</select></td>'+
+          '<td class="grp-detail-cell"><select class="mo-select" data-ei="'+xi+'" data-field="month">'+moOptions(it.month)+'</select></td>'+
+          '<td class="r grp-detail-cell"><input class="amt-input" type="number" min="0" step="0.01" value="'+it.amount+'" data-ei="'+xi+'" data-field="amount" /></td>'+
+          '<td class="grp-detail-cell"><button class="rm-btn" onclick="removeExp('+xi+')" aria-label="Remove">×</button></td>';
+        tbody.appendChild(tr);
+      });
+    } else {
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td><input class="label-input" type="text" value="'+e.label+'" data-ei="'+i+'" data-field="label" /></td>'+
+        '<td><select class="cat-select" data-ei="'+i+'" data-field="category">'+catOptions(e.category)+'</select></td>'+
+        '<td><select class="mo-select" data-ei="'+i+'" data-field="month">'+moOptions(e.month)+'</select></td>'+
+        '<td class="r"><input class="amt-input" type="number" min="0" step="0.01" value="'+e.amount+'" data-ei="'+i+'" data-field="amount" /></td>'+
+        '<td><button class="rm-btn" onclick="removeExp('+i+')" aria-label="Remove">×</button></td>';
+      tbody.appendChild(tr);
+    }
   });
+  attachExpenseListeners();
+}
+
+function attachExpenseListeners(){
+  const tbody=document.getElementById('exp-tbody');
   tbody.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input',()=>{
       const i=+inp.dataset.ei,field=inp.dataset.field;
       expenses[i][field]=field==='amount'?(parseFloat(inp.value)||0):inp.value;
+      if(field==='amount' && expenses[i].group){
+        const gid='grp-'+expenses[i].group;
+        const total=expenses.filter(x=>x.group===expenses[i].group).reduce((s,x)=>s+(x.amount||0),0);
+        const cell=document.getElementById('gsum-'+gid);
+        if(cell) cell.textContent='$'+total.toLocaleString();
+      }
       updateMetrics(); renderChart();
     });
   });
@@ -381,13 +500,17 @@ function buildExpenses(){
       const i=+sel.dataset.ei,field=sel.dataset.field;
       expenses[i][field]=sel.value;
       updateMetrics(); renderChart();
+      if(expenses[i].group) buildExpenses();
     });
   });
 }
 
 function updateMetrics(){
   const g=gap();
-  document.getElementById('m-total').textContent=totalMembers();
+  document.getElementById('m-total').textContent=74;
+  document.getElementById('m-anticipated').textContent=totalAnticipatedMembers();
+  document.getElementById('m-paid').textContent=totalUnpaidActiveMembers();
+  document.getElementById('m-total-total').textContent=totalTotalMembers();
   document.getElementById('m-dues-income').textContent='$'+totalDuesIncome().toLocaleString();
   document.getElementById('m-other-income').textContent='$'+totalOtherIncome().toLocaleString();
   document.getElementById('m-total-income').textContent='$'+totalIncome().toLocaleString();
@@ -601,8 +724,8 @@ function importData(){
     if(!d.classes||!d.expenses) throw new Error('missing fields');
     classes=(d.classes||[]).map(c=>({label:c.label,count:c.count,dues:c.dues,month:c.month||'Jul'}));
     otherIncome=(d.otherIncome||[]).map(e=>({label:e.label,amount:e.amount,month:e.month||'Jul'}));
-    expenses=(d.expenses||[]).map(e=>({label:e.label,amount:e.amount,category:e.category||'Other',month:e.month||'Jul',day:e.day}));
-    buildClasses(); buildIncome(); buildExpenses(); updateMetrics();
+    expenses=(d.expenses||[]).map(e=>({label:e.label,amount:e.amount,category:e.category||'Other',month:e.month||'Jul',day:e.day,group:e.group}));
+    buildClasses(); buildRosters(); buildIncome(); buildExpenses(); updateMetrics();
     hideBackupArea();
     setBackupStatus('Restored','ok',3000);
   }catch(e){
@@ -617,6 +740,7 @@ function setBackupStatus(msg,type,duration){
 }
 
 buildClasses();
+buildRosters();
 buildIncome();
 buildExpenses();
 updateMetrics();
