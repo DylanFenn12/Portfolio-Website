@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Corporation — Chapter Financial Overview</title>
+<style>
+:root{
+  --surface-2:#ffffff;--surface-1:#f5f4f1;--surface-0:#ececea;
+  --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#898781;
+  --text-success:#27500a;--text-danger:#791f1f;--text-accent:#0c447c;
+  --border:rgba(11,11,11,0.10);--border-strong:rgba(11,11,11,0.18);--border-stronger:rgba(11,11,11,0.30);
+  --border-accent:#85b7eb;--bg-accent:#e6f1fb;--radius:8px;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-2:#262624;--surface-1:#1e1e1c;--surface-0:#181816;
+    --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#898781;
+    --text-success:#8fc15a;--text-danger:#e88;--text-accent:#85b7eb;
+    --border:rgba(255,255,255,0.10);--border-strong:rgba(255,255,255,0.18);--border-stronger:rgba(255,255,255,0.30);
+    --border-accent:#185fa5;--bg-accent:#0c2d4a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface-0);font-family:var(--font-sans);color:var(--text-primary);padding:2rem 1rem}
+.page{max-width:880px;margin:0 auto}
+.page-title{font-size:22px;font-weight:500;margin-bottom:2px;color:var(--text-primary)}
+.page-sub{font-size:13px;color:var(--text-muted);margin-bottom:1.25rem}
+.sec-title{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.card{background:var(--surface-2);border:.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:var(--surface-1);border-radius:var(--radius);padding:.85rem}
+.metric-label{font-size:12px;color:var(--text-muted);margin-bottom:3px}
+.metric-value{font-size:20px;font-weight:500;color:var(--text-primary)}
+.metric-value.green{color:var(--text-success)}
+.metric-value.red{color:var(--text-danger)}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem}
+.class-card{background:var(--surface-1);border-radius:var(--radius);padding:.85rem;border:.5px solid var(--border)}
+.class-name{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:8px}
+.class-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:13px}
+.class-row span.lab{color:var(--text-secondary)}
+.class-row span.val{color:var(--text-primary);font-weight:500}
+.class-dues-pill{margin-top:8px;padding:4px 8px;border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:12px;font-weight:500;text-align:center}
+table.bt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+table.bt th{text-align:left;font-size:11px;font-weight:500;color:var(--text-muted);padding:3px 6px 7px}
+table.bt th.r{text-align:right}
+table.bt th.sm{width:110px}
+table.bt th.mo{width:80px}
+table.bt td{padding:8px 6px;color:var(--text-primary);vertical-align:middle}
+table.bt td.r{text-align:right}
+table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
+table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);padding-top:10px}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.tab.active{background:var(--surface-2);color:var(--text-primary);border-color:var(--border-stronger)}
+.section{display:none}
+.section.visible{display:block}
+.summary-box{background:var(--bg-accent);border:.5px solid var(--border-accent);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.summary-box-title{font-size:13px;color:var(--text-accent);font-weight:500;margin-bottom:10px}
+.dues-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px solid var(--border-accent);font-size:14px}
+.dues-row:last-child{border-bottom:none}
+.dues-row.total{font-weight:600;font-size:15px}
+.footer-note{font-size:12px;color:var(--text-muted);text-align:center;margin-top:1.5rem}
+.grp-row{cursor:pointer}
+.grp-row:hover td{background:var(--surface-1)}
+.grp-arrow{display:inline-block;margin-right:6px;font-size:10px;color:var(--text-muted)}
+.grp-detail{display:none}
+.grp-detail.open{display:table-row}
+.grp-detail td{color:var(--text-secondary);font-size:12px;background:var(--surface-1)}
+.grp-detail td:first-child{padding-left:28px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1 class="page-title">Chapter Financial Overview</h1>
+<div class="page-sub">Prepared for the Housing Corporation — Fall semester</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('payments',this)">Payment schedule</button>
+  <button class="tab" onclick="showTab('members',this)">Members & dues</button>
+  <button class="tab" onclick="showTab('expenses',this)">Expense overview</button>
+  <button class="tab" onclick="showTab('summary',this)">Summary</button>
+</div>
+
+<div id="tab-payments" class="section visible">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total to Housing Corp</div><div class="metric-value">$37,111.45</div></div>
+    <div class="metric"><div class="metric-label">Total apartment rent</div><div class="metric-value">$6,000.00</div></div>
+    <div class="metric"><div class="metric-label"># Housing Corp payments</div><div class="metric-value">7</div></div>
+    <div class="metric"><div class="metric-label"># Apartment payments</div><div class="metric-value">4</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Housing Corp — scheduled payments</div>
+    <table class="bt">
+      <thead><tr><th class="mo">Date</th><th>Description</th><th class="r sm">Amount</th></tr></thead>
+      <tbody id="hc-tbody"></tbody>
+      <tfoot>
+        <tr><td colspan="2">Total</td><td class="r">$37,111.45</td></tr>
+      </tfoot>
+    </table>
+  </div>
+  <div class="card">
+    <div class="sec-title">Apartment rent — due dates</div>
+    <table class="bt">
+      <thead><tr><th class="mo">Date</th><th>Description</th><th class="r sm">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Aug 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
+        <tr><td>Sep 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
+        <tr><td>Oct 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
+        <tr><td>Nov 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="2">Total</td><td class="r">$6,000.00</td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<div id="tab-members" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total active members</div><div class="metric-value" id="m-total">0</div></div>
+    <div class="metric"><div class="metric-label">Anticipated new members</div><div class="metric-value" id="m-anticipated">0</div></div>
+    <div class="metric"><div class="metric-label">Total anticipated members</div><div class="metric-value" id="m-total-total">0</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Class breakdown</div>
+    <div class="class-grid" id="class-grid"></div>
+  </div>
+</div>
+
+<div id="tab-expenses" class="section">
+  <div class="card">
+    <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--text-secondary)"></div>
+    <div style="position:relative;width:100%;height:320px">
+      <canvas id="expChart" role="img" aria-label="Pie chart of chapter expenses"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="tab-summary" class="section">
+  <div class="summary-box">
+    <div class="summary-box-title">Semester overview</div>
+    <div class="dues-row"><span>Total chapter income</span><span>$118,200.00</span></div>
+    <div class="dues-row"><span>Total to Housing Corporation</span><span>$37,111.45</span></div>
+    <div class="dues-row"><span>Other chapter obligations</span><span>$74,844.93</span></div>
+    <div class="dues-row total"><span>Total obligations</span><span>$111,956.38</span></div>
+    <div class="dues-row total"><span>Projected balance</span><span>$6,243.62</span></div>
+  </div>
+  <p class="footer-note">All scheduled payments to the Housing Corporation are budgeted and funded for the semester.</p>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const PALETTE=['#2a78d6','#1baf7a','#eda100','#4a3aa7','#e34948','#5f5e5a'];
+
+const HOUSING_PAYMENTS=[
+  {date:'Jul 27',label:'July payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+  {date:'Aug 10',label:'August payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+  {date:'Aug 20',label:'Backlog (Feb/March rent)',amount:4637.35,breakdown:null},
+  {date:'Sep 10',label:'September payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+  {date:'Oct 10',label:'October payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+  {date:'Nov 10',label:'November payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+  {date:'Dec 10',label:'December payment',amount:5412.35,breakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
+];
+
+function buildHousingPayments(){
+  const tbody=document.getElementById('hc-tbody');
+  let html='';
+  HOUSING_PAYMENTS.forEach((p,i)=>{
+    if(p.breakdown){
+      const gid='hc-row-'+i;
+      html+='<tr class="grp-row" onclick="toggleRow(\''+gid+'\')">'+
+        '<td>'+p.date+'</td>'+
+        '<td><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+p.label+'</td>'+
+        '<td class="r">$'+p.amount.toLocaleString(undefined,{minimumFractionDigits:2})+'</td>'+
+      '</tr>';
+      p.breakdown.forEach(([label,amt])=>{
+        html+='<tr class="grp-detail '+gid+'">'+
+          '<td></td><td>'+label+'</td><td class="r">$'+amt.toLocaleString(undefined,{minimumFractionDigits:2})+'</td>'+
+        '</tr>';
+      });
+    } else {
+      html+='<tr><td>'+p.date+'</td><td>'+p.label+'</td><td class="r">$'+p.amount.toLocaleString(undefined,{minimumFractionDigits:2})+'</td></tr>';
+    }
+  });
+  tbody.innerHTML=html;
+}
+
+function toggleRow(gid){
+  const rows=document.querySelectorAll('.'+gid);
+  const arrow=document.getElementById('arrow-'+gid);
+  if(!rows.length) return;
+  const opening=!rows[0].classList.contains('open');
+  rows.forEach(r=>r.classList.toggle('open',opening));
+  if(arrow) arrow.innerHTML=opening?'&#9662;':'&#9656;';
+}
+
+const classes=[
+  {label:'Freshman',count:25,dues:1950,month:'Sep'},
+  {label:'Sophomore',count:17,dues:1550,month:'Jul'},
+  {label:'Junior',count:10,dues:1350,month:'Jul'},
+  {label:'Senior',count:14,dues:950,month:'Jul'},
+];
+const TOTAL_ACTIVE=74;
+const TOTAL_ANTICIPATED_TOTAL=TOTAL_ACTIVE+classes.find(c=>c.label==='Freshman').count;
+
+function buildClasses(){
+  const grid=document.getElementById('class-grid');
+  grid.innerHTML=classes.map(c=>
+    '<div class="class-card">'+
+      '<div class="class-name">'+c.label+'</div>'+
+      '<div class="class-row"><span class="lab">Members</span><span class="val">'+c.count+'</span></div>'+
+      '<div class="class-row"><span class="lab">Dues</span><span class="val">$'+c.dues.toLocaleString()+'</span></div>'+
+      '<div class="class-row"><span class="lab">Paid month</span><span class="val">'+c.month+'</span></div>'+
+      '<div class="class-dues-pill">$'+((c.count||0)*(c.dues||0)).toLocaleString()+' total</div>'+
+    '</div>'
+  ).join('');
+  document.getElementById('m-total').textContent=TOTAL_ACTIVE;
+  document.getElementById('m-anticipated').textContent=classes.find(c=>c.label==='Freshman').count;
+  document.getElementById('m-total-total').textContent=TOTAL_ANTICIPATED_TOTAL;
+}
+
+let chartInstance=null;
+function renderChart(){
+  const canvas=document.getElementById('expChart');
+  if(!canvas) return;
+  const labels=['Housing Corp payments','Big fundraiser','IFC dues','Apartment rent','Pig dinner','Fraternity expenses'];
+  const data=[37111.45,3250,5700,6000,12800,47094.93];
+  const total=data.reduce((a,b)=>a+b,0);
+  const colors=labels.map((_,i)=>PALETTE[i%PALETTE.length]);
+
+  document.getElementById('chart-legend').innerHTML=labels.map((l,i)=>{
+    const pct=Math.round((data[i]/total)*100);
+    return '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0"></span>'+l+' — $'+data[i].toLocaleString()+' ('+pct+'%)</span>';
+  }).join('');
+
+  if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+  chartInstance=new Chart(canvas,{
+    type:'pie',
+    data:{ labels, datasets:[{ data, backgroundColor: colors, borderWidth:2, borderColor:'#fff' }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>{ const v=ctx.raw||0; return ' $'+v.toLocaleString()+' ('+Math.round(v/total*100)+'%)'; } } } }
+    }
+  });
+}
+
+function showTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('visible');
+  btn.classList.add('active');
+  if(name==='expenses') renderChart();
+}
+
+buildHousingPayments();
+buildClasses();
+</script>
+</body>
+</html>
