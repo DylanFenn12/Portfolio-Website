@@ -86,9 +86,9 @@ table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);pa
 <div id="tab-payments" class="section visible">
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Total to Housing Corp</div><div class="metric-value">$37,111.45</div></div>
-    <div class="metric"><div class="metric-label">Total apartment rent</div><div class="metric-value">$6,000.00</div></div>
+    <div class="metric"><div class="metric-label">Total apartment rent</div><div class="metric-value">$7,500.00</div></div>
     <div class="metric"><div class="metric-label"># Housing Corp payments</div><div class="metric-value">7</div></div>
-    <div class="metric"><div class="metric-label"># Apartment payments</div><div class="metric-value">4</div></div>
+    <div class="metric"><div class="metric-label"># Apartment payments</div><div class="metric-value">5</div></div>
   </div>
   <div class="card">
     <div class="sec-title">Housing Corp — scheduled payments</div>
@@ -109,9 +109,10 @@ table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);pa
         <tr><td>Sep 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
         <tr><td>Oct 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
         <tr><td>Nov 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
+        <tr><td>Dec 1</td><td>Apartment rent</td><td class="r">$1,500.00</td></tr>
       </tbody>
       <tfoot>
-        <tr><td colspan="2">Total</td><td class="r">$6,000.00</td></tr>
+        <tr><td colspan="2">Total</td><td class="r">$7,500.00</td></tr>
       </tfoot>
     </table>
   </div>
@@ -153,8 +154,8 @@ table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);pa
     <div class="dues-row"><span>Total chapter income</span><span>$118,200.00</span></div>
     <div class="dues-row"><span>Total to Housing Corporation</span><span>$37,111.45</span></div>
     <div class="dues-row"><span>Other chapter obligations</span><span>$74,844.93</span></div>
-    <div class="dues-row total"><span>Total obligations</span><span>$111,956.38</span></div>
-    <div class="dues-row total"><span>Projected balance</span><span>$6,243.62</span></div>
+    <div class="dues-row total"><span>Total obligations</span><span>$113,456.38</span></div>
+    <div class="dues-row total"><span>Projected balance</span><span>$4,743.62</span></div>
   </div>
   <p class="footer-note">All scheduled payments to the Housing Corporation are budgeted and funded for the semester.</p>
 </div>
@@ -237,7 +238,7 @@ function renderChart(){
   const canvas=document.getElementById('expChart');
   if(!canvas) return;
   const labels=['Housing Corp payments','Big fundraiser','IFC dues','Apartment rent','Pig dinner','Fraternity expenses'];
-  const data=[37111.45,3250,5700,6000,12800,47094.93];
+  const data=[37111.45,3250,5700,7500,12800,47094.93];
   const total=data.reduce((a,b)=>a+b,0);
   const colors=labels.map((_,i)=>PALETTE[i%PALETTE.length]);
 
