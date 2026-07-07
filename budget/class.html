@@ -32,7 +32,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);padding:2.5re
 .legend{width:100%;text-align:left}
 .legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;color:var(--ink)}
 .legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
-.legend-row span.pct{margin-left:auto;font-weight:700;color:var(--sub)}
+.legend-row span.pct{margin-left:auto;font-weight:700;color:var(--sub);white-space:nowrap;font-size:11.5px}
 .legend-row span.lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .explainer{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;margin-bottom:2rem}
 .explainer h3{font-size:18px;font-weight:800;margin-bottom:14px;text-align:center}
@@ -130,7 +130,8 @@ function buildCards(){
     const legendHtml=order.map(cat=>{
       const meta=CATEGORY_META[cat];
       const pct=c.breakdown[cat]||0;
-      return '<div class="legend-row"><span class="legend-dot" style="background:'+meta.color+'"></span><span class="lab">'+meta.icon+' '+cat+'</span><span class="pct">'+pct+'%</span></div>';
+      const amt=Math.round(c.dues*pct/100);
+      return '<div class="legend-row"><span class="legend-dot" style="background:'+meta.color+'"></span><span class="lab">'+meta.icon+' '+cat+'</span><span class="pct">'+pct+'% · $'+amt.toLocaleString()+'</span></div>';
     }).join('');
     return '<div class="card">'+
       '<h2>'+c.label+'</h2>'+
