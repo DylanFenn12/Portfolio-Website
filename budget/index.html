@@ -98,6 +98,8 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 .due-month-head:first-child{padding-top:0}
 .footer-note{font-size:13px;color:var(--text-secondary);text-align:center;margin-top:2rem;padding-top:1.5rem;border-top:.5px solid var(--border)}
 .footer-note a{color:var(--text-accent);text-decoration:underline}
+.housing-sub{display:none}
+.housing-sub.visible{display:block}
 </style>
 </head>
 <body>
@@ -110,7 +112,7 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
   <button class="tab" onclick="showTab('expenses',this)">Expenses</button>
   <button class="tab" onclick="showTab('chart',this)">Expense chart</button>
   <button class="tab" onclick="showTab('cashflow',this)">Cash flow by month</button>
-  <button class="tab" onclick="showTab('housing',this)">Housing due dates</button>
+  <button class="tab" onclick="showTab('housing',this)">Housing</button>
   <button class="tab" onclick="showTab('summary',this)">Summary</button>
 </div>
 
@@ -160,8 +162,8 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 
 <div id="tab-chart" class="section">
   <div class="toggle-row">
-    <button class="toggle-btn active" id="toggle-item" onclick="setChartMode('item')">By expense</button>
-    <button class="toggle-btn" id="toggle-cat" onclick="setChartMode('category')">By category</button>
+    <button class="toggle-btn" id="toggle-item" onclick="setChartMode('item')">By expense</button>
+    <button class="toggle-btn active" id="toggle-cat" onclick="setChartMode('category')">By category</button>
   </div>
   <div class="card">
     <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--text-secondary)"></div>
@@ -182,13 +184,52 @@ table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 </div>
 
 <div id="tab-housing" class="section">
-  <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Total housing payments</div><div class="metric-value" id="h-total">$0</div></div>
-    <div class="metric"><div class="metric-label">Number of payments</div><div class="metric-value" id="h-count">0</div></div>
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="toggle-hoverview" onclick="setHousingMode('overview')">Overview</button>
+    <button class="toggle-btn" id="toggle-hdates" onclick="setHousingMode('dates')">Due dates</button>
   </div>
-  <div class="card">
-    <div class="sec-title">Payment due dates</div>
-    <div id="housing-list"></div>
+
+  <div id="housing-dates" class="housing-sub">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total housing payments</div><div class="metric-value" id="h-total">$0</div></div>
+      <div class="metric"><div class="metric-label">Number of payments</div><div class="metric-value" id="h-count">0</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Payment due dates</div>
+      <div id="housing-list"></div>
+    </div>
+  </div>
+
+  <div id="housing-overview" class="housing-sub visible">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total to Housing Corp</div><div class="metric-value" id="ho-lounge-total">$0</div></div>
+      <div class="metric"><div class="metric-label">Total apartment rent</div><div class="metric-value" id="ho-apt-total">$0</div></div>
+      <div class="metric"><div class="metric-label"># Housing Corp payments</div><div class="metric-value" id="ho-lounge-count">0</div></div>
+      <div class="metric"><div class="metric-label"># Apartment payments</div><div class="metric-value" id="ho-apt-count">0</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Housing Corp — scheduled payments</div>
+      <table class="bt">
+        <thead><tr><th class="mo">Date</th><th>Description</th><th class="r sm">Amount</th></tr></thead>
+        <tbody id="ho-lounge-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="r" id="ho-lounge-total-cell">$0</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="card">
+      <div class="sec-title">Apartment rent — due dates</div>
+      <table class="bt">
+        <thead><tr><th class="mo">Date</th><th>Description</th><th class="r sm">Amount</th></tr></thead>
+        <tbody id="ho-apt-tbody"></tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="r" id="ho-apt-total-cell">$0</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="card">
+      <div class="sec-title">Other scheduled payments</div>
+      <table class="bt">
+        <thead><tr><th class="mo">Date</th><th>Description</th><th class="r sm">Amount</th></tr></thead>
+        <tbody id="ho-other-tbody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -218,35 +259,38 @@ const classes=[
 ];
 
 const otherIncome=[
-  {label:'Lost check reimbursement',amount:14500,month:'Oct'},
   {label:'Additional payment from Trese',amount:1800,month:'Jul'},
+  {label:'Fundraising Income',amount:0,month:'Jul',editable:true},
+  {label:'Donations',amount:0,month:'Jul',editable:true},
 ];
 
 const expenses=[
-  {label:'Backlog FEB',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20},
-  {label:'Big fundraiser (July 27)',amount:3250,category:'Operations',month:'Jul'},
+  {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul'},
   {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge'},
   {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge'},
   {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge'},
   {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10,group:'lounge'},
   {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge'},
   {label:'December housing corp payment (DEC 10)',amount:5612.35,category:'Housing/Lounge',month:'Dec',day:10,group:'lounge'},
+  {label:'BACKLOG February housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20,group:'lounge'},
+  {label:'BACKLOG March housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Adjustable',day:null,group:'lounge'},
   {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:1,group:'apartment'},
   {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:1,group:'apartment'},
   {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
   {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
   {label:'Apartment rent - December',amount:1500,category:'Housing/Lounge',month:'Dec',day:1,group:'apartment'},
-  {label:'Parlor fee',amount:3000,category:'Operations',month:'Aug'},
-  {label:'Pig dinner',amount:12800,category:'Operations',month:'Sep'},
+  {label:'Parlor fee',amount:3000,category:'Housing/Lounge',month:'Aug'},
+  {label:'Pig dinner (Postponed — lost deposit)',amount:500,category:'Operations',month:'Sep',strikeText:'Pig dinner'},
   {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
   {label:'IFC dues - half in October',amount:2850,category:'National dues',month:'Oct'},
-  {label:'Total national payment',amount:18500,category:'National dues',month:'Oct'},
+  {label:'Total national payment',amount:4000,category:'National dues',month:'Oct'},
   {label:'Formal',amount:0,category:'Formal',month:'Nov'},
   {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
   {label:'Brotherhood',amount:2300,category:'Brotherhood',month:'Sep'},
-  {label:'Social',amount:12000,category:'Social',month:'Sep'},
+  {label:'Social',amount:20000,category:'Social',month:'Sep'},
   {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug'},
   {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
+  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
   {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul',group:'legfi'},
   {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul',group:'legfi'},
   {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi'},
@@ -267,10 +311,9 @@ const expenses=[
   {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec',group:'youtube'},
   {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug',group:'sunday'},
   {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep',group:'sunday'},
-  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
 ];
 
-let chartMode='item';
+let chartMode='category';
 let chartInstance=null;
 let cfChartInstance=null;
 
@@ -306,10 +349,23 @@ function buildClasses(){
 
 function buildIncome(){
   const tbody=document.getElementById('inc-tbody');
-  tbody.innerHTML=otherIncome.map(e=>
-    '<tr><td>'+e.label+'</td><td>'+e.month+'</td><td class="r">$'+e.amount.toLocaleString()+'</td></tr>'
+  tbody.innerHTML=otherIncome.map((e,i)=>
+    '<tr><td>'+e.label+'</td><td>'+e.month+'</td><td class="r">'+
+      (e.editable
+        ? '<input type="number" min="0" step="0.01" value="'+e.amount+'" data-ii="'+i+'" style="width:90px;text-align:right;font-size:13px;padding:3px 6px;height:26px;background:var(--surface-2);border:.5px solid var(--border-strong);border-radius:var(--radius);color:var(--text-primary)" />'
+        : '$'+e.amount.toLocaleString())
+      +'</td></tr>'
   ).join('')+
-  '<tr><td style="font-weight:500;border-top:.5px solid var(--border-stronger);padding-top:8px">Total</td><td style="border-top:.5px solid var(--border-stronger)"></td><td class="r" style="font-weight:500;color:var(--text-success);border-top:.5px solid var(--border-stronger);padding-top:8px">$'+totalOtherIncome().toLocaleString()+'</td></tr>';
+  '<tr><td style="font-weight:500;border-top:.5px solid var(--border-stronger);padding-top:8px">Total</td><td style="border-top:.5px solid var(--border-stronger)"></td><td class="r" id="inc-total-cell" style="font-weight:500;color:var(--text-success);border-top:.5px solid var(--border-stronger);padding-top:8px">$'+totalOtherIncome().toLocaleString()+'</td></tr>';
+
+  document.querySelectorAll('#inc-tbody input[data-ii]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const i=+inp.dataset.ii;
+      otherIncome[i].amount=parseFloat(inp.value)||0;
+      document.getElementById('inc-total-cell').textContent='$'+totalOtherIncome().toLocaleString();
+      updateMetrics();
+    });
+  });
 }
 
 const GROUP_LABELS={
@@ -332,7 +388,8 @@ function buildExpenses(){
       const items=expenses.filter(x=>x.group===e.group);
       const total=items.reduce((s,x)=>s+(x.amount||0),0);
       const gid='grp-'+e.group;
-      const monthRange=items.length>1 ? (items[0].month+'–'+items[items.length-1].month) : items[0].month;
+      const monthItems=items.filter(x=>MONTH_ORDER.hasOwnProperty(x.month));
+      const monthRange=monthItems.length>1 ? (monthItems[0].month+'–'+monthItems[monthItems.length-1].month) : (monthItems[0]?monthItems[0].month:'—');
       html+='<tr class="grp-row" onclick="toggleGroup(\''+gid+'\')">'+
         '<td><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+(GROUP_LABELS[e.group]||e.group)+' <span class="grp-count">('+items.length+')</span></td>'+
         '<td>'+e.category+'</td>'+
@@ -348,7 +405,8 @@ function buildExpenses(){
         '</tr>';
       });
     } else {
-      html+='<tr><td>'+e.label+'</td><td>'+e.category+'</td><td>'+e.month+'</td><td class="r">$'+e.amount.toLocaleString()+'</td></tr>';
+      const lbl=e.strikeText?e.label.replace(e.strikeText,'<s>'+e.strikeText+'</s>'):e.label;
+      html+='<tr><td>'+lbl+'</td><td>'+e.category+'</td><td>'+e.month+'</td><td class="r">$'+e.amount.toLocaleString()+'</td></tr>';
     }
   });
   tbody.innerHTML=html;
@@ -447,13 +505,13 @@ function renderCashflow(){
   MONTHS.forEach(m=>{incByMonth[m]=[];expByMonth[m]=[]});
   classes.forEach(c=>{
     const amt=(c.count||0)*(c.dues||0);
-    if(amt>0) incByMonth[c.month||'Jul'].push({label:c.label+' dues',amount:amt});
+    if(amt>0 && incByMonth[c.month||'Jul']) incByMonth[c.month||'Jul'].push({label:c.label+' dues',amount:amt});
   });
   otherIncome.forEach(e=>{
-    if((e.amount||0)>0) incByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
+    if((e.amount||0)>0 && incByMonth[e.month||'Jul']) incByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
   });
   expenses.forEach(e=>{
-    if((e.amount||0)>0) expByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
+    if((e.amount||0)>0 && expByMonth[e.month||'Jul']) expByMonth[e.month||'Jul'].push({label:e.label,amount:e.amount});
   });
 
   let running=0;
@@ -489,6 +547,81 @@ function renderCashflow(){
       scales:{ y:{ min: minVal<0?minVal*1.15:0, ticks:{ callback:v=>'$'+v.toLocaleString() } } }
     }
   });
+}
+
+function setHousingMode(mode){
+  document.getElementById('housing-dates').classList.toggle('visible',mode==='dates');
+  document.getElementById('housing-overview').classList.toggle('visible',mode==='overview');
+  document.getElementById('toggle-hdates').classList.toggle('active',mode==='dates');
+  document.getElementById('toggle-hoverview').classList.toggle('active',mode==='overview');
+  if(mode==='overview') renderHousingOverview();
+}
+
+function dateLabel(e){
+  if(!MONTH_ORDER.hasOwnProperty(e.month)) return e.month;
+  return (typeof e.day==='number') ? (e.month+' '+e.day) : e.month;
+}
+
+function sortByDate(a,b){
+  const moA=MONTH_ORDER.hasOwnProperty(a.month)?MONTH_ORDER[a.month]:99;
+  const moB=MONTH_ORDER.hasOwnProperty(b.month)?MONTH_ORDER[b.month]:99;
+  if(moA!==moB) return moA-moB;
+  const dayA=(typeof a.day==='number')?a.day:99;
+  const dayB=(typeof b.day==='number')?b.day:99;
+  return dayA-dayB;
+}
+
+function money(n){ return '$'+(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function loungeBreakdown(e){
+  if(e.label.includes('BACKLOG')) return null;
+  const fundraiser=625, utility=150;
+  const rent=(e.amount||0)-fundraiser-utility;
+  return [['Rent',rent],['Housing fundraiser',fundraiser],['Xcel utility',utility]];
+}
+
+function renderHousingOverview(){
+  const loungeItems=expenses.filter(e=>e.group==='lounge').sort(sortByDate);
+  const aptItems=expenses.filter(e=>e.group==='apartment').sort(sortByDate);
+  const otherItems=expenses.filter(e=>e.category==='Housing/Lounge' && !e.group).sort(sortByDate);
+
+  const loungeTotal=loungeItems.reduce((s,e)=>s+(e.amount||0),0);
+  const aptTotal=aptItems.reduce((s,e)=>s+(e.amount||0),0);
+
+  document.getElementById('ho-lounge-total').textContent=money(loungeTotal);
+  document.getElementById('ho-apt-total').textContent=money(aptTotal);
+  document.getElementById('ho-lounge-count').textContent=loungeItems.length;
+  document.getElementById('ho-apt-count').textContent=aptItems.length;
+  document.getElementById('ho-lounge-total-cell').textContent=money(loungeTotal);
+  document.getElementById('ho-apt-total-cell').textContent=money(aptTotal);
+
+  let loungeHtml='';
+  loungeItems.forEach((e,i)=>{
+    const bd=loungeBreakdown(e);
+    if(bd){
+      const gid='ho-row-'+i;
+      loungeHtml+='<tr class="grp-row" onclick="toggleGroup(\''+gid+'\')">'+
+        '<td>'+dateLabel(e)+'</td>'+
+        '<td><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+e.label+'</td>'+
+        '<td class="r">'+money(e.amount)+'</td>'+
+      '</tr>';
+      bd.forEach(([label,amt])=>{
+        loungeHtml+='<tr class="grp-detail '+gid+'">'+
+          '<td class="grp-detail-cell"></td><td class="grp-detail-cell">'+label+'</td><td class="r grp-detail-cell">'+money(amt)+'</td>'+
+        '</tr>';
+      });
+    } else {
+      loungeHtml+='<tr><td>'+dateLabel(e)+'</td><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td></tr>';
+    }
+  });
+  document.getElementById('ho-lounge-tbody').innerHTML=loungeHtml;
+
+  document.getElementById('ho-apt-tbody').innerHTML=aptItems.map(e=>
+    '<tr><td>'+dateLabel(e)+'</td><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td></tr>'
+  ).join('');
+  document.getElementById('ho-other-tbody').innerHTML=otherItems.length
+    ? otherItems.map(e=>'<tr><td>'+dateLabel(e)+'</td><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td></tr>').join('')
+    : '<tr><td colspan="3" style="color:var(--text-muted)">None</td></tr>';
 }
 
 function renderHousing(){
@@ -559,7 +692,7 @@ function showTab(name,btn){
   if(name==='summary') renderSummary();
   if(name==='chart') renderChart();
   if(name==='cashflow') renderCashflow();
-  if(name==='housing') renderHousing();
+  if(name==='housing'){ renderHousing(); renderHousingOverview(); }
 }
 
 buildClasses();
