@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Your Dues Go</title>
+<style>
+:root{
+  --bg:#fdfaf5;--card:#ffffff;--ink:#1f1a17;--sub:#7a716a;
+  --c1:#FF6B6B;--c2:#4ECDC4;--c3:#FFD166;--c4:#6A4C93;--c5:#06A77D;
+  --border:rgba(31,26,23,0.08);--radius:18px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#171310;--card:#241f1a;--ink:#f7f3ee;--sub:#b3a99f;--border:rgba(255,255,255,0.08); }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);padding:2.5rem 1.25rem 4rem}
+.wrap{max-width:1000px;margin:0 auto}
+.hero{text-align:center;margin-bottom:2.5rem}
+.hero h1{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.02em;margin-bottom:.5rem}
+.hero p{color:var(--sub);font-size:16px;max-width:520px;margin:0 auto}
+.hero .emoji{font-size:40px;margin-bottom:.25rem}
+.banner{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:2.5rem}
+.pill{background:var(--card);border:1px solid var(--border);border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:3rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.25rem;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.04);display:flex;flex-direction:column;align-items:center}
+.card h2{font-size:19px;font-weight:800;margin-bottom:2px}
+.card .dues{color:var(--sub);font-size:13px;margin-bottom:14px}
+.card .dues b{color:var(--ink);font-size:15px}
+.chart-holder{position:relative;width:170px;height:170px;margin-bottom:14px}
+.legend{width:100%;text-align:left}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;color:var(--ink)}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.legend-row span.pct{margin-left:auto;font-weight:700;color:var(--sub)}
+.legend-row span.lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.explainer{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;margin-bottom:2rem}
+.explainer h3{font-size:18px;font-weight:800;margin-bottom:14px;text-align:center}
+.explainer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.explainer-item{display:flex;gap:10px;align-items:flex-start}
+.explainer-item .ico{font-size:22px;line-height:1}
+.explainer-item h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.explainer-item p{font-size:12.5px;color:var(--sub);line-height:1.5}
+.footer{text-align:center;color:var(--sub);font-size:13px;margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Dues Breakdown by Class</h1>
+    <p>An estimated breakdown of where semester dues are allocated, by class year. Percentages are approximate and reflect general spending priorities, not exact ledger figures.</p>
+  </div>
+
+  <div class="banner">
+    <div class="pill">Housing payments on schedule</div>
+    <div class="pill">Chapter finances in stable standing</div>
+  </div>
+
+  <div class="grid" id="class-grid"></div>
+
+  <div class="explainer">
+    <h3>Category definitions</h3>
+    <div class="explainer-grid">
+      <div class="explainer-item">
+        <div class="ico">🏠</div>
+        <div>
+          <h4>Housing &amp; Living</h4>
+          <p>Lounge rent and monthly housing corp payments, apartment rent, and parlor costs. Covers the physical house and its upkeep.</p>
+        </div>
+      </div>
+      <div class="explainer-item">
+        <div class="ico">🎉</div>
+        <div>
+          <h4>Social &amp; Brotherhood</h4>
+          <p>Mixers, date parties, formal, and brotherhood events. Discretionary social programming for the chapter.</p>
+        </div>
+      </div>
+      <div class="explainer-item">
+        <div class="ico">🏛️</div>
+        <div>
+          <h4>National &amp; IFC Dues</h4>
+          <p>Payments to Nationals and the IFC required to remain a chartered, in-good-standing chapter.</p>
+        </div>
+      </div>
+      <div class="explainer-item">
+        <div class="ico">📣</div>
+        <div>
+          <h4>Recruitment &amp; Apparel</h4>
+          <p>Rush events and materials, plus chapter apparel and gear.</p>
+        </div>
+      </div>
+      <div class="explainer-item">
+        <div class="ico">❤️</div>
+        <div>
+          <h4>Philanthropy &amp; Perks</h4>
+          <p>Philanthropy events and associated fundraising, plus shared amenities like streaming services and game-day subscriptions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer">For exact figures, contact your class officers or the chapter treasurer.</p>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const CATEGORY_META={
+  'Housing & Living':{color:'#FF6B6B',icon:'🏠'},
+  'Social & Brotherhood':{color:'#4ECDC4',icon:'🎉'},
+  'National & IFC Dues':{color:'#FFD166',icon:'🏛️'},
+  'Recruitment & Apparel':{color:'#6A4C93',icon:'📣'},
+  'Philanthropy & Perks':{color:'#06A77D',icon:'❤️'},
+};
+
+const CLASSES=[
+  {label:'Freshman',dues:1950,tagline:'Weighted toward social and brotherhood spending',breakdown:{'Social & Brotherhood':45,'Housing & Living':20,'Recruitment & Apparel':15,'Philanthropy & Perks':12,'National & IFC Dues':8}},
+  {label:'Sophomore',dues:1550,tagline:'Weighted toward social spending and recruitment',breakdown:{'Social & Brotherhood':40,'Recruitment & Apparel':20,'Housing & Living':20,'Philanthropy & Perks':12,'National & IFC Dues':8}},
+  {label:'Junior',dues:1350,tagline:'Split evenly between housing and social spending',breakdown:{'Housing & Living':30,'Social & Brotherhood':30,'Philanthropy & Perks':15,'National & IFC Dues':15,'Recruitment & Apparel':10}},
+  {label:'Senior',dues:950,tagline:'Weighted toward housing, philanthropy, and dues obligations',breakdown:{'Housing & Living':35,'Social & Brotherhood':20,'Philanthropy & Perks':20,'National & IFC Dues':15,'Recruitment & Apparel':10}},
+];
+
+function sliceOrder(){ return Object.keys(CATEGORY_META); }
+
+function buildCards(){
+  const grid=document.getElementById('class-grid');
+  grid.innerHTML=CLASSES.map((c,i)=>{
+    const order=sliceOrder();
+    const legendHtml=order.map(cat=>{
+      const meta=CATEGORY_META[cat];
+      const pct=c.breakdown[cat]||0;
+      return '<div class="legend-row"><span class="legend-dot" style="background:'+meta.color+'"></span><span class="lab">'+meta.icon+' '+cat+'</span><span class="pct">'+pct+'%</span></div>';
+    }).join('');
+    return '<div class="card">'+
+      '<h2>'+c.label+'</h2>'+
+      '<div class="dues">Semester dues: <b>$'+c.dues.toLocaleString()+'</b></div>'+
+      '<div class="chart-holder"><canvas id="chart-'+i+'"></canvas></div>'+
+      '<div class="legend">'+legendHtml+'</div>'+
+      '<div style="font-size:11.5px;color:var(--sub);margin-top:12px">'+c.tagline+'</div>'+
+    '</div>';
+  }).join('');
+
+  CLASSES.forEach((c,i)=>{
+    const canvas=document.getElementById('chart-'+i);
+    const order=sliceOrder();
+    const data=order.map(cat=>c.breakdown[cat]||0);
+    const colors=order.map(cat=>CATEGORY_META[cat].color);
+    new Chart(canvas,{
+      type:'doughnut',
+      data:{
+        labels:order,
+        datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'transparent' }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{
+          legend:{display:false},
+          tooltip:{ callbacks:{ label:ctx=>' '+ctx.label+': '+ctx.raw+'%' } }
+        }
+      }
+    });
+  });
+}
+
+buildCards();
+</script>
+</body>
+</html>
