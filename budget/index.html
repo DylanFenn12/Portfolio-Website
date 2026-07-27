@@ -254,7 +254,7 @@ const MONTHS=['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const classes=[
   {label:'Freshman',count:25,dues:1950,month:'Sep'},
   {label:'Sophomore',count:17,dues:1550,month:'Jul'},
-  {label:'Junior',count:10,dues:1350,month:'Jul'},
+  {label:'Junior',count:9,dues:1350,month:'Jul'},
   {label:'Senior',count:14,dues:950,month:'Jul'},
 ];
 
@@ -325,8 +325,8 @@ function totalDuesIncome(){return classes.reduce((s,c)=>s+(c.count||0)*(c.dues||
 function totalMembers(){return classes.reduce((s,c)=>s+(c.count||0),0)}
 function totalAnticipatedMembers(){const fr=classes.find(c=>c.label==='Freshman');return fr?(fr.count||0):0}
 function totalPaidMembers(){return Object.values(ROSTERS).reduce((s,names)=>s+names.length,0)}
-function totalUnpaidActiveMembers(){return classes.filter(c=>['Sophomore','Junior','Senior'].includes(c.label)).reduce((s,c)=>s+(c.count||0),0)}
-function totalTotalMembers(){return 74+totalAnticipatedMembers()}
+function totalUnpaidActiveMembers(){return 39}
+function totalTotalMembers(){return 73+totalAnticipatedMembers()}
 function totalOtherIncome(){return otherIncome.reduce((s,e)=>s+(e.amount||0),0)}
 function totalIncome(){return totalDuesIncome()+totalOtherIncome()}
 function totalExpenses(){return expenses.reduce((s,e)=>s+(e.amount||0),0)}
@@ -446,7 +446,7 @@ function toggleRoster(rid){
 
 function updateMetrics(){
   const g=gap();
-  document.getElementById('m-total').textContent=74;
+  document.getElementById('m-total').textContent=73;
   document.getElementById('m-anticipated').textContent=totalAnticipatedMembers();
   document.getElementById('m-paid').textContent=totalUnpaidActiveMembers();
   document.getElementById('m-total-total').textContent=totalTotalMembers();

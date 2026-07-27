@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget vs. Actual Tracker</title>
+<style>
+:root{
+  --surface-2:#ffffff;--surface-1:#f5f4f1;--surface-0:#ececea;
+  --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#898781;
+  --text-success:#27500a;--text-danger:#791f1f;--text-accent:#0c447c;
+  --border:rgba(11,11,11,0.10);--border-strong:rgba(11,11,11,0.18);--border-stronger:rgba(11,11,11,0.30);
+  --border-accent:#85b7eb;--bg-accent:#e6f1fb;--radius:8px;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-2:#262624;--surface-1:#1e1e1c;--surface-0:#181816;
+    --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#898781;
+    --text-success:#8fc15a;--text-danger:#e88;--text-accent:#85b7eb;
+    --border:rgba(255,255,255,0.10);--border-strong:rgba(255,255,255,0.18);--border-stronger:rgba(255,255,255,0.30);
+    --border-accent:#185fa5;--bg-accent:#0c2d4a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--surface-0);font-family:var(--font-sans);color:var(--text-primary);padding:2rem 1rem}
+.page{max-width:920px;margin:0 auto}
+.page-title{font-size:22px;font-weight:500;margin-bottom:2px;color:var(--text-primary)}
+.page-sub{font-size:13px;color:var(--text-muted);margin-bottom:1.25rem}
+.sec-title{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.card{background:var(--surface-2);border:.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:var(--surface-1);border-radius:var(--radius);padding:.85rem}
+.metric-label{font-size:12px;color:var(--text-muted);margin-bottom:3px}
+.metric-value{font-size:20px;font-weight:500;color:var(--text-primary)}
+.metric-value.green{color:var(--text-success)}
+.metric-value.red{color:var(--text-danger)}
+table.bt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+table.bt th{text-align:left;font-size:11px;font-weight:500;color:var(--text-muted);padding:3px 6px 7px}
+table.bt th.r{text-align:right}
+table.bt th.sm{width:90px}
+table.bt th.cat{width:110px}
+table.bt th.mo{width:65px}
+table.bt th.xs{width:26px}
+table.bt td{padding:6px;color:var(--text-primary);vertical-align:middle}
+table.bt td.r{text-align:right}
+table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
+table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);padding-top:10px}
+tr.paid td{color:var(--text-muted)}
+tr.paid td.item-label{text-decoration:line-through}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans)}
+.tab.active{background:var(--surface-2);color:var(--text-primary);border-color:var(--border-stronger)}
+.section{display:none}
+.section.visible{display:block}
+.note-box{background:var(--bg-accent);border:.5px solid var(--border-accent);border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;font-size:13px;color:var(--text-accent)}
+.footer-note{font-size:12px;color:var(--text-muted);text-align:center;margin-top:1.5rem}
+.bar-row{margin-bottom:14px}
+.bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.bar-track{position:relative;height:16px;background:var(--surface-1);border-radius:6px;overflow:hidden}
+.bar-fill{position:absolute;top:0;left:0;height:100%;background:var(--border-accent);border-radius:6px}
+.bar-fill.over{background:#e34948}
+.grp-row{cursor:pointer}
+.grp-row:hover td{background:var(--surface-1)}
+.grp-row td{font-weight:500}
+.grp-arrow{display:inline-block;margin-right:6px;font-size:10px;color:var(--text-muted)}
+.grp-count{color:var(--text-muted);font-size:11px;font-weight:400}
+.grp-detail{display:none}
+.grp-detail.open{display:table-row}
+.grp-detail-cell{padding-left:16px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1 class="page-title">Budget vs. Actual Tracker</h1>
+<div class="page-sub">Updated manually — tell Dylan the actual amount for each payment</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview',this)">Overview</button>
+  <button class="tab" onclick="showTab('payments',this)">Payments</button>
+  <button class="tab" onclick="showTab('compare',this)">Budget vs. actual</button>
+  <button class="tab" onclick="showTab('additional',this)">Additional funds</button>
+  <button class="tab" onclick="showTab('additional-payments',this)">Additional payments</button>
+</div>
+
+<div id="tab-overview" class="section visible">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Actual bank balance</div><div class="metric-value" id="m-balance">$0</div></div>
+    <div class="metric"><div class="metric-label">Total actually paid</div><div class="metric-value" id="m-actual-total">$0</div></div>
+    <div class="metric"><div class="metric-label">Total budgeted expenses</div><div class="metric-value" id="m-budget-total">$0</div></div>
+    <div class="metric"><div class="metric-label">Remaining vs. budget</div><div class="metric-value" id="m-remaining">$0</div></div>
+  </div>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Expected dues income</div><div class="metric-value green" id="m-dues-income">$0</div></div>
+    <div class="metric"><div class="metric-label">Expected total income</div><div class="metric-value green" id="m-total-income">$0</div></div>
+    <div class="metric"><div class="metric-label">Expected surplus</div><div class="metric-value" id="m-expected-surplus">$0</div></div>
+  </div>
+  <div class="note-box">All figures below are entered manually. To log an actual amount for a payment, or update the bank balance, just send the details and a refreshed version will be provided.</div>
+  <div class="card">
+    <div class="sec-title">How to read this</div>
+    <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">
+      <b>Actual bank balance</b> is the real cash on hand as of the last update.<br>
+      <b>Total actually paid</b> is the sum of every actual amount logged in the Payments tab.<br>
+      <b>Remaining vs. budget</b> is the budgeted total minus what's actually been paid so far.<br>
+      <b>Expected surplus</b> is expected total income (dues + other income) minus total budgeted expenses.
+    </p>
+  </div>
+</div>
+
+<div id="tab-payments" class="section">
+  <div class="card">
+    <div class="sec-title">All budgeted payments</div>
+    <table class="bt">
+      <thead><tr><th>Item</th><th class="cat">Category</th><th class="mo">Date</th><th class="r sm">Budgeted</th><th class="r sm">Actual</th></tr></thead>
+      <tbody id="pay-tbody"></tbody>
+      <tfoot><tr><td colspan="3">Total</td><td class="r" id="pay-budget-cell">$0</td><td class="r" id="pay-actual-cell">$0</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<div id="tab-compare" class="section">
+  <div class="card">
+    <div class="sec-title">Budgeted vs. actual, by category</div>
+    <div id="bar-list"></div>
+  </div>
+</div>
+
+<div id="tab-additional" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total additional funds</div><div class="metric-value green" id="m-additional-total">$0</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Other income sources (from the budget sheet)</div>
+    <table class="bt">
+      <thead><tr><th>Source</th><th class="mo">Month</th><th class="r sm">Amount</th></tr></thead>
+      <tbody id="additional-tbody"></tbody>
+      <tfoot>
+        <tr><td colspan="2">Total</td><td class="r" id="additional-total-cell">$0</td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<div id="tab-additional-payments" class="section">
+  <div class="card">
+    <div class="sec-title">Additional payments</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Payments outside the main budget list.</p>
+    <table class="bt">
+      <thead><tr><th>Item</th><th class="r sm">Budgeted</th><th class="r sm">Actual</th></tr></thead>
+      <tbody id="additional-payments-tbody"></tbody>
+      <tfoot><tr><td>Total</td><td class="r" id="additional-payments-budget-cell">$0</td><td class="r" id="additional-payments-total-cell">$0</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<p class="footer-note">All figures reflect the last manual update, not a live feed.</p>
+</div>
+
+<script>
+// ---- MANUALLY UPDATED DATA (mirrors the main budget) ----
+const ACTUAL_BALANCE = 32421.49; // 21,077.49 + 11,344
+
+const EXPECTED_DUES_INCOME = 101900; // Freshman 25x1950 + Sophomore 17x1550 + Junior 10x1350 + Senior 14x950
+const EXPECTED_OTHER_INCOME = 0; // Additional payment from Trese, Fundraising Income, and Donations all set to 0 for now
+const EXPECTED_TOTAL_INCOME = EXPECTED_DUES_INCOME + EXPECTED_OTHER_INCOME;
+
+const OTHER_INCOME = [
+  {label:'Additional payment from Trese', amount:0, month:'Jul'},
+  {label:'Fundraising Income', amount:0, month:'Jul'},
+  {label:'Donations', amount:0, month:'Jul'},
+];
+
+const ADDITIONAL_PAYMENTS = [
+  {label:'National backlog', amount:27108.36, actual:0},
+];
+
+const GROUP_LABELS={
+  lounge:'Housing corp rent',
+  apartment:'Apartment rent',
+  legfi:'Legfi',
+  youtube:'YouTube TV',
+  sunday:'NFL Sunday Ticket',
+  paramount:'Paramount+',
+};
+
+// Every budgeted line item, matching the main budget sheet exactly.
+const EXPENSES = [
+  {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul'},
+  {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge',actual:5262,actualBreakdown:[['Rent',4637,true],['Housing fundraiser',625,true],['Xcel utility',0]]},
+  {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'BACKLOG February housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20,group:'lounge'},
+  {label:'BACKLOG March housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge'},
+  {label:'Apartment rent - August',amount:1250,category:'Housing/Lounge',month:'Aug',day:1,group:'apartment'},
+  {label:'Apartment rent - September',amount:1250,category:'Housing/Lounge',month:'Sep',day:1,group:'apartment'},
+  {label:'Apartment rent - October',amount:1250,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
+  {label:'Apartment rent - November',amount:1250,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
+  {label:'Parlor fee',amount:3000,category:'Housing/Lounge',month:'Aug'},
+  {label:'Pig dinner (Postponed — lost deposit)',amount:0,category:'Operations',month:'Sep'},
+  {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
+  {label:'IFC dues - half in October',amount:2850,category:'National dues',month:'Oct'},
+  {label:'Total national payment',amount:13912,category:'National dues',month:'Oct'},
+  {label:'Formal',amount:0,category:'Formal',month:'Nov'},
+  {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
+  {label:'Brotherhood',amount:2300,category:'Brotherhood',month:'Sep'},
+  {label:'Social',amount:18000,category:'Social',month:'Sep'},
+  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug'},
+  {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
+  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
+  {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul',group:'legfi',actual:528},
+  {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul',group:'legfi',actual:240},
+  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi'},
+  {label:'Legfi - September',amount:264,category:'Operations',month:'Sep',group:'legfi'},
+  {label:'Legfi - October',amount:264,category:'Operations',month:'Oct',group:'legfi'},
+  {label:'Legfi - November',amount:264,category:'Operations',month:'Nov',group:'legfi'},
+  {label:'Legfi - December',amount:264,category:'Operations',month:'Dec',group:'legfi'},
+  {label:'Paramount+ - July ($14/mo)',amount:14,category:'Operations',month:'Jul',group:'paramount'},
+  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug',group:'paramount'},
+  {label:'Paramount+ - September',amount:14,category:'Operations',month:'Sep',group:'paramount'},
+  {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct',group:'paramount'},
+  {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov',group:'paramount'},
+  {label:'Paramount+ - December',amount:14,category:'Operations',month:'Dec',group:'paramount'},
+  {label:'Youtube TV - August ($101.99/mo)',amount:101.99,category:'Operations',month:'Aug',group:'youtube'},
+  {label:'Youtube TV - September',amount:101.99,category:'Operations',month:'Sep',group:'youtube'},
+  {label:'Youtube TV - October',amount:101.99,category:'Operations',month:'Oct',group:'youtube'},
+  {label:'Youtube TV - November',amount:101.99,category:'Operations',month:'Nov',group:'youtube'},
+  {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec',group:'youtube'},
+  {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug',group:'sunday'},
+  {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep',group:'sunday'},
+];
+// ---- END MANUALLY UPDATED DATA ----
+
+function money(n){ return '$'+(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function dateLabel(e){ return e.day ? (e.month+' '+e.day) : e.month; }
+
+function getEntry(idx){
+  return { actual: EXPENSES[idx].actual || 0 };
+}
+
+function totalBudgeted(){ return EXPENSES.reduce((s,e)=>s+(e.amount||0),0); }
+function totalActuallyPaid(){
+  return EXPENSES.reduce((s,e,i)=>s+getEntry(i).actual,0);
+}
+function actualByCategory(){
+  const out={};
+  EXPENSES.forEach((e,i)=>{
+    const amt=getEntry(i).actual;
+    if(amt) out[e.category]=(out[e.category]||0)+amt;
+  });
+  return out;
+}
+function totalOtherIncome(){ return OTHER_INCOME.reduce((s,e)=>s+(e.amount||0),0); }
+
+function buildOverview(){
+  const budgetTotal=totalBudgeted();
+  const actualTotal=totalActuallyPaid();
+  const remaining=budgetTotal-actualTotal;
+  const surplus=EXPECTED_TOTAL_INCOME-budgetTotal;
+
+  document.getElementById('m-balance').textContent=money(ACTUAL_BALANCE);
+  document.getElementById('m-actual-total').textContent=money(actualTotal);
+  document.getElementById('m-budget-total').textContent=money(budgetTotal);
+  const el=document.getElementById('m-remaining');
+  el.textContent=money(remaining);
+  el.className='metric-value '+(remaining>=0?'green':'red');
+  document.getElementById('m-dues-income').textContent=money(EXPECTED_DUES_INCOME);
+  document.getElementById('m-total-income').textContent=money(EXPECTED_TOTAL_INCOME);
+  const surplusEl=document.getElementById('m-expected-surplus');
+  surplusEl.textContent=(surplus>=0?'+':'-')+money(Math.abs(surplus));
+  surplusEl.className='metric-value '+(surplus>=0?'green':'red');
+}
+
+function toggleGroup(gid){
+  const rows=document.querySelectorAll('.'+gid);
+  const arrow=document.getElementById('arrow-'+gid);
+  if(!rows.length) return;
+  const opening=!rows[0].classList.contains('open');
+  rows.forEach(r=>r.classList.toggle('open',opening));
+  if(arrow) arrow.innerHTML=opening?'&#9662;':'&#9656;';
+}
+
+function rowHtml(e,i,rowClass){
+  const ent=getEntry(i);
+  const logged=ent.actual>0;
+  const detail=!!rowClass;
+  const cellClass=detail?' grp-detail-cell':'';
+  const trClass=rowClass ? rowClass+(logged?' paid':'') : (logged?'paid':'');
+  return '<tr class="'+trClass+'">'+
+    '<td class="item-label'+cellClass+'">'+e.label+'</td>'+
+    '<td class="'+cellClass.trim()+'">'+e.category+'</td>'+
+    '<td class="'+cellClass.trim()+'">'+dateLabel(e)+'</td>'+
+    '<td class="r'+cellClass+'">'+money(e.amount)+'</td>'+
+    '<td class="r'+cellClass+'">'+money(ent.actual)+'</td>'+
+  '</tr>';
+}
+
+function breakdownFor(actual){
+  return [['Rent', actual-775], ['Housing fundraiser', 625], ['Xcel utility', 150]];
+}
+const BUDGETED_BREAKDOWN={ 'Rent':4637.35, 'Housing fundraiser':625, 'Xcel utility':150 };
+
+function buildPayments(){
+  const tbody=document.getElementById('pay-tbody');
+  const seen=new Set();
+  let html='';
+  EXPENSES.forEach((e,i)=>{
+    if(e.group){
+      if(seen.has(e.group)) return;
+      seen.add(e.group);
+      const idxs=[];
+      EXPENSES.forEach((x,xi)=>{ if(x.group===e.group) idxs.push(xi); });
+      const budgetTotal=idxs.reduce((s,xi)=>s+(EXPENSES[xi].amount||0),0);
+      const actualTotal=idxs.reduce((s,xi)=>s+getEntry(xi).actual,0);
+      const loggedCount=idxs.filter(xi=>getEntry(xi).actual>0).length;
+      const gid='grp-'+e.group;
+      html+='<tr class="grp-row">'+
+        '<td onclick="toggleGroup(\''+gid+'\')" style="cursor:pointer" colspan="2"><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+(GROUP_LABELS[e.group]||e.group)+' <span class="grp-count">('+loggedCount+'/'+idxs.length+' logged)</span></td>'+
+        '<td></td><td class="r">'+money(budgetTotal)+'</td><td class="r">'+money(actualTotal)+'</td>'+
+      '</tr>';
+      idxs.forEach(xi=>{
+        const it=EXPENSES[xi];
+        html+=rowHtml(it,xi,'grp-detail '+gid);
+        if(e.group==='lounge' && !it.label.includes('BACKLOG')){
+          const ent=getEntry(xi);
+          const basis=ent.actual>0 ? ent.actual : it.amount;
+          const bd=it.actualBreakdown || breakdownFor(basis);
+          bd.forEach(([label,amt,paid])=>{
+            const strike=paid?'text-decoration:line-through':'';
+            html+='<tr class="grp-detail '+gid+'">'+
+              '<td style="padding-left:32px;color:var(--text-secondary);font-size:12px;'+strike+'">'+label+'</td>'+
+              '<td></td><td></td>'+
+              '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(BUDGETED_BREAKDOWN[label])+'</td>'+
+              '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(amt)+'</td>'+
+            '</tr>';
+          });
+        }
+      });
+    } else {
+      html+=rowHtml(e,i,null);
+    }
+  });
+  tbody.innerHTML=html;
+  document.getElementById('pay-budget-cell').textContent=money(totalBudgeted());
+  document.getElementById('pay-actual-cell').textContent=money(totalActuallyPaid());
+}
+
+function buildCompare(){
+  const container=document.getElementById('bar-list');
+  const actualByCat=actualByCategory();
+
+  container.innerHTML=Object.entries(BUDGETED_CATEGORIES()).map(([cat,budget])=>{
+    const actual=actualByCat[cat]||0;
+    const pct=budget>0 ? Math.min(100,Math.round((actual/budget)*100)) : (actual>0?100:0);
+    const over=actual>budget;
+    return '<div class="bar-row">'+
+      '<div class="bar-label"><span>'+cat+'</span><span>'+money(actual)+' / '+money(budget)+'</span></div>'+
+      '<div class="bar-track"><div class="bar-fill'+(over?' over':'')+'" style="width:'+pct+'%"></div></div>'+
+    '</div>';
+  }).join('');
+}
+
+function BUDGETED_CATEGORIES(){
+  const out={};
+  EXPENSES.forEach(e=>{ out[e.category]=(out[e.category]||0)+(e.amount||0); });
+  return out;
+}
+
+function buildAdditional(){
+  const total=totalOtherIncome();
+  document.getElementById('m-additional-total').textContent=money(total);
+  document.getElementById('additional-total-cell').textContent=money(total);
+  document.getElementById('additional-tbody').innerHTML=OTHER_INCOME.map(e=>
+    '<tr><td>'+e.label+'</td><td>'+e.month+'</td><td class="r">'+money(e.amount)+'</td></tr>'
+  ).join('');
+}
+
+function buildAdditionalPayments(){
+  const budgetTotal=ADDITIONAL_PAYMENTS.reduce((s,e)=>s+(e.amount||0),0);
+  const actualTotal=ADDITIONAL_PAYMENTS.reduce((s,e)=>s+(e.actual||0),0);
+  document.getElementById('additional-payments-budget-cell').textContent=money(budgetTotal);
+  document.getElementById('additional-payments-total-cell').textContent=money(actualTotal);
+  document.getElementById('additional-payments-tbody').innerHTML=ADDITIONAL_PAYMENTS.map(e=>
+    '<tr><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td><td class="r">'+money(e.actual)+'</td></tr>'
+  ).join('');
+}
+
+function showTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('visible');
+  btn.classList.add('active');
+}
+
+buildOverview();
+buildPayments();
+buildCompare();
+buildAdditional();
+buildAdditionalPayments();
+</script>
+</body>
+</html>
