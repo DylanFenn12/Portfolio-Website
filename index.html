@@ -63,10 +63,21 @@
     }
 
     /* ===== SIGNATURE: sweeping DMX light beams + blueprint grid ===== */
+    /* 3D scene layer (voxel dino + floating wireframes) */
+    #bg3d{
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      pointer-events: none;
+      display:block;
+      width: 100vw;
+      height: 100vh;
+    }
+
     .stage{
       position: fixed;
       inset: -20%;
-      z-index: -3;
+      z-index: -4;
       pointer-events:none;
       overflow:hidden;
       background: linear-gradient(180deg, #04060a 0%, #070a10 55%, #05070b 100%);
@@ -517,10 +528,14 @@
       display:grid;
       grid-template-columns: repeat(12, 1fr);
       gap: 14px;
+      perspective: 1200px;
     }
 
     .project{
       grid-column: span 6;
+      transform: translateY(var(--ty, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ryy, 0deg));
+      transform-style: preserve-3d;
+      will-change: transform;
       border-radius: var(--radius2);
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
@@ -549,7 +564,7 @@
     @property --ang{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
     @keyframes edgeSpin{ to{ --ang: 360deg; } }
     .project:hover{
-      transform: translateY(-4px) scale(1.005);
+      --ty: -4px;
       border-color: rgba(255,255,255,.05);
       background: rgba(255,255,255,.06);
       box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 30px rgba(77,230,210,.10);
@@ -842,6 +857,9 @@
     <div class="beam b3"></div>
   </div>
 
+  <!-- 3D layer: voxel chrome dino + floating wireframes (three.js) -->
+  <canvas id="bg3d" aria-hidden="true"></canvas>
+
   <header class="nav">
     <div class="inner">
       <a class="brand" href="#top" aria-label="Go to top">
@@ -991,7 +1009,7 @@
 
       <footer>
         <div>© <span id="year"></span> Dylan Fenn • Built with HTML/CSS/JS</div>
-        <div>v0.2 • Dylan Fenn's Portfolio</div>
+        <div>v0.3 • Dylan Fenn's Portfolio</div>
       </footer>
     </section>
   </main>
@@ -1211,6 +1229,197 @@
 
     document.getElementById('year').textContent = new Date().getFullYear();
     render();
+
+    /* =========================================================
+       3D CARD TILT — cards lean toward the cursor.
+       (Delegated on #grid so it survives re-renders from search/filter.
+        Skipped on touch devices and for reduced-motion users.)
+       ========================================================= */
+    (function(){
+      const fine = window.matchMedia('(pointer: fine)').matches;
+      const noMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!fine || noMotion) return;
+
+      grid.addEventListener('pointermove', (e) => {
+        const card = e.target.closest('.project');
+        if(!card) return;
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width  - .5;  // -0.5 .. 0.5
+        const py = (e.clientY - r.top)  / r.height - .5;
+        card.style.setProperty('--ryy', (px * 7).toFixed(2) + 'deg');
+        card.style.setProperty('--rx', (-py * 6).toFixed(2) + 'deg');
+      });
+      grid.addEventListener('pointerout', (e) => {
+        const card = e.target.closest('.project');
+        if(!card || card.contains(e.relatedTarget)) return;
+        card.style.setProperty('--ryy', '0deg');
+        card.style.setProperty('--rx', '0deg');
+      });
+    })();
+  </script>
+
+  <!-- three.js for the 3D background -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    /* =========================================================
+       3D BACKGROUND — a voxel Chrome dino (a nod to the laser-cut
+       sculpture project) slowly rotating among wireframe solids,
+       with mouse + scroll parallax. Degrades gracefully: if
+       three.js fails to load, the site works exactly as before.
+       ========================================================= */
+    (function(){
+      if(!window.THREE) return; // CDN failed? No problem, skip 3D.
+
+      const canvas = document.getElementById('bg3d');
+      const noMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !coarse });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarse ? 1.25 : 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x06080d, 0.020);
+
+      const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(0, 2, 30);
+
+      // Lights: cool key + magenta rim, like stage fixtures
+      scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+      const key = new THREE.DirectionalLight(0xcfe4ff, 1.0);
+      key.position.set(6, 10, 8);
+      scene.add(key);
+      const rim = new THREE.DirectionalLight(0xff5fa8, 0.6);
+      rim.position.set(-8, 4, -6);
+      scene.add(rim);
+
+      /* ---- Voxel Chrome dino (built cube-by-cube from a pixel map) ---- */
+      const DINO = [
+        "............########.",
+        "..........###########",
+        "..........###.#######",
+        "..........###########",
+        "..........###########",
+        "..........###########",
+        "..........######.....",
+        "..........#########..",
+        "#........######......",
+        "#.......#######......",
+        "##....###########....",
+        "###..############....",
+        "###..##########.#....",
+        "###############......",
+        "###############......",
+        ".#############.......",
+        "..############.......",
+        "...##########........",
+        "....########.........",
+        ".....###.###.........",
+        ".....##...##.........",
+        ".....#....##.........",
+        ".....##...###........"
+      ];
+
+      const V = 0.55;                 // voxel size
+      const rows = DINO.length;
+      const cols = Math.max(...DINO.map(r => r.length));
+      let count = 0;
+      DINO.forEach(r => { for(const c of r) if(c === '#') count++; });
+
+      const voxGeo = new THREE.BoxGeometry(V * 0.94, V * 0.94, V * 0.94);
+      const voxMat = new THREE.MeshLambertMaterial({ color: 0x7aa8ff, emissive: 0x16264a });
+      const dino = new THREE.InstancedMesh(voxGeo, voxMat, count);
+
+      const dummy = new THREE.Object3D();
+      let i = 0;
+      for(let y = 0; y < rows; y++){
+        const row = DINO[y];
+        for(let x = 0; x < row.length; x++){
+          if(row[x] !== '#') continue;
+          dummy.position.set(
+            (x - cols / 2) * V,
+            (rows / 2 - y) * V,
+            0
+          );
+          dummy.updateMatrix();
+          dino.setMatrixAt(i++, dummy.matrix);
+        }
+      }
+
+      const dinoGroup = new THREE.Group();
+      dinoGroup.add(dino);
+      // subtle green wire glow behind it
+      const halo = new THREE.Mesh(
+        new THREE.RingGeometry(9.5, 9.7, 64),
+        new THREE.MeshBasicMaterial({ color: 0x7aa8ff, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
+      );
+      halo.position.z = -2;
+      dinoGroup.add(halo);
+      dinoGroup.position.set(13, 3, -8);
+      scene.add(dinoGroup);
+
+      /* ---- Floating wireframe solids ---- */
+      function wire(geo, color, x, y, z, s){
+        const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+          color, wireframe: true, transparent: true, opacity: 0.22
+        }));
+        m.position.set(x, y, z);
+        m.scale.setScalar(s);
+        scene.add(m);
+        return m;
+      }
+      const shapes = [
+        wire(new THREE.IcosahedronGeometry(3, 0), 0x4de6d2, -16,  6, -10, 1.0),
+        wire(new THREE.TorusKnotGeometry(2.2, 0.55, 90, 10), 0xff5fa8, -10, -7, -16, 1.0),
+        wire(new THREE.OctahedronGeometry(2.6, 0), 0xffb454, 4, 9, -22, 1.0),
+        wire(new THREE.DodecahedronGeometry(2, 0), 0x8f9bff, 18, -6, -18, 1.0),
+      ];
+
+      /* ---- Parallax targets ---- */
+      let tX = 0, tY = 0;   // target rotation from mouse
+      if(!coarse && !noMotion){
+        window.addEventListener('pointermove', (e) => {
+          tX = (e.clientX / window.innerWidth  - .5) * 0.30;
+          tY = (e.clientY / window.innerHeight - .5) * 0.18;
+        }, { passive: true });
+      }
+
+      let scrollShift = 0;
+      window.addEventListener('scroll', () => {
+        scrollShift = window.scrollY * 0.004;
+      }, { passive: true });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      /* ---- Animate ---- */
+      const clock = new THREE.Clock();
+      function frame(){
+        const t = clock.getElapsedTime();
+
+        dinoGroup.rotation.y = Math.sin(t * 0.25) * 0.55 + tX;
+        dinoGroup.rotation.x = Math.sin(t * 0.18) * 0.08 + tY * 0.5;
+        dinoGroup.position.y = 3 + Math.sin(t * 0.7) * 0.5 - scrollShift * 2;
+        halo.rotation.z = t * 0.1;
+
+        shapes.forEach((s, k) => {
+          s.rotation.x = t * (0.10 + k * 0.03);
+          s.rotation.y = t * (0.14 - k * 0.02);
+          s.position.y += Math.sin(t * 0.5 + k * 2) * 0.004;
+        });
+
+        scene.rotation.y += (tX * 0.4 - scene.rotation.y) * 0.04;
+        scene.rotation.x += (tY * 0.4 - scene.rotation.x) * 0.04;
+        camera.position.y = 2 - scrollShift;
+
+        renderer.render(scene, camera);
+        if(!noMotion) requestAnimationFrame(frame);
+      }
+      frame(); // reduced-motion users get one static rendered frame
+    })();
   </script>
 </body>
 </html>
