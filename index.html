@@ -7,12 +7,15 @@
   <meta name="description" content="Dylan Fenn — Creative Technology & Design (CU Boulder). Portfolio of fabrication, electronics, lighting/DMX, design, and projects." />
   <link rel="icon" type="image/png" href="drf.png" />
 
+  <!-- Fonts: chunky techno display + clean body + schematic mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Outfit:wght@400;500;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      /* Responsive base size (smaller on phones, comfy on desktop) */
       --base: clamp(16px, 1.1vw + 12px, 19px);
 
-      /* Responsive type steps */
       --fs-xxs: clamp(12px, .35vw + 10px, 13px);
       --fs-xs:  clamp(13px, .45vw + 10px, 14px);
       --fs-sm:  clamp(14px, .55vw + 10px, 16px);
@@ -20,35 +23,32 @@
       --fs-lg:  clamp(18px, .95vw + 10px, 22px);
       --fs-xl:  clamp(22px, 1.30vw + 10px, 28px);
 
-      /* Accent pops */
-      --yellow: #f6e27a;
-      --lime: #b8f397;
-      --orange: #f4b266;
+      /* Stage-light color mix (R/G/B/A fixtures) */
+      --cyan:    #4de6d2;
+      --magenta: #ff5fa8;
+      --amber:   #ffb454;
+      --violet:  #8f9bff;
+      --lime:    #b8f397;
+      --yellow:  #f6e27a;
 
-      --bg: #0b0f14;
-      --panel: rgba(255,255,255,.06);
-      --panel2: rgba(255,255,255,.09);
-      --text: rgba(255,255,255,.92);
+      --bg: #06080d;
+      --panel: rgba(255,255,255,.055);
+      --text: rgba(255,255,255,.93);
       --muted: rgba(255,255,255,.70);
       --faint: rgba(255,255,255,.50);
-      --line: rgba(255,255,255,.12);
+      --line: rgba(255,255,255,.13);
       --shadow: 0 24px 70px rgba(0,0,0,.55);
       --radius: 18px;
       --radius2: 24px;
       --max: 1120px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
 
-    /* Accent palette inspired by “earthy pastels” */
-    .theme{
-      --a1: #7dd3c7;  /* pastel teal */
-      --a2: #f2b3c5;  /* pastel pink */
-      --a3: #f5d08c;  /* soft amber */
-      --a4: #9ab6ff;  /* periwinkle */
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: "Outfit", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      --display: "Unbounded", var(--sans);
     }
 
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     html,body{height:100%}
     body{
       margin:0;
@@ -62,34 +62,77 @@
       isolation: isolate;
     }
 
-    /* Fluid background across the whole page */
+    /* ===== SIGNATURE: sweeping DMX light beams + blueprint grid ===== */
+    .stage{
+      position: fixed;
+      inset: -20%;
+      z-index: -3;
+      pointer-events:none;
+      overflow:hidden;
+      background: linear-gradient(180deg, #04060a 0%, #070a10 55%, #05070b 100%);
+    }
+    .beam{
+      position:absolute;
+      width: 140vmax;
+      height: 140vmax;
+      left: 50%;
+      top: 50%;
+      translate: -50% -50%;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: .55;
+      mix-blend-mode: screen;
+    }
+    .beam.b1{
+      background: conic-gradient(from 0deg,
+        transparent 0 18%, rgba(77,230,210,.30) 22%, transparent 30%,
+        transparent 55%, rgba(143,155,255,.26) 60%, transparent 68%);
+      animation: spin 46s linear infinite;
+    }
+    .beam.b2{
+      background: conic-gradient(from 120deg,
+        transparent 0 20%, rgba(255,95,168,.22) 25%, transparent 34%,
+        transparent 60%, rgba(255,180,84,.20) 66%, transparent 75%);
+      animation: spin 64s linear infinite reverse;
+    }
+    .beam.b3{
+      background: radial-gradient(closest-side, rgba(246,226,122,.10), transparent 70%);
+      animation: breathe 9s ease-in-out infinite;
+    }
+    @keyframes spin{ to{ rotate: 360deg; } }
+    @keyframes breathe{ 0%,100%{opacity:.35; scale:1} 50%{opacity:.6; scale:1.08} }
+
+    /* Blueprint / engineering-paper grid */
     body::before{
       content:"";
       position: fixed;
       inset: 0;
       z-index: -2;
-      pointer-events: none;
-      background:
-        radial-gradient(1200px 800px at 10% 10%, rgba(125,211,199,.14), transparent 60%),
-        radial-gradient(1000px 700px at 95% 15%, rgba(154,182,255,.16), transparent 55%),
-        radial-gradient(900px 700px at 15% 95%, rgba(242,179,197,.12), transparent 50%),
-        radial-gradient(900px 700px at 90% 95%, rgba(245,208,140,.10), transparent 50%),
-        radial-gradient(1200px 900px at 55% 55%, rgba(246,226,122,.06), transparent 65%),
-        linear-gradient(180deg, #06080c 0%, #0b0f14 55%, #070a0f 100%);
-      transform: translateZ(0);
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+      mask-image: radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,.9), rgba(0,0,0,.25) 70%, transparent);
+      -webkit-mask-image: radial-gradient(1200px 900px at 50% 20%, rgba(0,0,0,.9), rgba(0,0,0,.25) 70%, transparent);
     }
+    /* Vignette + subtle noise */
     body::after{
       content:"";
       position: fixed;
       inset: 0;
       z-index: -1;
-      pointer-events: none;
+      pointer-events:none;
       background:
-        radial-gradient(900px 600px at 50% 10%, rgba(0,0,0,.10), transparent 60%),
-        radial-gradient(900px 600px at 50% 100%, rgba(0,0,0,.18), transparent 65%),
-        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.18));
-      mix-blend-mode: multiply;
-      opacity: .55;
+        radial-gradient(900px 600px at 50% 110%, rgba(0,0,0,.35), transparent 65%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .beam{ animation: none !important; }
+      *{ animation-duration: .001s !important; transition-duration: .001s !important; }
     }
 
     a{color:inherit; text-decoration:none}
@@ -97,14 +140,14 @@
 
     .wrap{max-width: var(--max); margin: 0 auto; padding: 26px 18px 70px;}
 
-    /* Top nav */
+    /* ===== Top nav ===== */
     .nav{
       position: sticky;
       top: 0;
       z-index: 10;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      background: rgba(11,15,20,.56);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(6,8,13,.62);
       border-bottom: 1px solid var(--line);
     }
     .nav .inner{
@@ -122,8 +165,6 @@
       gap: 10px;
       min-width: 220px;
     }
-
-    /* drf.png logo */
     .logo{
       width: 48px;
       height: 48px;
@@ -133,22 +174,17 @@
       padding: 6px;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.18);
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      box-shadow: 0 0 0 1px rgba(77,230,210,.15), 0 12px 30px rgba(0,0,0,.35);
     }
+    .brand .who{display:flex; flex-direction:column; line-height:1.05;}
+    .brand .who strong{
+      letter-spacing:.4px; color: var(--lime); font-size: var(--fs-md) !important;
+      font-family: var(--display); font-weight: 700;
+    }
+    .brand .who span{color: var(--muted); font-size: var(--fs-sm) !important; font-family: var(--mono);}
 
-    .brand .who{
-      display:flex; flex-direction:column; line-height:1.05;
-    }
-    .brand .who strong{letter-spacing:.2px; color: var(--lime); font-size: var(--fs-md) !important;}
-    .brand .who span{color: var(--muted); font-size: var(--fs-sm) !important;}
+    .cta{display:flex; gap:14px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
 
-    .cta{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-    }
     .pill{
       padding: 13px 18px;
       border-radius: 999px;
@@ -160,16 +196,26 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
+      font-weight: 600;
+      letter-spacing:.3px;
     }
-    .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+    .pill:hover{
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(77,230,210,.5);
+      box-shadow: 0 0 18px rgba(77,230,210,.18);
+    }
     .pill.primary{
-      border-color: var(--yellow);
-      background: linear-gradient(135deg, rgba(246,226,122,.25), rgba(125,211,199,.18));
-      color: #ffffff;
+      border-color: transparent;
+      background:
+        linear-gradient(#0a0e14, #0a0e14) padding-box,
+        linear-gradient(120deg, var(--yellow), var(--cyan), var(--magenta)) border-box;
+      color: #fff;
       font-weight: 800;
+      position:relative;
     }
+    .pill.primary:hover{ box-shadow: 0 0 24px rgba(255,95,168,.25), 0 0 24px rgba(77,230,210,.25); }
 
-    /* ✅ Disabled pill (for projects that only have 1 link) */
     .pill.disabled{
       opacity: .45;
       cursor: not-allowed;
@@ -177,11 +223,38 @@
       filter: grayscale(20%);
     }
 
-    /* Hero */
+    /* ===== Ticker (LED marquee) ===== */
+    .ticker{
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.35);
+      overflow:hidden;
+      user-select:none;
+    }
+    .ticker .track{
+      display:flex;
+      width: max-content;
+      animation: marquee 30s linear infinite;
+    }
+    .ticker span{
+      font-family: var(--mono);
+      font-size: var(--fs-xs) !important;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      padding: 8px 0;
+      white-space: nowrap;
+      color: rgba(255,255,255,.55);
+    }
+    .ticker b{ color: var(--cyan); font-weight:700; }
+    .ticker i{ color: var(--magenta); font-style:normal; }
+    .ticker u{ color: var(--amber); text-decoration:none; }
+    @keyframes marquee{ to{ transform: translateX(-50%);} }
+    .ticker:hover .track{ animation-play-state: paused; }
+
+    /* ===== Hero ===== */
     .hero{
       margin-top: 28px;
       display:grid;
-      grid-template-columns: 1fr; /* ✅ remove right box */
+      grid-template-columns: 1fr;
       gap: 18px;
       align-items: stretch;
     }
@@ -194,51 +267,124 @@
       overflow:hidden;
     }
 
-    .heroMain{padding: 22px 22px 18px; position:relative}
+    .heroMain{padding: 26px 22px 22px; position:relative}
     .heroMain::before{
       content:"";
       position:absolute; inset:-2px;
       background:
-        radial-gradient(520px 240px at 25% 0%, rgba(125,211,199,.22), transparent 60%),
-        radial-gradient(460px 240px at 75% 0%, rgba(154,182,255,.22), transparent 60%);
-      opacity:.85;
+        radial-gradient(520px 240px at 25% 0%, rgba(77,230,210,.20), transparent 60%),
+        radial-gradient(460px 240px at 75% 0%, rgba(255,95,168,.14), transparent 60%);
+      opacity:.9;
       pointer-events:none;
     }
     .heroMain > *{position:relative}
 
-    /* ✅ New split layout inside the left card: text + profile image */
+    /* corner brackets, like a camera viewfinder */
+    .heroMain::after{
+      content:"";
+      position:absolute;
+      inset: 12px;
+      pointer-events:none;
+      border-radius: 16px;
+      background:
+        linear-gradient(var(--cyan), var(--cyan)) top left / 26px 2px,
+        linear-gradient(var(--cyan), var(--cyan)) top left / 2px 26px,
+        linear-gradient(var(--magenta), var(--magenta)) top right / 26px 2px,
+        linear-gradient(var(--magenta), var(--magenta)) top right / 2px 26px,
+        linear-gradient(var(--amber), var(--amber)) bottom left / 26px 2px,
+        linear-gradient(var(--amber), var(--amber)) bottom left / 2px 26px,
+        linear-gradient(var(--violet), var(--violet)) bottom right / 26px 2px,
+        linear-gradient(var(--violet), var(--violet)) bottom right / 2px 26px;
+      background-repeat: no-repeat;
+      opacity:.7;
+    }
+
     .heroSplit{
       display:grid;
       grid-template-columns: 1.15fr .85fr;
       gap: 18px;
       align-items: stretch;
-
-      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
       place-items: center;
     }
     .heroText{
       min-width:0;
-
-      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
     }
+
+    .eyebrow{
+      font-family: var(--mono);
+      font-size: var(--fs-xs) !important;
+      letter-spacing:.3em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      margin: 0;
+    }
+    .eyebrow::before, .eyebrow::after{
+      content:"";
+      width: 28px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan));
+    }
+    .eyebrow::after{ background: linear-gradient(90deg, var(--cyan), transparent); }
+
+    .heroText .name{
+      margin: 12px 0 6px;
+      font-family: var(--display);
+      font-weight: 900;
+      font-size: clamp(44px, 5.4vw, 72px);
+      line-height: 1.04;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--yellow), var(--cyan) 40%, var(--magenta) 75%, var(--violet));
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: hueSlide 10s ease-in-out infinite alternate;
+      text-wrap: balance;
+    }
+    @keyframes hueSlide{ from{background-position: 0% 0} to{background-position: 100% 0} }
+
+    .heroText .title{
+      margin: 0 0 14px;
+      font-size: clamp(16px, 2vw, 22px);
+      font-weight: 600;
+      letter-spacing: .35px;
+      color: rgba(255,255,255,.88);
+      font-family: var(--mono);
+    }
+    .heroText .title .cursorBlink{
+      display:inline-block;
+      width:.6ch;
+      color: var(--lime);
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink{ 50%{opacity:0} }
+
+    .sub{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 62ch;
+      font-size: var(--fs-md) !important;
+    }
+
     .heroActions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-top: 16px;
-
-      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
+      margin-top: 18px;
       justify-content: center;
     }
 
     .heroPhoto{
       border-radius: var(--radius2);
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.04);
       overflow:hidden;
       position: relative;
@@ -248,61 +394,61 @@
       min-width: 70%;
       margin-left: auto;
       align-self: center;
-
-      /* === ONLY CHANGE YOU ASKED FOR: center/justify hero content === */
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow:
+        0 0 0 1px rgba(77,230,210,.12),
+        0 0 40px rgba(77,230,210,.10),
+        0 0 60px rgba(255,95,168,.08);
     }
     .heroPhoto img{
       width: 100%;
       height: 100%;
-      object-fit: fill;   /* ✅ no cropping */
+      object-fit: fill;
       object-position: center;
       display: block;
-      background: rgba(0,0,0,.18); /* optional: fills empty space if aspect ratios differ */
+      background: rgba(0,0,0,.18);
     }
-
     .heroPhoto::after{
       content:"";
       position:absolute;
       inset:0;
-      background: radial-gradient(700px 420px at 30% 10%, rgba(246,226,122,.18), transparent 55%);
+      background:
+        radial-gradient(700px 420px at 30% 10%, rgba(246,226,122,.16), transparent 55%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 4px);
       pointer-events:none;
-      opacity:.55;
+      opacity:.6;
       mix-blend-mode: screen;
     }
 
-    h1{
-      margin: 16px 0 14px;
-      font-size: clamp(34px, 4.1vw, 60px);
-      line-height: 1.04;
-      letter-spacing: -0.8px;
-      background: linear-gradient(90deg, var(--yellow), var(--a1), var(--a4));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .sub{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-      max-width: 72ch;
-      font-size: var(--fs-md) !important;
-    }
-
-    /* Sections */
-    section{scroll-margin-top: 84px;}
+    /* ===== Sections ===== */
+    section{scroll-margin-top: 120px;}
     .sectionHead{
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
       gap: 12px;
-      margin: 36px 0 12px;
+      margin: 44px 0 14px;
     }
-    .sectionHead h2{margin:0; font-size: var(--fs-lg) !important; letter-spacing:.3px; color: var(--yellow)}
-    .sectionHead p{margin:0; color: var(--muted); font-size: var(--fs-sm) !important}
+    .sectionHead h2{
+      margin:0;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: var(--fs-xl) !important;
+      letter-spacing:.5px;
+      color: #fff;
+      display:flex;
+      align-items:baseline;
+      gap: 12px;
+    }
+    .sectionHead h2 .slash{
+      font-family: var(--mono);
+      font-size: var(--fs-sm);
+      color: var(--amber);
+      letter-spacing:.1em;
+    }
+    .sectionHead p{margin:4px 0 0; color: var(--muted); font-size: var(--fs-sm) !important; font-family: var(--mono);}
 
     .toolbar{
       display:flex;
@@ -321,25 +467,26 @@
     .search input{
       width:100%;
       background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
       border-radius: 999px;
       padding: 12px 14px 12px 40px;
       color: var(--text);
       outline:none;
       font-size: var(--fs-sm) !important;
+      font-family: var(--mono);
+      transition: .18s ease;
     }
-    .search input::placeholder{color: rgba(255,255,255,.45)}
+    .search input:focus{
+      border-color: rgba(77,230,210,.6);
+      box-shadow: 0 0 0 3px rgba(77,230,210,.14);
+    }
+    .search input::placeholder{color: rgba(255,255,255,.4)}
     .search .icon{
       position:absolute; left: 14px; top: 50%; transform: translateY(-50%);
       width: 16px; height: 16px; opacity:.65;
     }
 
-    .filters{
-      display:flex;
-      gap: 8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+    .filters{display:flex; gap: 8px; flex-wrap:wrap; justify-content:flex-end;}
     .fbtn{
       cursor:pointer;
       user-select:none;
@@ -350,19 +497,26 @@
       color: rgba(255,255,255,.90);
       transition: .16s ease;
       font-size: var(--fs-sm) !important;
+      font-family: var(--mono);
+      letter-spacing:.04em;
     }
-    .fbtn:hover{background: rgba(255,255,255,.06)}
+    .fbtn:hover{
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,180,84,.5);
+      transform: translateY(-1px);
+    }
     .fbtn.active{
-      border-color: rgba(125,211,199,.45);
-      background: rgba(125,211,199,.11);
-      color: rgba(255,255,255,.92);
+      border-color: rgba(77,230,210,.55);
+      background: rgba(77,230,210,.12);
+      color: #fff;
+      box-shadow: 0 0 14px rgba(77,230,210,.18), inset 0 0 12px rgba(77,230,210,.08);
     }
 
-    /* Project grid */
+    /* ===== Project grid ===== */
     .grid{
       display:grid;
       grid-template-columns: repeat(12, 1fr);
-      gap: 12px;
+      gap: 14px;
     }
 
     .project{
@@ -372,64 +526,131 @@
       background: rgba(255,255,255,.04);
       overflow:hidden;
       position:relative;
-      transition: .18s ease;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
       cursor:pointer;
     }
-    .project:hover{transform: translateY(-2px); border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.055)}
+    /* animated RGB edge on hover */
+    .project::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius: inherit;
+      padding: 1px;
+      background: conic-gradient(from var(--ang, 0deg), var(--cyan), var(--magenta), var(--amber), var(--violet), var(--cyan));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      opacity: 0;
+      transition: opacity .25s ease;
+      pointer-events:none;
+      z-index: 2;
+      animation: edgeSpin 4s linear infinite;
+    }
+    @property --ang{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
+    @keyframes edgeSpin{ to{ --ang: 360deg; } }
+    .project:hover{
+      transform: translateY(-4px) scale(1.005);
+      border-color: rgba(255,255,255,.05);
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 30px rgba(77,230,210,.10);
+    }
+    .project:hover::before{ opacity:.9; }
+    .project:focus-visible{
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
 
     .thumb{
       height: 150px;
       background:
-        radial-gradient(300px 160px at 30% 40%, rgba(125,211,199,.25), transparent 60%),
-        radial-gradient(260px 160px at 70% 40%, rgba(242,179,197,.18), transparent 60%),
+        radial-gradient(300px 160px at 30% 40%, rgba(77,230,210,.25), transparent 60%),
+        radial-gradient(260px 160px at 70% 40%, rgba(255,95,168,.16), transparent 60%),
         linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border-bottom: 1px solid rgba(255,255,255,.10);
       position:relative;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      transition: filter .25s ease;
     }
+    .project:hover .thumb{ filter: saturate(1.15) brightness(1.05); }
     .thumb.hasImg::before{
       content:"";
       position:absolute;
       inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.28));
+      background: linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.30));
       pointer-events:none;
     }
+    /* gaffer-tape style badge */
     .thumb::after{
       content: attr(data-badge);
       position:absolute;
       top: 12px; left: 12px;
       font-family: var(--mono);
       font-weight: 700;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.88);
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      padding: 8px 11px;
+      border-radius: 4px;
+      border: 1px dashed rgba(255,255,255,.28);
+      background: rgba(0,0,0,.45);
+      color: var(--yellow);
       font-size: var(--fs-xs) !important;
       z-index: 1;
+      transform: rotate(-1.5deg);
+      backdrop-filter: blur(4px);
     }
 
-    .pbody{padding: 14px 14px 16px}
-    .ptitle{margin:0; letter-spacing:.3px; font-size: var(--fs-md) !important;}
+    .pbody{padding: 16px 16px 18px}
+    .ptitle{
+      margin:0;
+      letter-spacing:.3px;
+      font-size: var(--fs-md) !important;
+      font-family: var(--display);
+      font-weight: 700;
+    }
     .pdesc{margin:12px 0 0; color: var(--muted); line-height: 1.65; font-size: var(--fs-sm) !important;}
     .meta{margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap}
     .tag{
-      padding: 8px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(246,226,122,.12), rgba(125,211,199,.10));
+      padding: 7px 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
       color: rgba(255,255,255,.92);
       font-size: var(--fs-xs) !important;
+      font-family: var(--mono);
+      letter-spacing:.03em;
+    }
+    .meta .tag:first-child{
+      border-color: rgba(77,230,210,.4);
+      color: var(--cyan);
+      background: rgba(77,230,210,.08);
     }
 
-    /* About + Contact */
-    .twoCol{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
-    .pad{padding: 18px}
+    /* ===== About + Contact ===== */
+    .twoCol{display:grid; grid-template-columns: 1fr 1fr; gap: 14px;}
+    .pad{padding: 20px}
+    .pad h3{
+      margin:0;
+      font-size:var(--fs-md);
+      letter-spacing:.4px;
+      font-family: var(--display);
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .pad h3::before{
+      content:"";
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      rotate: 45deg;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      box-shadow: 0 0 12px rgba(77,230,210,.5);
+    }
 
     .list{
-      margin: 12px 0 0;
+      margin: 14px 0 0;
       padding: 0;
       list-style:none;
       display:grid;
@@ -439,47 +660,81 @@
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.03);
-      padding: 12px;
+      padding: 13px;
       display:flex; gap: 10px;
       align-items:flex-start;
+      transition: .18s ease;
+    }
+    .li:hover{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.05);
+      transform: translateX(4px);
     }
     .li .ic{
       width: 10px; height: 10px; border-radius: 50%;
-      background: rgba(245,208,140,.85);
+      background: rgba(245,208,140,.9);
       margin-top: 6px;
-      box-shadow: 0 0 0 6px rgba(245,208,140,.12);
+      box-shadow: 0 0 0 5px rgba(245,208,140,.12), 0 0 10px rgba(245,208,140,.6);
       flex: 0 0 auto;
     }
-    .li strong{display:block; font-size: var(--fs-sm) !important;}
-    .li span{display:block; font-size: var(--fs-sm) !important; color: var(--muted); margin-top: 4px; line-height: 1.55}
+    .li strong{display:block; font-size: var(--fs-sm) !important; letter-spacing:.2px;}
+    .li span:not(.ic){display:block; font-size: var(--fs-sm) !important; color: var(--muted); margin-top: 4px; line-height: 1.55; font-family: var(--mono); font-size: var(--fs-xs) !important;}
 
     .contactGrid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
     .contactItem{
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.03);
-      padding: 12px;
+      padding: 14px;
       display:flex; flex-direction:column; gap: 6px;
+      transition: .18s ease;
+      position:relative;
+      overflow:hidden;
     }
-    .contactItem .k{font-size: var(--fs-sm) !important; color: var(--muted)}
+    .contactItem::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--cyan), var(--magenta));
+      opacity:0;
+      transition:.18s ease;
+    }
+    .contactItem:hover{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.055);
+      transform: translateY(-2px);
+    }
+    .contactItem:hover::before{opacity:1}
+    .contactItem .k{
+      font-size: var(--fs-xs) !important;
+      color: var(--cyan);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing:.18em;
+    }
     .contactItem .v{font-size: var(--fs-md) !important; font-family: var(--mono)}
+    .contactItem .v a:hover{ color: var(--yellow); }
 
-    /* Modal */
+    /* ===== Modal ===== */
     dialog{
       width: min(760px, calc(100% - 28px));
-      border: 1px solid rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.16);
       border-radius: 22px;
       padding: 0;
-      background: rgba(14,18,25,.92);
-      box-shadow: 0 40px 120px rgba(0,0,0,.70);
+      background: rgba(10,13,19,.94);
+      box-shadow: 0 40px 120px rgba(0,0,0,.70), 0 0 60px rgba(77,230,210,.06);
       color: var(--text);
       overflow:hidden;
     }
-    dialog::backdrop{background: rgba(0,0,0,.60)}
+    dialog::backdrop{background: rgba(0,0,0,.66); backdrop-filter: blur(3px);}
+    dialog[open]{ animation: modalIn .22s ease; }
+    @keyframes modalIn{ from{ opacity:0; transform: translateY(10px) scale(.985);} to{ opacity:1; transform:none;} }
+
     .modalTop{padding: 16px 16px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.12)}
     .modalTop .title{display:flex; flex-direction:column; gap: 2px;}
-    .modalTop .title strong{font-size: var(--fs-md) !important;}
-    .modalTop .title span{font-size: var(--fs-sm) !important; color: var(--muted)}
+    .modalTop .title strong{font-size: var(--fs-md) !important; font-family: var(--display); font-weight:700;}
+    .modalTop .title span{font-size: var(--fs-xs) !important; color: var(--muted); font-family: var(--mono);}
     .x{
       cursor:pointer;
       border: 1px solid rgba(255,255,255,.14);
@@ -488,15 +743,17 @@
       border-radius: 999px;
       padding: 10px 12px;
       font-size: var(--fs-sm) !important;
+      transition:.15s ease;
     }
+    .x:hover{ border-color: var(--magenta); color: var(--magenta); box-shadow: 0 0 12px rgba(255,95,168,.25); }
     .modalBody{padding: 16px; display:grid; gap: 12px}
     .modalHero{
       height: 220px;
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
       background:
-        radial-gradient(400px 240px at 30% 30%, rgba(125,211,199,.25), transparent 60%),
-        radial-gradient(420px 260px at 70% 70%, rgba(154,182,255,.22), transparent 60%),
+        radial-gradient(400px 240px at 30% 30%, rgba(77,230,210,.25), transparent 60%),
+        radial-gradient(420px 260px at 70% 70%, rgba(143,155,255,.22), transparent 60%),
         linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       background-size: cover;
       background-position: center;
@@ -508,10 +765,9 @@
       content:"";
       position:absolute;
       inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.28));
+      background: linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.28));
       pointer-events:none;
     }
-
     .modalCopy{
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
@@ -523,57 +779,45 @@
     }
     .modalLinks{display:flex; gap:10px; flex-wrap:wrap}
 
-    /* Footer */
-    footer{margin-top: 42px; color: var(--faint); font-size: var(--fs-xs) !important; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    /* ===== Footer ===== */
+    footer{
+      margin-top: 48px;
+      color: var(--faint);
+      font-size: var(--fs-xs) !important;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      border-top: 1px dashed rgba(255,255,255,.14);
+      padding-top: 16px;
+      font-family: var(--mono);
+    }
 
-    /* Responsive */
+    /* ===== Responsive (unchanged breakpoints) ===== */
     @media (max-width: 920px){
       .project{grid-column: span 12;}
       .twoCol{grid-template-columns: 1fr;}
       .brand{min-width: unset;}
-      .heroSplit{grid-template-columns: 1fr;} /* ✅ stack text over photo */
-
-      /* === ONLY CHANGE YOU ASKED FOR: keep hero centered even stacked === */
+      .heroSplit{grid-template-columns: 1fr;}
       .heroText{align-items:center; text-align:center;}
       .heroActions{justify-content:center;}
       .heroPhoto{margin-left:auto; margin-right:auto;}
       .heroPhoto{min-height: 260px;}
     }
     @media (max-width: 520px){
-      .nav .inner{
-        padding: 10px 12px;
-        gap: 10px;
-      }
-
-      .brand{
-        min-width: 0;
-        gap: 8px;
-        overflow: hidden;             /* allow truncation inside */
-      }
-
-      /* keep the subtitle, but keep it on ONE line and cut it off nicely */
-      .brand .who{
-        min-width: 0;                 /* critical for ellipsis in flex */
-      }
-      .brand .who strong{
-        font-size: var(--fs-sm) !important;
-      }
+      .nav .inner{ padding: 10px 12px; gap: 10px; }
+      .brand{ min-width: 0; gap: 8px; overflow: hidden; }
+      .brand .who{ min-width: 0; }
+      .brand .who strong{ font-size: var(--fs-sm) !important; }
       .brand .who span{
-        display: block;               /* keep it */
+        display: block;
         font-size: var(--fs-xs) !important;
-        white-space: nowrap;          /* no wrapping */
+        white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;      /* … instead of making the nav tall */
-        max-width: 22ch;              /* tweak this number if you want */
+        text-overflow: ellipsis;
+        max-width: 22ch;
       }
-
-      .logo{
-        width: 38px;
-        height: 38px;
-        border-radius: 12px;
-        padding: 5px;
-      }
-
+      .logo{ width: 38px; height: 38px; border-radius: 12px; padding: 5px; }
       .cta{
         flex-wrap: nowrap;
         gap: 8px;
@@ -583,39 +827,21 @@
         scrollbar-width: none;
       }
       .cta::-webkit-scrollbar{ display: none; }
-
-      .pill{
-        padding: 9px 12px;
-        font-size: var(--fs-xs) !important;
-        white-space: nowrap;
-      }
-
+      .pill{ padding: 9px 12px; font-size: var(--fs-xs) !important; white-space: nowrap; }
       .contactGrid{grid-template-columns: 1fr;}
       :root{ --base: clamp(15px, 1.0vw + 12px, 17px); }
-    }
-
-    .heroText .name{
-      margin: 8px 0 6px;
-      font-size: clamp(60px, 5vw, 64px);
-      line-height: 1.02;
-      letter-spacing: -0.9px;
-    }
-
-    .heroText .title{
-      margin: 0 0 14px;
-      font-size: clamp(18px, 2.1vw, 24px);
-      font-weight: 600;
-      letter-spacing: .35px;
-      color: rgba(255,255,255,.88);
-    }
-
-    .heroText .sub{
-      margin-top: 0;
     }
   </style>
 </head>
 
-<body class="theme">
+<body>
+  <!-- Sweeping stage-light background -->
+  <div class="stage" aria-hidden="true">
+    <div class="beam b1"></div>
+    <div class="beam b2"></div>
+    <div class="beam b3"></div>
+  </div>
+
   <header class="nav">
     <div class="inner">
       <a class="brand" href="#top" aria-label="Go to top">
@@ -631,6 +857,14 @@
         <a class="pill primary" href="#contact">Contact</a>
       </div>
     </div>
+
+    <!-- LED marquee ticker -->
+    <div class="ticker" aria-hidden="true">
+      <div class="track">
+        <span>&nbsp;<b>Sketch</b> → CAD → Print → Wire → Iterate&nbsp;&nbsp;///&nbsp;&nbsp;<i>Arduino</i>&nbsp;&nbsp;///&nbsp;&nbsp;<u>DMX + Lighting</u>&nbsp;&nbsp;///&nbsp;&nbsp;Fusion 360&nbsp;&nbsp;///&nbsp;&nbsp;<b>Laser Cutting</b>&nbsp;&nbsp;///&nbsp;&nbsp;3D Printing&nbsp;&nbsp;///&nbsp;&nbsp;<i>Packaging + Branding</i>&nbsp;&nbsp;///&nbsp;&nbsp;<u>Rapid Prototyping</u>&nbsp;&nbsp;///&nbsp;&nbsp;</span>
+        <span>&nbsp;<b>Sketch</b> → CAD → Print → Wire → Iterate&nbsp;&nbsp;///&nbsp;&nbsp;<i>Arduino</i>&nbsp;&nbsp;///&nbsp;&nbsp;<u>DMX + Lighting</u>&nbsp;&nbsp;///&nbsp;&nbsp;Fusion 360&nbsp;&nbsp;///&nbsp;&nbsp;<b>Laser Cutting</b>&nbsp;&nbsp;///&nbsp;&nbsp;3D Printing&nbsp;&nbsp;///&nbsp;&nbsp;<i>Packaging + Branding</i>&nbsp;&nbsp;///&nbsp;&nbsp;<u>Rapid Prototyping</u>&nbsp;&nbsp;///&nbsp;&nbsp;</span>
+      </div>
+    </div>
   </header>
 
   <main id="top" class="wrap">
@@ -638,8 +872,9 @@
       <section class="card heroMain" aria-label="Intro">
         <div class="heroSplit">
           <div class="heroText">
+            <p class="eyebrow">Build • Wire • Light</p>
             <h1 class="name">Dylan Fenn</h1>
-            <p class="title">Creative Technologist &amp; Product Designer</p>
+            <p class="title">Creative Technologist &amp; Product Designer<span class="cursorBlink">_</span></p>
             <p class="sub">
               I’m Dylan — A Sophomore in Creative Technology and Design Engineering at the University of Colorado, Boulder. I prototype physical products, design packaging/branding,
               and build electronics along with other technology. This site provides a look into some of the projects I have completed and other work I am currently participating in.
@@ -662,7 +897,7 @@
     <section id="projects" aria-label="Projects">
       <div class="sectionHead">
         <div>
-          <h2>Projects</h2>
+          <h2><span class="slash">//</span>Projects</h2>
           <p>Search + filter. Click a card to open details.</p>
         </div>
 
@@ -690,14 +925,14 @@
     <section id="about" aria-label="About">
       <div class="sectionHead">
         <div>
-          <h2>About</h2>
+          <h2><span class="slash">//</span>About</h2>
           <p>Learn about my skills and specializations.</p>
         </div>
       </div>
 
       <div class="twoCol">
         <div class="card pad">
-          <h3 style="margin:0; font-size:var(--fs-md); letter-spacing:.2px">Skills</h3>
+          <h3>Skills</h3>
           <ul class="list">
             <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Prototype speed</strong><span>From sketch → CAD → print → wire → iterate (and repeat).</span></div></li>
             <li class="li"><span class="ic" aria-hidden="true"></span><div><strong>Electronics</strong><span>Arduino • sensors • relays • power distribution • troubleshooting</span></div></li>
@@ -706,12 +941,12 @@
         </div>
 
         <div class="card pad">
-          <h3 style="margin:0; font-size:var(--fs-md); letter-spacing:.2px">Specializations</h3>
+          <h3>Specializations</h3>
           <ul class="list">
-            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(154,182,255,.85); box-shadow: 0 0 0 6px rgba(154,182,255,.12)"></span><div><strong>Fusion 360 / CAD</strong><span>parametric modeling • multi-part assemblies • mechanical tolerancing • electronics enclosures • fast prototyping</span></div></li>
-            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(125,211,199,.85); box-shadow: 0 0 0 6px rgba(125,211,199,.12)"></span><div><strong>Coding</strong><span>Arduino • C++ • HTML • JavaScript • Python</span></div></li>
-            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(242,179,197,.85); box-shadow: 0 0 0 6px rgba(242,179,197,.12)"></span><div><strong>Graphic Design</strong><span>Illustrator • InDesign • Photoshop • presentation-ready deliverables</span></div></li>
-                        <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(242, 179, 179, 0.85); box-shadow: 0 0 0 6px rgba(242,179,197,.12)"></span><div><strong>Physical Fabrication</strong><span>3D printing (Prusa, Bambu) • laser cutting • material selection • fixtures & mounts • rapid iteration • assembly & finishing</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(143,155,255,.9); box-shadow: 0 0 0 5px rgba(143,155,255,.12), 0 0 10px rgba(143,155,255,.6)"></span><div><strong>Fusion 360 / CAD</strong><span>parametric modeling • multi-part assemblies • mechanical tolerancing • electronics enclosures • fast prototyping</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(77,230,210,.9); box-shadow: 0 0 0 5px rgba(77,230,210,.12), 0 0 10px rgba(77,230,210,.6)"></span><div><strong>Coding</strong><span>Arduino • C++ • HTML • JavaScript • Python</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(255,95,168,.9); box-shadow: 0 0 0 5px rgba(255,95,168,.12), 0 0 10px rgba(255,95,168,.6)"></span><div><strong>Graphic Design</strong><span>Illustrator • InDesign • Photoshop • presentation-ready deliverables</span></div></li>
+            <li class="li"><span class="ic" aria-hidden="true" style="background: rgba(255,180,84,.9); box-shadow: 0 0 0 5px rgba(255,180,84,.12), 0 0 10px rgba(255,180,84,.6)"></span><div><strong>Physical Fabrication</strong><span>3D printing (Prusa, Bambu) • laser cutting • material selection • fixtures & mounts • rapid iteration • assembly & finishing</span></div></li>
           </ul>
         </div>
       </div>
@@ -720,7 +955,7 @@
     <section id="contact" aria-label="Contact">
       <div class="sectionHead">
         <div>
-          <h2>Contact</h2>
+          <h2><span class="slash">//</span>Contact</h2>
           <p>Reach out to me for inqueries.</p>
         </div>
       </div>
@@ -730,15 +965,13 @@
           <div class="contactItem">
             <div class="k">Email</div>
             <div class="v">
-                  <a href="mailto:dylanrfenn@gmail.com">dylanrfenn@gmail.com</a>
+              <a href="mailto:dylanrfenn@gmail.com">dylanrfenn@gmail.com</a>
             </div>
           </div>
           <div class="contactItem">
             <div class="k">LinkedIn</div>
             <div class="v">
-                  <a href="https://www.linkedin.com/in/dylanfenn" target="_blank" rel="noopener noreferrer">
-      linkedin.com/in/dylanfenn
-    </a>
+              <a href="https://www.linkedin.com/in/dylanfenn" target="_blank" rel="noopener noreferrer">linkedin.com/in/dylanfenn</a>
             </div>
           </div>
           <div class="contactItem">
@@ -750,9 +983,7 @@
           <div class="contactItem">
             <div class="k">Instagram</div>
             <div class="v">
-    <a href="https://www.instagram.com/dylanfennn" target="_blank" rel="noopener noreferrer">
-      @dylanfennn
-    </a>
+              <a href="https://www.instagram.com/dylanfennn" target="_blank" rel="noopener noreferrer">@dylanfennn</a>
             </div>
           </div>
         </div>
@@ -760,7 +991,7 @@
 
       <footer>
         <div>© <span id="year"></span> Dylan Fenn • Built with HTML/CSS/JS</div>
-        <div style="font-family:var(--mono)">v0.1 • Dylan Fenn's Portfolio</div>
+        <div>v0.2 • Dylan Fenn's Portfolio</div>
       </footer>
     </section>
   </main>
@@ -832,7 +1063,7 @@
       {
         id:'dino-lasercut-project',
         title:'Chrome Dinosaur Laser-Cut Sculpture',
-        category:'laser cutting',
+        category:'fabrication',
         badge:'Lasercut + Design',
         tools:['Design','Lasercut', 'Acrylic',],
         desc:'This project transforms the Chrome offline dinosaur into a layered, laser-cut acrylic sculpture. Starting from an STL model, the form was reconstructed in Fusion 360, sliced into intersecting planes, and engineered with interlocking slots for press-fit assembly. The final design was exported as DXF files, refined in Illustrator for laser cutting, and fabricated in acrylic, resulting in a self-supporting, three-dimensional object that explores digital-to-physical workflow, precision fabrication, and modular construction.',
