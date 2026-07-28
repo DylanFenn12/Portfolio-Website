@@ -84,6 +84,11 @@ tr.paid td.item-label{text-decoration:line-through}
 </div>
 
 <div id="tab-overview" class="section visible">
+  <div class="card" style="background:var(--surface-2);border:1.5px solid #eaff00;box-shadow:0 0 10px rgba(234,255,0,0.35);margin-bottom:16px">
+    <div class="sec-title" style="color:#eaff00">⚠ Notes</div>
+    <p style="font-size:12px;color:#eaff00;opacity:.75;margin-bottom:6px">Last updated: July 27, 2026</p>
+    <p style="font-size:13px;color:var(--text-primary);line-height:1.5">The total account balance is not including the national payment that has to be made in the next couple days. The national payment can be found in the additional payment section and will be removed as soon as it is completed.</p>
+  </div>
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Actual bank balance</div><div class="metric-value" id="m-balance">$0</div></div>
     <div class="metric"><div class="metric-label">Total actually paid</div><div class="metric-value" id="m-actual-total">$0</div></div>
@@ -158,7 +163,7 @@ tr.paid td.item-label{text-decoration:line-through}
 
 <script>
 // ---- MANUALLY UPDATED DATA (mirrors the main budget) ----
-const ACTUAL_BALANCE = 32421.49; // 21,077.49 + 11,344
+const ACTUAL_BALANCE = 29170.49; // 32,421.49 - 3,251 (Mandatory Housing Fundraiser paid)
 
 const EXPECTED_DUES_INCOME = 101900; // Freshman 25x1950 + Sophomore 17x1550 + Junior 10x1350 + Senior 14x950
 const EXPECTED_OTHER_INCOME = 0; // Additional payment from Trese, Fundraising Income, and Donations all set to 0 for now
@@ -185,7 +190,7 @@ const GROUP_LABELS={
 
 // Every budgeted line item, matching the main budget sheet exactly.
 const EXPENSES = [
-  {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul'},
+  {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul',actual:3251},
   {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge',actual:5262,actualBreakdown:[['Rent',4637,true],['Housing fundraiser',625,true],['Xcel utility',0]]},
   {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
   {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
