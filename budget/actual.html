@@ -46,8 +46,8 @@ table.bt td{padding:6px;color:var(--text-primary);vertical-align:middle}
 table.bt td.r{text-align:right}
 table.bt tr:not(:last-child) td{border-bottom:.5px solid var(--border)}
 table.bt tfoot td{font-weight:500;border-top:1px solid var(--border-stronger);padding-top:10px}
-tr.paid td{color:var(--text-muted)}
-tr.paid td.item-label{text-decoration:line-through}
+tr.fully-paid td{color:var(--text-muted)}
+tr.fully-paid td.item-label{text-decoration:line-through}
 .tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
 .tab{font-size:13px;padding:5px 14px;border-radius:var(--radius);border:.5px solid var(--border-strong);background:none;color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans)}
 .tab.active{background:var(--surface-2);color:var(--text-primary);border-color:var(--border-stronger)}
@@ -86,8 +86,8 @@ tr.paid td.item-label{text-decoration:line-through}
 <div id="tab-overview" class="section visible">
   <div class="card" style="background:var(--surface-2);border:1.5px solid #eaff00;box-shadow:0 0 10px rgba(234,255,0,0.35);margin-bottom:16px">
     <div class="sec-title" style="color:#eaff00">⚠ Notes</div>
-    <p style="font-size:12px;color:#eaff00;opacity:.75;margin-bottom:6px">Last updated: July 27, 2026</p>
-    <p style="font-size:13px;color:var(--text-primary);line-height:1.5">The total account balance is not including the national payment that has to be made in the next couple days. The national payment can be found in the additional payment section and will be removed as soon as it is completed.</p>
+    <p style="font-size:12px;color:#eaff00;opacity:.75;margin-bottom:6px">Last updated: August 26, 2026</p>
+    <p style="font-size:13px;color:var(--text-primary);line-height:1.5">All expenses current.</p>
   </div>
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Actual bank balance</div><div class="metric-value" id="m-balance">$0</div></div>
@@ -107,7 +107,7 @@ tr.paid td.item-label{text-decoration:line-through}
       <b>Actual bank balance</b> is the real cash on hand as of the last update.<br>
       <b>Total actually paid</b> is the sum of every actual amount logged in the Payments tab.<br>
       <b>Remaining vs. budget</b> is the budgeted total minus what's actually been paid so far.<br>
-      <b>Expected surplus</b> is expected total income (dues + other income) minus total budgeted expenses.
+      <b>Expected surplus</b> is current bank balance, plus dues still expected from the 25 incoming freshmen, minus everything still owed (unpaid main expenses + unpaid Additional payments). Amounts already paid aren't counted twice.
     </p>
   </div>
 </div>
@@ -116,9 +116,9 @@ tr.paid td.item-label{text-decoration:line-through}
   <div class="card">
     <div class="sec-title">All budgeted payments</div>
     <table class="bt">
-      <thead><tr><th>Item</th><th class="cat">Category</th><th class="mo">Date</th><th class="r sm">Budgeted</th><th class="r sm">Actual</th></tr></thead>
+      <thead><tr><th>Item</th><th class="cat">Category</th><th class="mo">Date</th><th class="r sm">Budgeted</th><th class="r sm">Paid</th><th class="r sm">Remaining</th></tr></thead>
       <tbody id="pay-tbody"></tbody>
-      <tfoot><tr><td colspan="3">Total</td><td class="r" id="pay-budget-cell">$0</td><td class="r" id="pay-actual-cell">$0</td></tr></tfoot>
+      <tfoot><tr><td colspan="3">Total</td><td class="r" id="pay-budget-cell">$0</td><td class="r" id="pay-actual-cell">$0</td><td class="r" id="pay-remaining-cell">$0</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -151,9 +151,9 @@ tr.paid td.item-label{text-decoration:line-through}
     <div class="sec-title">Additional payments</div>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Payments outside the main budget list.</p>
     <table class="bt">
-      <thead><tr><th>Item</th><th class="r sm">Budgeted</th><th class="r sm">Actual</th></tr></thead>
+      <thead><tr><th>Item</th><th class="r sm">Budgeted</th><th class="r sm">Paid</th><th class="r sm">Remaining</th></tr></thead>
       <tbody id="additional-payments-tbody"></tbody>
-      <tfoot><tr><td>Total</td><td class="r" id="additional-payments-budget-cell">$0</td><td class="r" id="additional-payments-total-cell">$0</td></tr></tfoot>
+      <tfoot><tr><td>Total</td><td class="r" id="additional-payments-budget-cell">$0</td><td class="r" id="additional-payments-total-cell">$0</td><td class="r" id="additional-payments-remaining-cell">$0</td></tr></tfoot>
     </table>
   </div>
 </div>
@@ -163,9 +163,10 @@ tr.paid td.item-label{text-decoration:line-through}
 
 <script>
 // ---- MANUALLY UPDATED DATA (mirrors the main budget) ----
-const ACTUAL_BALANCE = 29170.49; // 32,421.49 - 3,251 (Mandatory Housing Fundraiser paid)
+const ACTUAL_BALANCE = 13776.29; // 16,776.29 - 3,000 (Aug + Sep apartment rent paid)
 
-const EXPECTED_DUES_INCOME = 101900; // Freshman 25x1950 + Sophomore 17x1550 + Junior 10x1350 + Senior 14x950
+const EXPECTED_DUES_INCOME = 100550; // Freshman 25x1950 + Sophomore 17x1550 + Junior 9x1350 + Senior 14x950
+const EXPECTED_FUTURE_INCOME = 48750; // 25 anticipated freshmen x $1950, not yet collected — everyone else is assumed already paid and reflected in the current balance
 const EXPECTED_OTHER_INCOME = 0; // Additional payment from Trese, Fundraising Income, and Donations all set to 0 for now
 const EXPECTED_TOTAL_INCOME = EXPECTED_DUES_INCOME + EXPECTED_OTHER_INCOME;
 
@@ -176,7 +177,11 @@ const OTHER_INCOME = [
 ];
 
 const ADDITIONAL_PAYMENTS = [
-  {label:'National backlog', amount:27108.36, actual:0},
+  {label:'National backlog', amount:28758.36, actual:17600},
+  {label:'Noah VZ - Ekklesia Flight', amount:532.40, actual:0},
+  {label:'Dylan Fenn - Ekklesia Flight', amount:425.41, actual:0},
+  {label:'Gus Cameron - Ekklesia Flight', amount:138.06, actual:0},
+  {label:'Spencer Broussard - Ekklesia Flight', amount:283.96, actual:0},
 ];
 
 const GROUP_LABELS={
@@ -191,38 +196,37 @@ const GROUP_LABELS={
 // Every budgeted line item, matching the main budget sheet exactly.
 const EXPENSES = [
   {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul',actual:3251},
-  {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge',actual:5262,actualBreakdown:[['Rent',4637,true],['Housing fundraiser',625,true],['Xcel utility',0]]},
-  {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge',actual:5412,actualBreakdown:[['Rent',4637],['Housing fundraiser',625],['Xcel utility',150]]},
+  {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge',actual:5412.35,actualBreakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
   {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
   {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
   {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
-  {label:'BACKLOG February housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20,group:'lounge'},
+  {label:'BACKLOG February housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20,group:'lounge',actual:4637.35},
   {label:'BACKLOG March housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge'},
-  {label:'Apartment rent - August',amount:1250,category:'Housing/Lounge',month:'Aug',day:1,group:'apartment'},
-  {label:'Apartment rent - September',amount:1250,category:'Housing/Lounge',month:'Sep',day:1,group:'apartment'},
-  {label:'Apartment rent - October',amount:1250,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
-  {label:'Apartment rent - November',amount:1250,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
+  {label:'Apartment rent - August',amount:1500,category:'Housing/Lounge',month:'Aug',day:1,group:'apartment',actual:1500},
+  {label:'Apartment rent - September',amount:1500,category:'Housing/Lounge',month:'Sep',day:1,group:'apartment',actual:1500},
+  {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
+  {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
+  {label:'Apartment rent - December',amount:1500,category:'Housing/Lounge',month:'Dec',day:1,group:'apartment'},
   {label:'Parlor fee',amount:3000,category:'Housing/Lounge',month:'Aug'},
-  {label:'Pig dinner (Postponed — lost deposit)',amount:0,category:'Operations',month:'Sep'},
-  {label:'IFC dues - half now',amount:2850,category:'National dues',month:'Aug'},
-  {label:'IFC dues - half in October',amount:2850,category:'National dues',month:'Oct'},
+  {label:'IFC dues - half now',amount:1950,category:'National dues',month:'Aug'},
+  {label:'IFC dues - half in October',amount:2700,category:'National dues',month:'Oct'},
   {label:'Total national payment',amount:13912,category:'National dues',month:'Oct'},
-  {label:'Formal',amount:0,category:'Formal',month:'Nov'},
-  {label:'Apparel',amount:4000,category:'Apparel',month:'Aug'},
-  {label:'Brotherhood',amount:2300,category:'Brotherhood',month:'Sep'},
-  {label:'Social',amount:18000,category:'Social',month:'Sep'},
-  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug'},
+  {label:'Apparel',amount:4000,category:'Apparel',month:'Aug',actual:2512.82},
+  {label:'Brotherhood',amount:1800,category:'Brotherhood',month:'Sep'},
+  {label:'Social',amount:18000,category:'Social',month:'Sep',actual:12000},
+  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug',actual:1140.24},
   {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
   {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
   {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul',group:'legfi',actual:528},
   {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul',group:'legfi',actual:240},
-  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi'},
+  {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi',actual:264},
   {label:'Legfi - September',amount:264,category:'Operations',month:'Sep',group:'legfi'},
   {label:'Legfi - October',amount:264,category:'Operations',month:'Oct',group:'legfi'},
   {label:'Legfi - November',amount:264,category:'Operations',month:'Nov',group:'legfi'},
   {label:'Legfi - December',amount:264,category:'Operations',month:'Dec',group:'legfi'},
   {label:'Paramount+ - July ($14/mo)',amount:14,category:'Operations',month:'Jul',group:'paramount'},
-  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug',group:'paramount'},
+  {label:'Paramount+ - August',amount:14,category:'Operations',month:'Aug',group:'paramount',actual:14},
   {label:'Paramount+ - September',amount:14,category:'Operations',month:'Sep',group:'paramount'},
   {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct',group:'paramount'},
   {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov',group:'paramount'},
@@ -258,11 +262,15 @@ function actualByCategory(){
 }
 function totalOtherIncome(){ return OTHER_INCOME.reduce((s,e)=>s+(e.amount||0),0); }
 
+function totalAdditionalBudgeted(){ return ADDITIONAL_PAYMENTS.reduce((s,e)=>s+(e.amount||0),0); }
+function totalAdditionalPaid(){ return ADDITIONAL_PAYMENTS.reduce((s,e)=>s+(e.actual||0),0); }
+
 function buildOverview(){
   const budgetTotal=totalBudgeted();
   const actualTotal=totalActuallyPaid();
   const remaining=budgetTotal-actualTotal;
-  const surplus=EXPECTED_TOTAL_INCOME-budgetTotal;
+  const remainingObligations=remaining+(totalAdditionalBudgeted()-totalAdditionalPaid());
+  const surplus=ACTUAL_BALANCE+EXPECTED_FUTURE_INCOME-remainingObligations;
 
   document.getElementById('m-balance').textContent=money(ACTUAL_BALANCE);
   document.getElementById('m-actual-total').textContent=money(actualTotal);
@@ -288,16 +296,18 @@ function toggleGroup(gid){
 
 function rowHtml(e,i,rowClass){
   const ent=getEntry(i);
-  const logged=ent.actual>0;
+  const fullyPaid = e.amount>0 && Math.round(ent.actual)>=Math.round(e.amount);
   const detail=!!rowClass;
   const cellClass=detail?' grp-detail-cell':'';
-  const trClass=rowClass ? rowClass+(logged?' paid':'') : (logged?'paid':'');
-  return '<tr class="'+trClass+'">'+
+  const classes=(rowClass?rowClass+' ':'')+(fullyPaid?'fully-paid':'');
+  const remaining=e.amount-ent.actual;
+  return '<tr class="'+classes.trim()+'">'+
     '<td class="item-label'+cellClass+'">'+e.label+'</td>'+
     '<td class="'+cellClass.trim()+'">'+e.category+'</td>'+
     '<td class="'+cellClass.trim()+'">'+dateLabel(e)+'</td>'+
     '<td class="r'+cellClass+'">'+money(e.amount)+'</td>'+
     '<td class="r'+cellClass+'">'+money(ent.actual)+'</td>'+
+    '<td class="r'+cellClass+'">'+money(remaining)+'</td>'+
   '</tr>';
 }
 
@@ -322,7 +332,7 @@ function buildPayments(){
       const gid='grp-'+e.group;
       html+='<tr class="grp-row">'+
         '<td onclick="toggleGroup(\''+gid+'\')" style="cursor:pointer" colspan="2"><span class="grp-arrow" id="arrow-'+gid+'">&#9656;</span>'+(GROUP_LABELS[e.group]||e.group)+' <span class="grp-count">('+loggedCount+'/'+idxs.length+' logged)</span></td>'+
-        '<td></td><td class="r">'+money(budgetTotal)+'</td><td class="r">'+money(actualTotal)+'</td>'+
+        '<td></td><td class="r">'+money(budgetTotal)+'</td><td class="r">'+money(actualTotal)+'</td><td class="r">'+money(budgetTotal-actualTotal)+'</td>'+
       '</tr>';
       idxs.forEach(xi=>{
         const it=EXPENSES[xi];
@@ -331,13 +341,16 @@ function buildPayments(){
           const ent=getEntry(xi);
           const basis=ent.actual>0 ? ent.actual : it.amount;
           const bd=it.actualBreakdown || breakdownFor(basis);
-          bd.forEach(([label,amt,paid])=>{
-            const strike=paid?'text-decoration:line-through':'';
+          bd.forEach(([label,amt])=>{
+            const budgeted=BUDGETED_BREAKDOWN[label];
+            const fullyPaid = budgeted>0 && Math.round(amt)>=Math.round(budgeted);
+            const strike=fullyPaid?'text-decoration:line-through':'';
             html+='<tr class="grp-detail '+gid+'">'+
               '<td style="padding-left:32px;color:var(--text-secondary);font-size:12px;'+strike+'">'+label+'</td>'+
               '<td></td><td></td>'+
-              '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(BUDGETED_BREAKDOWN[label])+'</td>'+
+              '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(budgeted)+'</td>'+
               '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(amt)+'</td>'+
+              '<td class="r" style="color:var(--text-secondary);font-size:12px;'+strike+'">'+money(budgeted-amt)+'</td>'+
             '</tr>';
           });
         }
@@ -349,6 +362,7 @@ function buildPayments(){
   tbody.innerHTML=html;
   document.getElementById('pay-budget-cell').textContent=money(totalBudgeted());
   document.getElementById('pay-actual-cell').textContent=money(totalActuallyPaid());
+  document.getElementById('pay-remaining-cell').textContent=money(totalBudgeted()-totalActuallyPaid());
 }
 
 function buildCompare(){
@@ -386,8 +400,9 @@ function buildAdditionalPayments(){
   const actualTotal=ADDITIONAL_PAYMENTS.reduce((s,e)=>s+(e.actual||0),0);
   document.getElementById('additional-payments-budget-cell').textContent=money(budgetTotal);
   document.getElementById('additional-payments-total-cell').textContent=money(actualTotal);
+  document.getElementById('additional-payments-remaining-cell').textContent=money(budgetTotal-actualTotal);
   document.getElementById('additional-payments-tbody').innerHTML=ADDITIONAL_PAYMENTS.map(e=>
-    '<tr><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td><td class="r">'+money(e.actual)+'</td></tr>'
+    '<tr><td>'+e.label+'</td><td class="r">'+money(e.amount)+'</td><td class="r">'+money(e.actual)+'</td><td class="r">'+money((e.amount||0)-(e.actual||0))+'</td></tr>'
   ).join('');
 }
 
