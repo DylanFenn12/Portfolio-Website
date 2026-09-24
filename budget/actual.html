@@ -91,13 +91,10 @@ tr.fully-paid td.item-label{text-decoration:line-through}
   </div>
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Actual bank balance</div><div class="metric-value" id="m-balance">$0</div></div>
-    <div class="metric"><div class="metric-label">Total actually paid</div><div class="metric-value" id="m-actual-total">$0</div></div>
-    <div class="metric"><div class="metric-label">Total budgeted expenses</div><div class="metric-value" id="m-budget-total">$0</div></div>
-    <div class="metric"><div class="metric-label">Remaining vs. budget</div><div class="metric-value" id="m-remaining">$0</div></div>
+    <div class="metric"><div class="metric-label">Remaining costs</div><div class="metric-value" id="m-remaining">$0</div></div>
   </div>
   <div class="metric-grid">
     <div class="metric"><div class="metric-label">Expected dues income</div><div class="metric-value green" id="m-dues-income">$0</div></div>
-    <div class="metric"><div class="metric-label">Expected total income</div><div class="metric-value green" id="m-total-income">$0</div></div>
     <div class="metric"><div class="metric-label">Expected surplus</div><div class="metric-value" id="m-expected-surplus">$0</div></div>
   </div>
   <div class="note-box">All figures below are entered manually. To log an actual amount for a payment, or update the bank balance, just send the details and a refreshed version will be provided.</div>
@@ -105,9 +102,9 @@ tr.fully-paid td.item-label{text-decoration:line-through}
     <div class="sec-title">How to read this</div>
     <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">
       <b>Actual bank balance</b> is the real cash on hand as of the last update.<br>
-      <b>Total actually paid</b> is the sum of every actual amount logged in the Payments tab.<br>
-      <b>Remaining vs. budget</b> is the budgeted total minus what's actually been paid so far.<br>
-      <b>Expected surplus</b> is current bank balance, plus dues still expected from the 25 incoming freshmen, minus everything still owed (unpaid main expenses + unpaid Additional payments). Amounts already paid aren't counted twice.
+      <b>Remaining costs</b> is the budgeted total minus what's actually been paid so far.<br>
+      <b>Expected dues income</b> is dues still expected to come in.<br>
+      <b>Expected surplus</b> is current bank balance, plus expected dues income, minus everything still owed (unpaid main expenses + unpaid Additional payments). Amounts already paid aren't counted twice.
     </p>
   </div>
 </div>
@@ -163,12 +160,9 @@ tr.fully-paid td.item-label{text-decoration:line-through}
 
 <script>
 // ---- MANUALLY UPDATED DATA (mirrors the main budget) ----
-const ACTUAL_BALANCE = 13776.29; // 16,776.29 - 3,000 (Aug + Sep apartment rent paid)
+const ACTUAL_BALANCE = 28549;
 
-const EXPECTED_DUES_INCOME = 100550; // Freshman 25x1950 + Sophomore 17x1550 + Junior 9x1350 + Senior 14x950
-const EXPECTED_FUTURE_INCOME = 48750; // 25 anticipated freshmen x $1950, not yet collected — everyone else is assumed already paid and reflected in the current balance
-const EXPECTED_OTHER_INCOME = 0; // Additional payment from Trese, Fundraising Income, and Donations all set to 0 for now
-const EXPECTED_TOTAL_INCOME = EXPECTED_DUES_INCOME + EXPECTED_OTHER_INCOME;
+const EXPECTED_DUES_INCOME = 11700; // still-expected dues income
 
 const OTHER_INCOME = [
   {label:'Additional payment from Trese', amount:0, month:'Jul'},
@@ -177,7 +171,6 @@ const OTHER_INCOME = [
 ];
 
 const ADDITIONAL_PAYMENTS = [
-  {label:'National backlog', amount:28758.36, actual:17600},
   {label:'Noah VZ - Ekklesia Flight', amount:532.40, actual:0},
   {label:'Dylan Fenn - Ekklesia Flight', amount:425.41, actual:0},
   {label:'Gus Cameron - Ekklesia Flight', amount:138.06, actual:0},
@@ -188,17 +181,14 @@ const GROUP_LABELS={
   lounge:'Housing corp rent',
   apartment:'Apartment rent',
   legfi:'Legfi',
-  youtube:'YouTube TV',
-  sunday:'NFL Sunday Ticket',
   paramount:'Paramount+',
 };
 
 // Every budgeted line item, matching the main budget sheet exactly.
 const EXPENSES = [
-  {label:'Mandatory Housing Fundraiser (July 27)',amount:3250,category:'Housing/Lounge',month:'Jul',actual:3251},
   {label:'July housing corp payment (July 27)',amount:5412.35,category:'Housing/Lounge',month:'Jul',day:27,group:'lounge',actual:5412,actualBreakdown:[['Rent',4637],['Housing fundraiser',625],['Xcel utility',150]]},
   {label:'August housing corp payment (AUG 10)',amount:5412.35,category:'Housing/Lounge',month:'Aug',day:10,group:'lounge',actual:5412.35,actualBreakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
-  {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
+  {label:'September housing corp payment (SEP 10)',amount:5412.35,category:'Housing/Lounge',month:'Sep',day:10,group:'lounge',actual:5412.35,actualBreakdown:[['Rent',4637.35],['Housing fundraiser',625],['Xcel utility',150]]},
   {label:'October housing corp payment (OCT 10)',amount:5412.35,category:'Housing/Lounge',month:'Oct',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
   {label:'November housing corp payment (NOV 10)',amount:5412.35,category:'Housing/Lounge',month:'Nov',day:10,group:'lounge',actualBreakdown:[['Rent',0],['Housing fundraiser',0],['Xcel utility',0]]},
   {label:'BACKLOG February housing corp payment',amount:4637.35,category:'Housing/Lounge',month:'Aug',day:20,group:'lounge',actual:4637.35},
@@ -208,16 +198,10 @@ const EXPENSES = [
   {label:'Apartment rent - October',amount:1500,category:'Housing/Lounge',month:'Oct',day:1,group:'apartment'},
   {label:'Apartment rent - November',amount:1500,category:'Housing/Lounge',month:'Nov',day:1,group:'apartment'},
   {label:'Apartment rent - December',amount:1500,category:'Housing/Lounge',month:'Dec',day:1,group:'apartment'},
-  {label:'Parlor fee',amount:3000,category:'Housing/Lounge',month:'Aug'},
-  {label:'IFC dues - half now',amount:1950,category:'National dues',month:'Aug'},
-  {label:'IFC dues - half in October',amount:2700,category:'National dues',month:'Oct'},
-  {label:'Total national payment',amount:13912,category:'National dues',month:'Oct'},
+  {label:'IFC dues',amount:5040,category:'National dues',month:'Aug'},
+  {label:'Total national payment',amount:13125,category:'National dues',month:'Oct'},
   {label:'Apparel',amount:4000,category:'Apparel',month:'Aug',actual:2512.82},
-  {label:'Brotherhood',amount:1800,category:'Brotherhood',month:'Sep'},
-  {label:'Social',amount:18000,category:'Social',month:'Sep',actual:12981.33},
-  {label:'Recruitment',amount:3500,category:'Recruitment',month:'Aug',actual:1479.11},
-  {label:'Philo',amount:400,category:'Philanthropy',month:'Oct'},
-  {label:'Fundraising',amount:500,category:'Fundraising',month:'Sep'},
+  {label:'Social',amount:18000,category:'Social',month:'Sep',actual:12000},
   {label:'Legfi backlog (May+June, $264/mo)',amount:527.98,category:'Operations',month:'Jul',group:'legfi',actual:528},
   {label:'Legfi - July ($264/mo)',amount:264,category:'Operations',month:'Jul',group:'legfi',actual:240},
   {label:'Legfi - August',amount:264,category:'Operations',month:'Aug',group:'legfi',actual:264},
@@ -231,13 +215,6 @@ const EXPENSES = [
   {label:'Paramount+ - October',amount:14,category:'Operations',month:'Oct',group:'paramount'},
   {label:'Paramount+ - November',amount:14,category:'Operations',month:'Nov',group:'paramount'},
   {label:'Paramount+ - December',amount:14,category:'Operations',month:'Dec',group:'paramount'},
-  {label:'Youtube TV - August ($101.99/mo)',amount:101.99,category:'Operations',month:'Aug',group:'youtube'},
-  {label:'Youtube TV - September',amount:101.99,category:'Operations',month:'Sep',group:'youtube'},
-  {label:'Youtube TV - October',amount:101.99,category:'Operations',month:'Oct',group:'youtube'},
-  {label:'Youtube TV - November',amount:101.99,category:'Operations',month:'Nov',group:'youtube'},
-  {label:'Youtube TV - December',amount:101.99,category:'Operations',month:'Dec',group:'youtube'},
-  {label:'NFL Sunday Ticket - payment 1',amount:94.5,category:'Operations',month:'Aug',group:'sunday'},
-  {label:'NFL Sunday Ticket - payment 2',amount:94.5,category:'Operations',month:'Sep',group:'sunday'},
 ];
 // ---- END MANUALLY UPDATED DATA ----
 
@@ -270,16 +247,13 @@ function buildOverview(){
   const actualTotal=totalActuallyPaid();
   const remaining=budgetTotal-actualTotal;
   const remainingObligations=remaining+(totalAdditionalBudgeted()-totalAdditionalPaid());
-  const surplus=ACTUAL_BALANCE+EXPECTED_FUTURE_INCOME-remainingObligations;
+  const surplus=ACTUAL_BALANCE+EXPECTED_DUES_INCOME-remainingObligations;
 
   document.getElementById('m-balance').textContent=money(ACTUAL_BALANCE);
-  document.getElementById('m-actual-total').textContent=money(actualTotal);
-  document.getElementById('m-budget-total').textContent=money(budgetTotal);
   const el=document.getElementById('m-remaining');
   el.textContent=money(remaining);
   el.className='metric-value '+(remaining>=0?'green':'red');
   document.getElementById('m-dues-income').textContent=money(EXPECTED_DUES_INCOME);
-  document.getElementById('m-total-income').textContent=money(EXPECTED_TOTAL_INCOME);
   const surplusEl=document.getElementById('m-expected-surplus');
   surplusEl.textContent=(surplus>=0?'+':'-')+money(Math.abs(surplus));
   surplusEl.className='metric-value '+(surplus>=0?'green':'red');
