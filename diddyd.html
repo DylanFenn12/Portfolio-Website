@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#06080d" />
   <title>Diddy D! Map</title>
   <meta name="description" content="Every place across the US where someone has screamed &quot;Diddy D!&quot;" />
   <link rel="icon" type="image/png" href="drf.png" />
@@ -29,6 +30,8 @@
     *{ box-sizing: border-box; }
     html, body{ margin: 0; height: 100%; }
     body{
+      height: 100dvh;
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: "Outfit", system-ui, sans-serif;
@@ -37,7 +40,7 @@
     }
 
     header{
-      padding: 20px 16px 14px;
+      padding: calc(20px + env(safe-area-inset-top)) 16px 14px;
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
@@ -66,7 +69,7 @@
     .count strong{ font-size: 22px; }
 
     main{ flex: 1; display: flex; min-height: 0; }
-    #map{ flex: 1; min-height: 420px; background: var(--bg); }
+    #map{ flex: 1; min-height: 0; background: var(--bg); }
 
     /* ---------- Sidebar list ---------- */
     aside{
@@ -77,8 +80,14 @@
       flex-direction: column;
       min-height: 0;
     }
-    .side-head{ padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
+    .side-head{
+      display: block; width: 100%;
+      padding: 14px 16px 12px;
+      background: none; border: 0; border-bottom: 1px solid var(--line);
+      color: inherit; font: inherit; text-align: left;
+    }
     .side-title{
+      display: flex; justify-content: space-between; align-items: center;
       margin: 0 0 10px;
       font-family: "JetBrains Mono", monospace;
       font-size: 12px;
@@ -113,13 +122,61 @@
     .spot-by span{ color: var(--pin); font-weight: 600; }
     .spot-date{ display: block; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); margin-top: 3px; }
 
+    .chev{ display: none; transition: transform .2s; }
+
+    /* ---------- Phones: compact header, list becomes a bottom sheet ---------- */
     @media (max-width: 760px){
+      header{ padding: calc(10px + env(safe-area-inset-top)) 16px 10px; flex-wrap: nowrap; align-items: center; }
+      h1{ font-size: 26px; }
+      .sub{ display: none; }
+      .count{ font-size: 12px; }
+      .count strong{ font-size: 18px; }
+
       main{ flex-direction: column; }
-      #map{ min-height: 55vh; }
-      aside{ width: auto; border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; }
+      aside{
+        width: auto;
+        max-height: 42dvh;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        border-radius: 16px 16px 0 0;
+        margin-top: -16px;          /* tuck the rounded top over the map */
+        position: relative;
+        z-index: 1000;
+        background: var(--bg);
+        box-shadow: 0 -10px 30px rgba(0,0,0,.45);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .side-head{ cursor: pointer; padding-top: 18px; position: relative; }
+      .side-head::before{          /* grab handle */
+        content: "";
+        position: absolute; top: 7px; left: 50%;
+        width: 36px; height: 4px; margin-left: -18px;
+        border-radius: 2px;
+        background: var(--line);
+      }
+      .chev{ display: inline-block; font-size: 14px; }
+      aside.collapsed .chev{ transform: rotate(180deg); }
+      aside.collapsed .spots{ display: none; }
+      .legend{ flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .legend li{ flex-shrink: 0; }
+      .spot{ padding: 12px 16px; }
+
+      .leaflet-control-attribution{ font-size: 9px; }
+      .leaflet-bottom{ bottom: 16px; } /* keep controls clear of the sheet's rounded edge */
+    }
+
+    /* Bigger tap targets on touch screens */
+    @media (pointer: coarse){
+      .leaflet-control-zoom{ display: none; }  /* pinch to zoom instead */
+      .leaflet-container a.leaflet-popup-close-button{ width: 36px; height: 36px; font-size: 26px; line-height: 34px; }
     }
 
     /* ---------- Pins ---------- */
+    .dd-marker::before{             /* invisible padding so pins are easy to tap */
+      content: "";
+      position: absolute;
+      inset: -12px -12px -6px;
+    }
     .dd-pin{
       width: 22px; height: 22px;
       border-radius: 50% 50% 50% 0;
@@ -144,7 +201,7 @@
       border-radius: 14px;
       padding: 0;
       overflow: hidden;
-      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      box-shadow: 0 6px 20px rgba(0,0,0,.4);
     }
     .leaflet-popup-tip{ background: var(--panel); }
     .leaflet-popup-content{ margin: 0; }
@@ -164,16 +221,17 @@
       color: var(--magenta);
     }
     .card-body{ padding: 12px 14px 14px; }
-    .card-place{ font-weight: 800; font-size: 17px; margin: 0; }
-    .card-by{ margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    /* ".card-body" prefixes beat Leaflet's own ".leaflet-popup-content p" margins */
+    .card-body .card-place{ font-weight: 800; font-size: 17px; margin: 0; }
+    .card-body .card-by{ margin: 4px 0 0; color: var(--muted); font-size: 14px; }
     .card-by span{ color: var(--pin); font-weight: 600; }
-    .card-meta{
+    .card-body .card-meta{
       margin: 8px 0 0;
       font-family: "JetBrains Mono", monospace;
       font-size: 12px;
       color: var(--faint);
     }
-    .card-note{ margin: 8px 0 0; font-size: 14px; color: var(--text); }
+    .card-body .card-note{ margin: 8px 0 0; font-size: 14px; color: var(--text); }
 
     /* Half-size card shown on hover; clicking opens the full one */
     .dd-compact .leaflet-popup-content-wrapper{ border-radius: 10px; }
@@ -183,7 +241,7 @@
     .dd-compact .card-by{ font-size: 11px; margin-top: 2px; }
     .dd-compact .card-meta{ font-size: 10px; margin-top: 3px; }
     .dd-compact .card-note{ display: none; }
-    .card-hint{ margin: 4px 0 0; font-size: 10px; color: var(--amber); font-weight: 600; }
+    .card-body .card-hint{ margin: 4px 0 0; font-size: 10px; color: var(--amber); font-weight: 600; }
 
     .leaflet-control-layers{
       background: var(--panel);
@@ -205,16 +263,16 @@
   <header>
     <div>
       <h1>DIDDY D!</h1>
-      <p class="sub">Every place we've screamed it. Hover a pin to relive it, click to keep it open.</p>
+      <p class="sub">Every place we've screamed it. Hover a pin for a peek, click to watch.</p>
     </div>
     <div class="count"><strong id="count">0</strong> screams logged</div>
   </header>
 
   <main>
     <div id="map"></div>
-    <aside>
-      <div class="side-head">
-        <p class="side-title">Screamers</p>
+    <aside id="sheet">
+      <div class="side-head" id="sheet-toggle">
+        <p class="side-title">Screamers <span class="chev" aria-hidden="true">▾</span></p>
         <ul class="legend" id="legend"></ul>
       </div>
       <ul class="spots" id="spots"></ul>
@@ -279,8 +337,18 @@
       };
     })();
 
+    const isPhone = matchMedia("(max-width: 760px)");
+    const canHover = matchMedia("(hover: hover)");
+
     const map = L.map("map", { zoomSnap: 0.25, worldCopyJump: true });
-    map.fitBounds([[24.5, -125], [49.5, -66.5]]);
+    // Phones are too narrow for the whole US to read well, so start them zoomed to the pins.
+    if (isPhone.matches && SIGHTINGS.length) {
+      map.fitBounds(SIGHTINGS.map(s => [s.lat, s.lng]), { padding: [50, 50], maxZoom: 6 });
+    } else {
+      map.fitBounds([[24.5, -125], [49.5, -66.5]]);
+    }
+    // Keep tiles filling the map when the bottom sheet opens/closes or the phone rotates.
+    new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById("map"));
 
     // Esri basemaps: free and need no API key. The switcher (top right) remembers your pick.
     const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
@@ -317,7 +385,7 @@
     });
 
     const pinIcon = color => L.divIcon({
-      className: "",
+      className: "dd-marker",
       html: `<div class="dd-pin" style="--pin:${color}"></div>`,
       iconSize: [22, 22],
       iconAnchor: [11, 26],
@@ -359,14 +427,22 @@
         </div>`;
     }
 
-    // Fly in to a pin, leaving room above it for the card.
+    // Fly in to a pin, placing it so the open card fits just above it.
     const FOCUS_ZOOM = 13;
-    function focusOn(latlng){
+    function focusOn(latlng, cardHeight){
       const zoom = Math.max(map.getZoom(), FOCUS_ZOOM);
+      const mapH = map.getSize().y;
+      const topRoom = isPhone.matches ? 100 : 50;          // phones: keep the card below the map-style button
+      const pinY = Math.min(cardHeight + topRoom, mapH - 40); // where the pin should end up, from the top
       const pinPx = map.project(latlng, zoom);
-      const center = map.unproject(pinPx.subtract([0, 150]), zoom);
+      const center = map.unproject(pinPx.add([0, mapH / 2 - pinY]), zoom);
       map.flyTo(center, zoom, { duration: 1.2 });
     }
+
+    const sheet = document.getElementById("sheet");
+    document.getElementById("sheet-toggle").addEventListener("click", () => {
+      if (isPhone.matches) sheet.classList.toggle("collapsed");
+    });
 
     // Hover opens the card; moving the mouse onto the card keeps it open.
     // Clicking a pin "locks" it open until it's closed with the X.
@@ -377,13 +453,15 @@
       const color = colorOf(s.by);
       const marker = L.marker([s.lat, s.lng], { icon: pinIcon(color), title: s.place }).addTo(map);
       // Popup content is rebuilt on every open so videos restart and stop playing once closed.
-      marker.bindPopup(() => cardHtml(s, popup.options.maxWidth < 280), { autoPan: false });
+      let compactCard = false;
+      marker.bindPopup(() => cardHtml(s, compactCard), { autoPan: false });
       const popup = marker.getPopup();
 
       let closeTimer = null;
       let locked = false;
       const openCard = compact => {
-        const width = compact ? 140 : 280;
+        compactCard = compact;
+        const width = compact ? 140 : Math.min(280, map.getSize().x - 32);
         popup.options.minWidth = popup.options.maxWidth = width;
         if (marker.isPopupOpen()) marker.closePopup();
         marker.openPopup();
@@ -397,9 +475,14 @@
 
       const select = () => {
         cancelClose();
+        // On phones, tuck the list away first so the map has room for the card.
+        if (isPhone.matches && !sheet.classList.contains("collapsed")) {
+          sheet.classList.add("collapsed");
+          map.invalidateSize({ pan: false });
+        }
         openCard(false);
         locked = true;
-        focusOn(marker.getLatLng());
+        focusOn(marker.getLatLng(), popup.getElement().offsetHeight);
       };
 
       // Sidebar row: hovering highlights the pin, clicking flies to it.
@@ -418,17 +501,20 @@
         row.classList.toggle("is-hot", on);
         marker.getElement()?.firstElementChild.classList.toggle("is-hot", on);
       };
-      row.addEventListener("mouseenter", () => setHot(true));
-      row.addEventListener("mouseleave", () => setHot(false));
       row.addEventListener("click", select);
       spotList.appendChild(li);
 
-      marker.on("mouseover", () => { cancelClose(); setHot(true); if (!marker.isPopupOpen()) openCard(true); });
-      marker.on("mouseout", () => { setHot(false); scheduleClose(); });
+      // Hover previews only on devices with a real mouse; on touch, a tap goes straight to the full card.
+      if (canHover.matches) {
+        row.addEventListener("mouseenter", () => setHot(true));
+        row.addEventListener("mouseleave", () => setHot(false));
+        marker.on("mouseover", () => { cancelClose(); setHot(true); if (!marker.isPopupOpen()) openCard(true); });
+        marker.on("mouseout", () => { setHot(false); scheduleClose(); });
+      }
       marker.on("click", select);
       marker.on("popupopen", e => {
         const el = e.popup.getElement();
-        el.classList.toggle("dd-compact", popup.options.maxWidth < 280);
+        el.classList.toggle("dd-compact", compactCard);
         el.addEventListener("mouseenter", cancelClose);
         el.addEventListener("mouseleave", scheduleClose);
       });
