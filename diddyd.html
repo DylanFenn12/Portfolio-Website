@@ -189,6 +189,16 @@
     .f-error[hidden]{ display: none; }
     .f-actions{ display: flex; gap: 8px; justify-content: flex-end; }
 
+    .confetti{ position: fixed; inset: 0; z-index: 5000; pointer-events: none; overflow: hidden; }
+    .confetti span{
+      position: absolute; left: 0; top: 0;
+      white-space: nowrap;
+      font-family: "Unbounded", sans-serif;
+      font-weight: 900;
+      text-shadow: 0 2px 6px rgba(0,0,0,.65), 0 0 1px #000;
+      will-change: transform;
+    }
+
     /* ---------- Phones: compact header, list becomes a bottom sheet ---------- */
     @media (max-width: 760px){
       header{ padding: calc(10px + env(safe-area-inset-top)) 16px 10px; flex-wrap: nowrap; align-items: center; }
@@ -431,6 +441,21 @@
       apiKey: "AIzaSyAO0V3e_g_i1VpkBxIoulvv0FN6ZFDtb0A",
       projectId: "diddy-d-31d16"
     };
+
+    // Phrases that burst out as confetti after someone adds a pin.
+    const CONFETTI_PHRASES = [
+      "Bet Bro",
+      "My bitch is going",
+      "Places",
+      "Slide 11",
+      "Things",
+      "Joke book",
+      "Book of jokes",
+      "That's crazy",
+      "Ok man",
+      "U da man",
+      "Love you bro"
+    ];
 
     // name -> color. A person keeps the color of their first pin; new people
     // get the next palette color nobody is using yet.
@@ -784,6 +809,50 @@
       }
     }
 
+    // Fire the phrases up from the bottom of the screen; each arcs over and falls back down.
+    function phraseConfetti(){
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const W = innerWidth, H = innerHeight;
+      const count = reduceMotion ? 8 : (W < 600 ? 28 : 45);
+      const phrases = [...CONFETTI_PHRASES].sort(() => Math.random() - .5);
+      const rand = (a, b) => a + Math.random() * (b - a);
+
+      const layer = document.createElement("div");
+      layer.className = "confetti";
+      layer.setAttribute("aria-hidden", "true");
+      document.body.appendChild(layer);
+
+      const done = [];
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement("span");
+        el.textContent = phrases[i % phrases.length];   // every phrase shows up at least once
+        el.style.color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+        el.style.fontSize = `${rand(14, 26)}px`;
+        layer.appendChild(el);
+
+        let frames, timing;
+        if (reduceMotion) {
+          const at = `translate(${rand(.1, .9) * W}px, ${rand(.15, .75) * H}px) translate(-50%, 0)`;
+          frames = [{ transform: at, opacity: 0 }, { transform: at, opacity: 1, offset: .2 }, { transform: at, opacity: 1, offset: .8 }, { transform: at, opacity: 0 }];
+          timing = { duration: 2200, delay: rand(0, 400), fill: "both" };
+        } else {
+          const startX = W / 2 + rand(-.1, .1) * W;
+          const peakX = rand(0, 1) * W, peakY = rand(.08, .45) * H;
+          const endX = peakX + rand(-.15, .15) * W;
+          const spin0 = rand(-15, 15), spin1 = spin0 + rand(-50, 50);   // gentle tumble so phrases stay readable
+          const move = (x, y, deg, s) => `translate(${x}px, ${y}px) translate(-50%, 0) rotate(${deg}deg) scale(${s})`;
+          frames = [
+            { transform: move(startX, H + 20, spin0, .5), easing: "cubic-bezier(.15,.7,.35,1)" },          // shoot up, slowing
+            { transform: move(peakX, peakY, (spin0 + spin1) / 2, 1), offset: .4, easing: "cubic-bezier(.55,0,.85,.4)" }, // then fall
+            { transform: move(endX, H + 60, spin1, 1) }
+          ];
+          timing = { duration: rand(2600, 4000), delay: rand(0, 350), fill: "both" };
+        }
+        done.push(el.animate(frames, timing).finished);
+      }
+      Promise.allSettled(done).then(() => layer.remove());
+    }
+
     function startAdding(){
       map.closePopup();
       adding = { marker: null, lookups: 0, placeEdited: false };
@@ -872,6 +941,7 @@
         const entry = addSighting(pin);
         renderList();
         entry.select();
+        phraseConfetti();
       } catch (err) {
         console.error(err);
         showError("Couldn't save the pin. Check your connection and try again.");
