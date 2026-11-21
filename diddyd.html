@@ -124,6 +124,71 @@
 
     .chev{ display: none; transition: transform .2s; }
 
+    /* ---------- Add-a-pin ---------- */
+    .add-ctl{ display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+    .add-ctl[hidden]{ display: none; }
+    .btn{
+      font: inherit; font-weight: 700; font-size: 15px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 0;
+      cursor: pointer;
+      background: linear-gradient(90deg, var(--magenta), var(--amber));
+      color: #14070d;
+      box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    }
+    .btn-ghost{ background: var(--panel); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+    .btn:disabled{ opacity: .6; cursor: default; }
+    .add-hint{
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      max-width: calc(100vw - 90px);   /* leave room for the map-style button */
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    }
+    .add-hint[hidden]{ display: none; }
+    .add-hint .btn{ font-size: 13px; padding: 7px 12px; }
+    #map.placing{ cursor: crosshair; }
+
+    .add-form{ padding: 14px 16px 18px; overflow-y: auto; }
+    .add-form[hidden], aside.adding .side-head, aside.adding .spots{ display: none; }
+    .add-form label, .add-form fieldset{ display: block; margin: 0 0 12px; padding: 0; border: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .add-form legend{ padding: 0; margin-bottom: 6px; }
+    .add-form input[type="text"], .add-form input[type="date"]{
+      display: block; width: 100%;
+      margin-top: 5px;
+      padding: 10px 12px;
+      font: inherit; font-size: 16px; font-weight: 500;   /* 16px stops iPhones zooming in on focus */
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color-scheme: dark;
+    }
+    .add-form input:focus{ outline: 2px solid var(--cyan); outline-offset: 1px; }
+    .swatches{ display: flex; flex-wrap: wrap; gap: 6px; }
+    .swatch{ position: relative; }
+    .swatch input{ position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .swatch span{
+      display: block; width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--pin);
+      border: 3px solid transparent;
+      box-shadow: 0 0 0 1px var(--line);
+    }
+    .swatch input:checked + span{ border-color: #fff; box-shadow: 0 0 0 2px var(--pin); }
+    .swatch input:focus-visible + span{ outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .swatch input:disabled{ cursor: not-allowed; }
+    .swatch input:disabled:not(:checked) + span{ opacity: .18; }
+    .f-note{ margin: 6px 0 0; font-size: 12px; font-weight: 500; color: var(--faint); }
+    .f-error{ margin: 0 0 12px; font-size: 13px; color: #ff6b7d; }
+    .f-error[hidden]{ display: none; }
+    .f-actions{ display: flex; gap: 8px; justify-content: flex-end; }
+
     /* ---------- Phones: compact header, list becomes a bottom sheet ---------- */
     @media (max-width: 760px){
       header{ padding: calc(10px + env(safe-area-inset-top)) 16px 10px; flex-wrap: nowrap; align-items: center; }
@@ -157,6 +222,7 @@
       .chev{ display: inline-block; font-size: 14px; }
       aside.collapsed .chev{ transform: rotate(180deg); }
       aside.collapsed .spots{ display: none; }
+      aside.adding{ max-height: 60dvh; }
       .legend{ flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
       .legend li{ flex-shrink: 0; }
       .spot{ padding: 12px 16px; }
@@ -276,8 +342,41 @@
         <ul class="legend" id="legend"></ul>
       </div>
       <ul class="spots" id="spots"></ul>
+
+      <form class="add-form" id="add-form" hidden novalidate>
+        <p class="side-title">New pin</p>
+        <label>Where?
+          <input type="text" id="f-place" maxlength="80" placeholder="City, ST" autocomplete="off" />
+        </label>
+        <label>Who screamed it?
+          <input type="text" id="f-by" maxlength="40" list="people-list" autocomplete="off" placeholder="Name" />
+        </label>
+        <datalist id="people-list"></datalist>
+        <fieldset>
+          <legend>Pin color</legend>
+          <div class="swatches" id="f-colors"></div>
+          <p class="f-note" id="f-color-note"></p>
+        </fieldset>
+        <label>When?
+          <input type="date" id="f-date" />
+        </label>
+        <p class="f-error" id="f-error" role="alert" hidden></p>
+        <div class="f-actions">
+          <button type="button" class="btn btn-ghost" id="f-cancel">Cancel</button>
+          <button type="submit" class="btn" id="f-submit">Add pin</button>
+        </div>
+      </form>
     </aside>
   </main>
+
+  <div class="add-ctl" id="add-ctl" hidden>
+    <button type="button" class="btn" id="add-btn">+ Add a pin</button>
+    <div class="add-hint" id="add-hint" hidden>
+      <span id="add-hint-text">Tap the map where it was screamed</span>
+      <button type="button" class="btn btn-ghost" id="locate-btn">Use my location</button>
+      <button type="button" class="btn btn-ghost" id="add-cancel">Cancel</button>
+    </div>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
@@ -323,24 +422,38 @@
       "#8d6e63"  // brown
     ];
 
-    const colorOf = (() => {
-      const assigned = { ...PEOPLE_COLORS };
-      const used = new Set(Object.values(assigned));
-      let next = 0;
-      return name => {
-        if (!assigned[name]) {
-          const free = PALETTE.find(c => !used.has(c));
-          assigned[name] = free || PALETTE[next++ % PALETTE.length];
-          used.add(assigned[name]);
-        }
-        return assigned[name];
-      };
-    })();
+    /* =========================================================
+       LET VISITORS ADD PINS (Firebase Firestore)
+       Paste your Firebase project's apiKey and projectId here.
+       While these are blank, the "Add a pin" button stays hidden.
+       ========================================================= */
+    const FIREBASE = {
+      apiKey: "AIzaSyAO0V3e_g_i1VpkBxIoulvv0FN6ZFDtb0A",
+      projectId: "diddy-d-31d16"
+    };
+
+    // name -> color. A person keeps the color of their first pin; new people
+    // get the next palette color nobody is using yet.
+    const peopleColors = { ...PEOPLE_COLORS };
+    function colorOf(name, preferred){
+      if (!peopleColors[name]) {
+        const used = new Set(Object.values(peopleColors));
+        peopleColors[name] = (preferred && !used.has(preferred) && preferred)
+          || PALETTE.find(c => !used.has(c))
+          || preferred
+          || PALETTE[Object.keys(peopleColors).length % PALETTE.length];
+      }
+      return peopleColors[name];
+    }
+    // Match names case-insensitively so "wylie" joins "Wylie" instead of becoming a new person.
+    const knownName = name =>
+      Object.keys(peopleColors).find(n => n.toLowerCase() === name.trim().toLowerCase());
 
     const isPhone = matchMedia("(max-width: 760px)");
     const canHover = matchMedia("(hover: hover)");
 
-    const map = L.map("map", { zoomSnap: 0.25, worldCopyJump: true });
+    const map = L.map("map", { zoomSnap: 0.25, worldCopyJump: true, zoomControl: false });
+    L.control.zoom({ position: "bottomright" }).addTo(map);
     // Phones are too narrow for the whole US to read well, so start them zoomed to the pins.
     if (isPhone.matches && SIGHTINGS.length) {
       map.fitBounds(SIGHTINGS.map(s => [s.lat, s.lng]), { padding: [50, 50], maxZoom: 6 });
@@ -444,13 +557,15 @@
       if (isPhone.matches) sheet.classList.toggle("collapsed");
     });
 
+    // Every pin on the map: the built-in SIGHTINGS plus any added through the site.
+    const entries = [];
+    const spotList = document.getElementById("spots");
+    let adding = null;   // set while someone is placing a new pin
+
     // Hover opens the card; moving the mouse onto the card keeps it open.
     // Clicking a pin "locks" it open until it's closed with the X.
-    const spotList = document.getElementById("spots");
-    const byNewest = [...SIGHTINGS].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-
-    byNewest.forEach(s => {
-      const color = colorOf(s.by);
+    function addSighting(s){
+      const color = colorOf(s.by, s.color);
       const marker = L.marker([s.lat, s.lng], { icon: pinIcon(color), title: s.place }).addTo(map);
       // Popup content is rebuilt on every open so videos restart and stop playing once closed.
       let compactCard = false;
@@ -474,6 +589,7 @@
       const cancelClose = () => clearTimeout(closeTimer);
 
       const select = () => {
+        if (adding) { marker.closePopup(); return; }
         cancelClose();
         // On phones, tuck the list away first so the map has room for the card.
         if (isPhone.matches && !sheet.classList.contains("collapsed")) {
@@ -502,13 +618,16 @@
         marker.getElement()?.firstElementChild.classList.toggle("is-hot", on);
       };
       row.addEventListener("click", select);
-      spotList.appendChild(li);
 
       // Hover previews only on devices with a real mouse; on touch, a tap goes straight to the full card.
       if (canHover.matches) {
         row.addEventListener("mouseenter", () => setHot(true));
         row.addEventListener("mouseleave", () => setHot(false));
-        marker.on("mouseover", () => { cancelClose(); setHot(true); if (!marker.isPopupOpen()) openCard(true); });
+        marker.on("mouseover", () => {
+          if (adding) return;
+          cancelClose(); setHot(true);
+          if (!marker.isPopupOpen()) openCard(true);
+        });
         marker.on("mouseout", () => { setHot(false); scheduleClose(); });
       }
       marker.on("click", select);
@@ -519,17 +638,282 @@
         el.addEventListener("mouseleave", scheduleClose);
       });
       marker.on("popupclose", () => { locked = false; });
+
+      const entry = { s, li, select };
+      entries.push(entry);
+      return entry;
+    }
+
+    // Rebuild the list (newest first), the legend, the name suggestions and the count.
+    function renderList(){
+      [...entries]
+        .sort((a, b) => (b.s.date || "").localeCompare(a.s.date || ""))
+        .forEach(e => spotList.appendChild(e.li));
+
+      const tally = {};
+      entries.forEach(({ s }) => { tally[s.by] = (tally[s.by] || 0) + 1; });
+      document.getElementById("legend").innerHTML = Object.entries(tally)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, n]) => `<li style="--pin:${colorOf(name)}"><span class="dot"></span>${esc(name)} <b>${n}</b></li>`)
+        .join("");
+      document.getElementById("people-list").innerHTML =
+        Object.keys(tally).map(n => `<option value="${esc(n)}"></option>`).join("");
+
+      document.getElementById("count").textContent = entries.length;
+    }
+
+    SIGHTINGS.forEach(addSighting);
+    renderList();
+
+    /* ---------- Add a pin (saved to Firebase so everyone sees it) ---------- */
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/pins`;
+    const HEX = /^#[0-9a-f]{6}$/i;
+
+    function fromDoc(doc){
+      const f = doc.fields || {};
+      const val = x => x && (x.stringValue ?? x.doubleValue ?? x.integerValue);
+      return {
+        place: String(val(f.place) || "").trim(),
+        by: String(val(f.by) || "").trim(),
+        lat: Number(val(f.lat)),
+        lng: Number(val(f.lng)),
+        color: HEX.test(val(f.color)) ? val(f.color) : undefined,
+        date: /^\d{4}-\d{2}-\d{2}$/.test(val(f.date)) ? val(f.date) : "",
+        video: "",
+        note: ""
+      };
+    }
+
+    async function loadPins(){
+      const pins = [];
+      let pageToken = "";
+      do {
+        const res = await fetch(`${firestoreUrl}?key=${FIREBASE.apiKey}&pageSize=300` +
+          (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ""));
+        if (!res.ok) throw new Error(`Loading pins failed (${res.status})`);
+        const data = await res.json();
+        (data.documents || []).forEach(d => pins.push(fromDoc(d)));
+        pageToken = data.nextPageToken || "";
+      } while (pageToken);
+      return pins.filter(p => p.place && p.by && isFinite(p.lat) && isFinite(p.lng));
+    }
+
+    async function savePin(p){
+      const res = await fetch(`${firestoreUrl}?key=${FIREBASE.apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: {
+          place: { stringValue: p.place },
+          by:    { stringValue: p.by },
+          lat:   { doubleValue: p.lat },
+          lng:   { doubleValue: p.lng },
+          color: { stringValue: p.color },
+          date:  { stringValue: p.date }
+        } })
+      });
+      if (!res.ok) throw new Error(`Saving failed (${res.status}): ${await res.text()}`);
+    }
+
+    // Turn a map tap into "City, ST" using OpenStreetMap's free lookup.
+    async function placeNameFor(latlng){
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&lat=${latlng.lat}&lon=${latlng.lng}`);
+      const j = await res.json();
+      const a = j.address || {};
+      const town = a.city || a.town || a.village || a.hamlet || a.county || "";
+      const state = (a["ISO3166-2-lvl4"] || "").split("-")[1] || a.state || "";
+      return [town, state].filter(Boolean).join(", ") || j.name || "";
+    }
+
+    const mapEl = document.getElementById("map");
+    const addCtl = document.getElementById("add-ctl");
+    const addBtn = document.getElementById("add-btn");
+    const hint = document.getElementById("add-hint");
+    const hintText = document.getElementById("add-hint-text");
+    const form = document.getElementById("add-form");
+    const fPlace = document.getElementById("f-place");
+    const fBy = document.getElementById("f-by");
+    const fColors = document.getElementById("f-colors");
+    const fNote = document.getElementById("f-color-note");
+    const fDate = document.getElementById("f-date");
+    const fError = document.getElementById("f-error");
+    const fSubmit = document.getElementById("f-submit");
+
+    const chosenColor = () => fColors.querySelector("input:checked")?.value;
+    const pinColorForForm = () => {
+      const name = knownName(fBy.value);
+      return name ? peopleColors[name] : chosenColor();
+    };
+    const showError = msg => { fError.textContent = msg; fError.hidden = false; };
+
+    function buildSwatches(){
+      fColors.innerHTML = PALETTE.map(c =>
+        `<label class="swatch" style="--pin:${c}"><input type="radio" name="color" value="${c}" aria-label="Color ${c}"><span></span></label>`
+      ).join("");
+      syncSwatches();
+    }
+
+    // Existing people keep their color; new people can only pick colors nobody has yet.
+    function syncSwatches(){
+      const inputs = [...fColors.querySelectorAll("input")];
+      const name = knownName(fBy.value);
+      if (name) {
+        inputs.forEach(i => { i.disabled = true; i.checked = i.value === peopleColors[name]; });
+        fNote.textContent = `${name} already has a color, so the new pin will match.`;
+      } else {
+        const used = new Set(Object.values(peopleColors));
+        const allTaken = PALETTE.every(c => used.has(c));
+        inputs.forEach(i => { i.disabled = !allTaken && used.has(i.value); });
+        const current = inputs.find(i => i.checked && !i.disabled);
+        if (!current) inputs.find(i => !i.disabled).checked = true;
+        fNote.textContent = allTaken ? "" : "Faded colors already belong to someone.";
+      }
+      adding?.marker?.setIcon(pinIcon(pinColorForForm()));
+    }
+
+    async function lookUpPlace(latlng){
+      if (adding.placeEdited) return;
+      const ticket = ++adding.lookups;
+      fPlace.placeholder = "Looking up…";
+      try {
+        const name = await placeNameFor(latlng);
+        if (adding && ticket === adding.lookups && !adding.placeEdited) fPlace.value = name;
+      } catch (err) {
+        // Lookup is just a convenience; the visitor can type the place in.
+      } finally {
+        fPlace.placeholder = "City, ST";
+      }
+    }
+
+    function startAdding(){
+      map.closePopup();
+      adding = { marker: null, lookups: 0, placeEdited: false };
+      form.reset();
+      fError.hidden = true;
+      fDate.value = new Date().toLocaleDateString("en-CA");   // today, as YYYY-MM-DD
+      buildSwatches();
+      addBtn.hidden = true;
+      hint.hidden = false;
+      hintText.textContent = "Tap the map where it was screamed";
+      mapEl.classList.add("placing");
+      if (isPhone.matches) sheet.classList.add("collapsed");
+    }
+
+    function placeAt(latlng){
+      if (!adding.marker) {
+        adding.marker = L.marker(latlng, { icon: pinIcon(pinColorForForm()), draggable: true, zIndexOffset: 1000 }).addTo(map);
+        adding.marker.on("dragend", () => lookUpPlace(adding.marker.getLatLng()));
+        sheet.classList.remove("collapsed");
+        sheet.classList.add("adding");
+        form.hidden = false;
+        map.invalidateSize({ pan: false });
+      } else {
+        adding.marker.setLatLng(latlng);
+      }
+      hintText.textContent = "Tap again or drag the pin to move it";
+      map.panInside(latlng, { padding: [60, 60] });
+      lookUpPlace(latlng);
+      if (!isPhone.matches) fBy.focus();   // on phones, don't throw the keyboard over the map
+    }
+
+    function stopAdding(){
+      adding?.marker?.remove();
+      adding = null;
+      addBtn.hidden = false;
+      hint.hidden = true;
+      mapEl.classList.remove("placing");
+      sheet.classList.remove("adding");
+      form.hidden = true;
+      map.invalidateSize({ pan: false });
+    }
+
+    function locate(){
+      if (!navigator.geolocation) {
+        hintText.textContent = "Location isn't available here. Tap the map instead.";
+        return;
+      }
+      hintText.textContent = "Finding you…";
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          if (!adding) return;
+          const here = L.latLng(pos.coords.latitude, pos.coords.longitude);
+          map.setView(here, Math.max(map.getZoom(), 12));
+          placeAt(here);
+        },
+        () => { if (adding) hintText.textContent = "Couldn't get your location. Tap the map instead."; },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const place = fPlace.value.trim();
+      const typed = fBy.value.trim();
+      const problem = !place ? "Where was it screamed?" : !typed ? "Who screamed it?" : "";
+      if (problem) { showError(problem); return; }
+
+      const by = knownName(typed) || typed;
+      const ll = adding.marker.getLatLng().wrap();
+      const pin = {
+        place, by,
+        lat: +ll.lat.toFixed(5),
+        lng: +ll.lng.toFixed(5),
+        color: pinColorForForm(),
+        date: fDate.value || "",
+        video: "",
+        note: ""
+      };
+
+      fSubmit.disabled = true;
+      fSubmit.textContent = "Adding…";
+      fError.hidden = true;
+      try {
+        await savePin(pin);
+        stopAdding();
+        const entry = addSighting(pin);
+        renderList();
+        entry.select();
+      } catch (err) {
+        console.error(err);
+        showError("Couldn't save the pin. Check your connection and try again.");
+      } finally {
+        fSubmit.disabled = false;
+        fSubmit.textContent = "Add pin";
+      }
     });
 
-    // Legend: one chip per screamer, most screams first.
-    const tally = {};
-    SIGHTINGS.forEach(s => { tally[s.by] = (tally[s.by] || 0) + 1; });
-    document.getElementById("legend").innerHTML = Object.entries(tally)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, n]) => `<li style="--pin:${colorOf(name)}"><span class="dot"></span>${esc(name)} <b>${n}</b></li>`)
-      .join("");
+    if (FIREBASE.apiKey && FIREBASE.projectId) {
+      const AddControl = L.Control.extend({
+        onAdd(){
+          L.DomEvent.disableClickPropagation(addCtl);
+          L.DomEvent.disableScrollPropagation(addCtl);
+          return addCtl;
+        }
+      });
+      new AddControl({ position: "topleft" }).addTo(map);
+      addCtl.hidden = false;
 
-    document.getElementById("count").textContent = SIGHTINGS.length;
+      addBtn.addEventListener("click", startAdding);
+      document.getElementById("add-cancel").addEventListener("click", stopAdding);
+      document.getElementById("f-cancel").addEventListener("click", stopAdding);
+      document.getElementById("locate-btn").addEventListener("click", locate);
+      map.on("click", e => { if (adding) placeAt(e.latlng); });
+      fBy.addEventListener("input", syncSwatches);
+      fColors.addEventListener("change", syncSwatches);
+      fPlace.addEventListener("input", () => { if (adding) adding.placeEdited = fPlace.value.trim() !== ""; });
+
+      // If nobody has moved the map yet, re-fit phones once everyone's pins have loaded.
+      let mapTouched = false;
+      map.once("movestart", () => { mapTouched = true; });
+      loadPins()
+        .then(pins => {
+          pins.forEach(addSighting);
+          renderList();
+          if (isPhone.matches && !mapTouched && entries.length) {
+            map.fitBounds(entries.map(e => [e.s.lat, e.s.lng]), { padding: [50, 50], maxZoom: 6 });
+          }
+        })
+        .catch(err => console.error(err));
+    }
   </script>
 </body>
 </html>
