@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diddy D! Map</title>
+  <meta name="description" content="Every place across the US where someone has screamed &quot;Diddy D!&quot;" />
+  <link rel="icon" type="image/png" href="drf.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Outfit:wght@400;500;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+  <style>
+    :root{
+      --cyan:    #4de6d2;
+      --magenta: #ff5fa8;
+      --amber:   #ffb454;
+
+      --bg: #06080d;
+      --panel: #10141d;
+      --text: rgba(255,255,255,.93);
+      --muted: rgba(255,255,255,.70);
+      --faint: rgba(255,255,255,.50);
+      --line: rgba(255,255,255,.13);
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ margin: 0; height: 100%; }
+    body{
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Outfit", system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header{
+      padding: 20px 16px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1{
+      margin: 0;
+      font-family: "Unbounded", sans-serif;
+      font-weight: 900;
+      font-size: clamp(28px, 5vw, 48px);
+      letter-spacing: -.02em;
+      background: linear-gradient(90deg, var(--magenta), var(--amber));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .sub{ margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+    .count{
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      color: var(--cyan);
+      white-space: nowrap;
+    }
+    .count strong{ font-size: 22px; }
+
+    main{ flex: 1; display: flex; min-height: 0; }
+    #map{ flex: 1; min-height: 420px; background: var(--bg); }
+
+    /* ---------- Sidebar list ---------- */
+    aside{
+      width: 320px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .side-head{ padding: 14px 16px 12px; border-bottom: 1px solid var(--line); }
+    .side-title{
+      margin: 0 0 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .legend{ display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .legend li{
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 10px 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .legend b{ font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--faint); font-size: 12px; }
+    .dot{ width: 10px; height: 10px; border-radius: 50%; background: var(--pin); flex-shrink: 0; }
+
+    .spots{ margin: 0; padding: 6px 0; list-style: none; overflow-y: auto; flex: 1; }
+    .spot{
+      display: flex; gap: 12px; align-items: flex-start;
+      width: 100%;
+      padding: 10px 16px;
+      background: none; border: 0; border-left: 3px solid transparent;
+      color: inherit; font: inherit; text-align: left;
+      cursor: pointer;
+    }
+    .spot:hover, .spot:focus-visible, .spot.is-hot{ background: rgba(255,255,255,.05); border-left-color: var(--pin); outline: none; }
+    .spot .dot{ margin-top: 6px; }
+    .spot-place{ display: block; font-weight: 600; font-size: 15px; line-height: 1.3; }
+    .spot-by{ display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .spot-by span{ color: var(--pin); font-weight: 600; }
+    .spot-date{ display: block; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); margin-top: 3px; }
+
+    @media (max-width: 760px){
+      main{ flex-direction: column; }
+      #map{ min-height: 55vh; }
+      aside{ width: auto; border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; }
+    }
+
+    /* ---------- Pins ---------- */
+    .dd-pin{
+      width: 22px; height: 22px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: var(--pin);
+      border: 3px solid #fff;
+      animation: pulse 2s infinite;
+      transition: transform .15s;
+    }
+    .leaflet-marker-icon:hover .dd-pin, .dd-pin.is-hot{ transform: rotate(-45deg) scale(1.3); }
+    @keyframes pulse{
+      0%  { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin) 60%, transparent); }
+      70% { box-shadow: 0 0 0 14px transparent; }
+      100%{ box-shadow: 0 0 0 0 transparent; }
+    }
+
+    /* ---------- Popup card ---------- */
+    .leaflet-popup-content-wrapper{
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    }
+    .leaflet-popup-tip{ background: var(--panel); }
+    .leaflet-popup-content{ margin: 0; }
+    .leaflet-container a.leaflet-popup-close-button{ color: #fff; z-index: 2; text-shadow: 0 1px 3px #000; }
+
+    .card-media{
+      aspect-ratio: 16 / 9;
+      background: #000;
+      display: grid;
+      place-items: center;
+    }
+    .card-media video, .card-media iframe{ width: 100%; height: 100%; border: 0; display: block; }
+    .card-media .no-video{
+      font-family: "Unbounded", sans-serif;
+      font-weight: 900;
+      font-size: 26px;
+      color: var(--magenta);
+    }
+    .card-body{ padding: 12px 14px 14px; }
+    .card-place{ font-weight: 800; font-size: 17px; margin: 0; }
+    .card-by{ margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .card-by span{ color: var(--pin); font-weight: 600; }
+    .card-meta{
+      margin: 8px 0 0;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--faint);
+    }
+    .card-note{ margin: 8px 0 0; font-size: 14px; color: var(--text); }
+
+    /* Half-size card shown on hover; clicking opens the full one */
+    .dd-compact .leaflet-popup-content-wrapper{ border-radius: 10px; }
+    .dd-compact .leaflet-popup-close-button{ display: none; }
+    .dd-compact .card-body{ padding: 6px 8px 8px; }
+    .dd-compact .card-place{ font-size: 12px; line-height: 1.25; }
+    .dd-compact .card-by{ font-size: 11px; margin-top: 2px; }
+    .dd-compact .card-meta{ font-size: 10px; margin-top: 3px; }
+    .dd-compact .card-note{ display: none; }
+    .card-hint{ margin: 4px 0 0; font-size: 10px; color: var(--amber); font-weight: 600; }
+
+    .leaflet-control-layers{
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line) !important;
+      border-radius: 10px !important;
+      font-family: "Outfit", system-ui, sans-serif;
+      font-size: 14px;
+    }
+    .leaflet-control-layers-expanded{ padding: 8px 12px; }
+    .leaflet-control-layers label{ margin: 4px 0; cursor: pointer; }
+    .leaflet-control-layers input{ accent-color: var(--magenta); }
+
+    .leaflet-control-attribution{ background: rgba(6,8,13,.7) !important; color: var(--faint); }
+    .leaflet-control-attribution a{ color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>DIDDY D!</h1>
+      <p class="sub">Every place we've screamed it. Hover a pin to relive it, click to keep it open.</p>
+    </div>
+    <div class="count"><strong id="count">0</strong> screams logged</div>
+  </header>
+
+  <main>
+    <div id="map"></div>
+    <aside>
+      <div class="side-head">
+        <p class="side-title">Screamers</p>
+        <ul class="legend" id="legend"></ul>
+      </div>
+      <ul class="spots" id="spots"></ul>
+    </aside>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    /* =========================================================
+       ADD NEW SIGHTINGS HERE
+       - lat / lng: right-click a spot in Google Maps to copy them
+       - video: a YouTube link, or a path to a file in this repo
+                (e.g. "videos/boulder.mp4"). Leave "" for no video.
+       ========================================================= */
+    const SIGHTINGS = [
+      {
+        place: "Boulder, CO",
+        lat: 40.0150, lng: -105.2705,
+        by: "Everyone",
+        date: "2026-09-14",
+        video: "",
+        note: ""
+      },
+      {
+        place: "Knoxville, TN",
+        lat: 35.9606, lng: -83.9207,
+        by: "Wylie",
+        date: "",
+        video: "",
+        note: ""
+      }
+    ];
+
+    /* Pin color for each screamer. Anyone not listed here gets the
+       next unused color from PALETTE automatically. */
+    const PEOPLE_COLORS = {};
+    // Ordered so each new person lands far from the colors already in use.
+    const PALETTE = [
+      "#ff1f3d", // red
+      "#1e88ff", // blue
+      "#ffe100", // yellow
+      "#00e05a", // green
+      "#b84dff", // purple
+      "#ff8a00", // orange
+      "#00e5ff", // cyan
+      "#ff3dd8", // hot pink
+      "#c6ff00", // lime
+      "#8d6e63"  // brown
+    ];
+
+    const colorOf = (() => {
+      const assigned = { ...PEOPLE_COLORS };
+      const used = new Set(Object.values(assigned));
+      let next = 0;
+      return name => {
+        if (!assigned[name]) {
+          const free = PALETTE.find(c => !used.has(c));
+          assigned[name] = free || PALETTE[next++ % PALETTE.length];
+          used.add(assigned[name]);
+        }
+        return assigned[name];
+      };
+    })();
+
+    const map = L.map("map", { zoomSnap: 0.25, worldCopyJump: true });
+    map.fitBounds([[24.5, -125], [49.5, -66.5]]);
+
+    // Esri basemaps: free and need no API key. The switcher (top right) remembers your pick.
+    const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+    const esriTiles = (service, maxNativeZoom) =>
+      L.tileLayer(esri + service + "/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "Tiles &copy; Esri &mdash; Esri, Maxar, HERE, Garmin, &copy; OpenStreetMap contributors",
+        maxNativeZoom,
+        maxZoom: 19
+      });
+
+    const basemaps = {
+      "Satellite": L.layerGroup([
+        esriTiles("World_Imagery", 19),
+        esriTiles("Reference/World_Boundaries_and_Places", 19)
+      ]),
+      "Street": esriTiles("World_Street_Map", 19),
+      "Topo": esriTiles("World_Topo_Map", 19),
+      "National Geographic": esriTiles("NatGeo_World_Map", 16),
+      "Dark": L.layerGroup([
+        esriTiles("Canvas/World_Dark_Gray_Base", 16),
+        esriTiles("Canvas/World_Dark_Gray_Reference", 16)
+      ])
+    };
+
+    let startName = "Satellite";
+    try {
+      const saved = localStorage.getItem("dd-basemap");
+      if (saved && basemaps[saved]) startName = saved;
+    } catch (e) {}
+    basemaps[startName].addTo(map);
+    L.control.layers(basemaps, null, { position: "topright" }).addTo(map);
+    map.on("baselayerchange", e => {
+      try { localStorage.setItem("dd-basemap", e.name); } catch (err) {}
+    });
+
+    const pinIcon = color => L.divIcon({
+      className: "",
+      html: `<div class="dd-pin" style="--pin:${color}"></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 26],
+      popupAnchor: [0, -26]
+    });
+
+    const esc = (s = "") => String(s).replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function youTubeId(url){
+      const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+      return m ? m[1] : null;
+    }
+
+    function mediaHtml(video){
+      if (!video) return '<div class="no-video">DIDDY D!</div>';
+      const yt = youTubeId(video);
+      if (yt) {
+        return `<iframe src="https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}"
+                  allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      }
+      return `<video src="${esc(video)}" autoplay muted loop playsinline controls></video>`;
+    }
+
+    const formatDate = d =>
+      new Date(d + "T12:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+
+    // The hover card is text only; the video loads once the pin is clicked.
+    function cardHtml(s, compact){
+      const date = s.date ? formatDate(s.date) : "";
+      return `
+        ${compact ? "" : `<div class="card-media">${mediaHtml(s.video)}</div>`}
+        <div class="card-body">
+          <p class="card-place">${esc(s.place)}</p>
+          <p class="card-by">Screamed by <span style="--pin:${colorOf(s.by)}">${esc(s.by)}</span></p>
+          ${date ? `<p class="card-meta">${date}</p>` : ""}
+          ${s.note ? `<p class="card-note">${esc(s.note)}</p>` : ""}
+          ${compact && s.video ? `<p class="card-hint">Click for video</p>` : ""}
+        </div>`;
+    }
+
+    // Fly in to a pin, leaving room above it for the card.
+    const FOCUS_ZOOM = 13;
+    function focusOn(latlng){
+      const zoom = Math.max(map.getZoom(), FOCUS_ZOOM);
+      const pinPx = map.project(latlng, zoom);
+      const center = map.unproject(pinPx.subtract([0, 150]), zoom);
+      map.flyTo(center, zoom, { duration: 1.2 });
+    }
+
+    // Hover opens the card; moving the mouse onto the card keeps it open.
+    // Clicking a pin "locks" it open until it's closed with the X.
+    const spotList = document.getElementById("spots");
+    const byNewest = [...SIGHTINGS].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+    byNewest.forEach(s => {
+      const color = colorOf(s.by);
+      const marker = L.marker([s.lat, s.lng], { icon: pinIcon(color), title: s.place }).addTo(map);
+      // Popup content is rebuilt on every open so videos restart and stop playing once closed.
+      marker.bindPopup(() => cardHtml(s, popup.options.maxWidth < 280), { autoPan: false });
+      const popup = marker.getPopup();
+
+      let closeTimer = null;
+      let locked = false;
+      const openCard = compact => {
+        const width = compact ? 140 : 280;
+        popup.options.minWidth = popup.options.maxWidth = width;
+        if (marker.isPopupOpen()) marker.closePopup();
+        marker.openPopup();
+      };
+      const scheduleClose = () => {
+        if (locked) return;
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => marker.closePopup(), 250);
+      };
+      const cancelClose = () => clearTimeout(closeTimer);
+
+      const select = () => {
+        cancelClose();
+        openCard(false);
+        locked = true;
+        focusOn(marker.getLatLng());
+      };
+
+      // Sidebar row: hovering highlights the pin, clicking flies to it.
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <button class="spot" type="button" style="--pin:${color}">
+          <span class="dot"></span>
+          <span>
+            <span class="spot-place">${esc(s.place)}</span>
+            <span class="spot-by">by <span>${esc(s.by)}</span></span>
+            ${s.date ? `<span class="spot-date">${formatDate(s.date)}</span>` : ""}
+          </span>
+        </button>`;
+      const row = li.firstElementChild;
+      const setHot = on => {
+        row.classList.toggle("is-hot", on);
+        marker.getElement()?.firstElementChild.classList.toggle("is-hot", on);
+      };
+      row.addEventListener("mouseenter", () => setHot(true));
+      row.addEventListener("mouseleave", () => setHot(false));
+      row.addEventListener("click", select);
+      spotList.appendChild(li);
+
+      marker.on("mouseover", () => { cancelClose(); setHot(true); if (!marker.isPopupOpen()) openCard(true); });
+      marker.on("mouseout", () => { setHot(false); scheduleClose(); });
+      marker.on("click", select);
+      marker.on("popupopen", e => {
+        const el = e.popup.getElement();
+        el.classList.toggle("dd-compact", popup.options.maxWidth < 280);
+        el.addEventListener("mouseenter", cancelClose);
+        el.addEventListener("mouseleave", scheduleClose);
+      });
+      marker.on("popupclose", () => { locked = false; });
+    });
+
+    // Legend: one chip per screamer, most screams first.
+    const tally = {};
+    SIGHTINGS.forEach(s => { tally[s.by] = (tally[s.by] || 0) + 1; });
+    document.getElementById("legend").innerHTML = Object.entries(tally)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, n]) => `<li style="--pin:${colorOf(name)}"><span class="dot"></span>${esc(name)} <b>${n}</b></li>`)
+      .join("");
+
+    document.getElementById("count").textContent = SIGHTINGS.length;
+  </script>
+</body>
+</html>
