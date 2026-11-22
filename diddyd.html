@@ -632,7 +632,7 @@
       return m ? m[1] : null;
     }
 
-    const hasRecording = s => Boolean(s.id || s.audio || s.audioData);
+    const hasRecording = s => Boolean(s.hasAudio || s.audio || s.audioData);
 
     function videoHtml(video){
       const yt = youTubeId(video);
@@ -877,7 +877,25 @@
         (data.documents || []).forEach(d => pins.push(fromDoc(d)));
         pageToken = data.nextPageToken || "";
       } while (pageToken);
+      const voiced = await idsWithRecordings().catch(err => { console.error(err); return null; });
+      pins.forEach(p => { p.hasAudio = voiced ? voiced.has(p.id) : true; });   // if the check fails, offer play on all
       return pins.filter(p => p.place && p.by && isFinite(p.lat) && isFinite(p.lng));
+    }
+
+    // Which pins have a recording, without downloading any recordings.
+    // (Pins added before voice recordings existed don't have one.)
+    async function idsWithRecordings(){
+      const res = await fetch(`${firestoreUrl.replace(/\/pins$/, "")}:runQuery?key=${FIREBASE.apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ structuredQuery: {
+          from: [{ collectionId: "pins" }],
+          select: { fields: [{ fieldPath: "__name__" }] },
+          where: { fieldFilter: { field: { fieldPath: "audio" }, op: "GREATER_THAN", value: { stringValue: "" } } }
+        } })
+      });
+      if (!res.ok) throw new Error(`Checking recordings failed (${res.status})`);
+      return new Set((await res.json()).filter(r => r.document).map(r => r.document.name.split("/").pop()));
     }
 
     // Saves the pin and returns its new id.
@@ -895,7 +913,10 @@
           audio: { stringValue: p.audioData }
         } })
       });
-      if (!res.ok) throw new Error(`Saving failed (${res.status}): ${await res.text()}`);
+      if (!res.ok) {
+        const reason = await res.json().then(j => j.error?.status, () => "");
+        throw new Error(`${res.status}${reason ? " " + reason : ""}`);
+      }
       return (await res.json()).name.split("/").pop();
     }
 
@@ -1281,17 +1302,27 @@
       fError.hidden = true;
       try {
         pin.id = await savePin(pin);
-        stopAdding();
-        addSighting(pin);
-        render();
-        groupOf(pin).select();
-        phraseConfetti();
       } catch (err) {
         console.error(err);
-        showError("Couldn't save your Diddy D. Check your connection and try again.");
+        // Include the details so a screenshot shows what went wrong.
+        const kind = clip.dataUrl.slice(5, clip.dataUrl.indexOf(";base64"));
+        showError(`Couldn't save your Diddy D. Try again in a moment. (${err.message || err.name} · ${kind} · ${Math.round(clip.dataUrl.length / 1024)} KB)`);
+        return;
       } finally {
         fSubmit.disabled = false;
         fSubmit.textContent = "Add pin";
+      }
+
+      // Saved. Anything that goes wrong from here is just the display, so never tell them it didn't save.
+      pin.hasAudio = true;
+      stopAdding();
+      addSighting(pin);
+      phraseConfetti();
+      try {
+        render();
+        groupOf(pin).select();
+      } catch (err) {
+        console.error(err);
       }
     });
 
