@@ -397,6 +397,24 @@
     .dd-compact .card-note{ display: none; }
     .card-body .card-hint{ margin: 4px 0 0; font-size: 10px; color: var(--amber); font-weight: 600; }
 
+    .pin-filter{
+      display: flex; padding: 3px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.4);
+    }
+    .pin-filter button{
+      padding: 7px 12px;
+      border: 0; border-radius: 999px;
+      background: none; color: var(--muted);
+      font: 600 13px "Outfit", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .pin-filter button[aria-pressed="true"]{ background: linear-gradient(90deg, var(--magenta), var(--amber)); color: #14070d; }
+    .pin-filter button:focus-visible{ outline: 2px solid var(--cyan); outline-offset: 1px; }
+    .spots-empty{ padding: 16px; font-size: 14px; color: var(--muted); }
+
     .leaflet-control-layers{
       background: var(--panel);
       color: var(--text);
@@ -712,6 +730,7 @@
     // Every Diddy D: the built-in SIGHTINGS plus any added through the site.
     // Diddy Ds within MERGE_RADIUS_M of each other share one pin.
     const MERGE_RADIUS_M = 100;
+    let recordedOnly = false;   // the All | Recorded switch on the map
     const sightings = [];
     let groups = [];      // { latlng, place, items, marker, li, select }
     const spotList = document.getElementById("spots");
@@ -729,8 +748,9 @@
     // The earliest Diddy D at a spot anchors the pin (its position and place name);
     // later ones within range join it.
     function buildGroups(){
-      const ordered = sightings.map((s, i) => ({ s, i })).sort((a, b) =>
-        (a.s.date || "9999").localeCompare(b.s.date || "9999") || a.i - b.i);
+      const ordered = sightings.map((s, i) => ({ s, i }))
+        .filter(({ s }) => !recordedOnly || hasRecording(s))
+        .sort((a, b) => (a.s.date || "9999").localeCompare(b.s.date || "9999") || a.i - b.i);
       groups = [];
       for (const { s } of ordered) {
         const latlng = L.latLng(s.lat, s.lng);
@@ -830,8 +850,11 @@
     // Redraw every pin and list row (newest first), plus the legend, name suggestions and count.
     function render(){
       groups.forEach(g => { g.marker.remove(); g.li.remove(); });
+      spotList.querySelector(".spots-empty")?.remove();
       buildGroups();
       groups.forEach(drawGroup);
+      if (!groups.length) spotList.insertAdjacentHTML("beforeend",
+        `<li class="spots-empty">${recordedOnly ? "No recorded Diddy Ds yet. Go yell one!" : "No Diddy Ds yet."}</li>`);
       [...groups]
         .sort((a, b) => latestDate(b).localeCompare(latestDate(a)))
         .forEach(g => spotList.appendChild(g.li));
@@ -919,6 +942,28 @@
 
     SIGHTINGS.forEach(addSighting);
     render();
+
+    // All | Recorded switch, just under the map-style button.
+    const FilterControl = L.Control.extend({
+      onAdd(){
+        const el = L.DomUtil.create("div", "pin-filter");
+        el.setAttribute("role", "group");
+        el.setAttribute("aria-label", "Which pins to show");
+        el.innerHTML = `<button type="button" data-filter="all" aria-pressed="true">All</button>` +
+                       `<button type="button" data-filter="recorded" aria-pressed="false">Recorded</button>`;
+        L.DomEvent.disableClickPropagation(el);
+        el.addEventListener("click", e => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          recordedOnly = btn.dataset.filter === "recorded";
+          el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b === btn));
+          map.closePopup();
+          render();
+        });
+        return el;
+      }
+    });
+    new FilterControl({ position: "topright" }).addTo(map);
 
     /* ---------- Add a Diddy D (saved to Firebase so everyone sees it) ---------- */
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/pins`;
