@@ -1298,10 +1298,24 @@
     }
 
     function onWhoChange(){
-      fError.hidden = true;
       fNewWrap.hidden = fWho.value !== NEW_NAME;
       if (!fNewWrap.hidden) fBy.focus();
       syncSwatches();
+      checkRepeat();
+    }
+
+    // One Diddy D per person per spot: they have to be 200 yards from any of their own to add another.
+    const REPEAT_GAP_M = 183;   // 200 yards
+    function repeatMessage(){
+      const name = formName().toLowerCase();
+      if (!adding?.marker || !name) return "";
+      const here = adding.marker.getLatLng();
+      const mine = sightings.find(s => s.by.toLowerCase() === name && map.distance(here, [s.lat, s.lng]) < REPEAT_GAP_M);
+      return mine ? `You already have a Diddy D here (${mine.place}). Go at least 200 yards from it to add another.` : "";
+    }
+    function checkRepeat(){
+      const msg = repeatMessage();
+      if (msg) showError(msg); else fError.hidden = true;
     }
     const fColors = document.getElementById("f-colors");
     const fNote = document.getElementById("f-color-note");
@@ -1553,6 +1567,7 @@
       } else {
         lookUpPlace(latlng);
       }
+      checkRepeat();   // their remembered name may already have one here
     }
 
     function stopAdding(){
@@ -1576,7 +1591,8 @@
       const place = fPlace.value.trim();
       const typed = formName();
       const problem = !clip ? "Record your Diddy D first." : !place ? "Where was it screamed?"
-        : !typed ? (fWho.value === NEW_NAME ? "Type your new name." : "Pick your name, or add a new one.") : "";
+        : !typed ? (fWho.value === NEW_NAME ? "Type your new name." : "Pick your name, or add a new one.")
+        : repeatMessage();
       if (problem) { showError(problem); return; }
 
       const by = knownName(typed) || typed;
@@ -1641,7 +1657,7 @@
         if (rec) rec.recorder.stop(); else startRecording();
       });
       recPlay.addEventListener("click", playPreview);
-      fBy.addEventListener("input", () => { fError.hidden = true; syncSwatches(); });
+      fBy.addEventListener("input", () => { syncSwatches(); checkRepeat(); });
       fWho.addEventListener("change", onWhoChange);
       fColors.addEventListener("change", syncSwatches);
 
