@@ -150,9 +150,8 @@
       font-size: 14px; font-weight: 600;
       box-shadow: 0 4px 14px rgba(0,0,0,.4);
     }
-    .add-hint[hidden]{ display: none; }
+    .add-hint[hidden], .add-hint .btn[hidden]{ display: none; }
     .add-hint .btn{ font-size: 13px; padding: 7px 12px; }
-    #map.placing{ cursor: crosshair; }
 
     .add-form{ padding: 14px 16px 18px; overflow-y: auto; }
     .add-form[hidden], aside.adding .side-head, aside.adding .spots{ display: none; }
@@ -188,6 +187,47 @@
     .f-error{ margin: 0 0 12px; font-size: 13px; color: #ff6b7d; }
     .f-error[hidden]{ display: none; }
     .f-actions{ display: flex; gap: 8px; justify-content: flex-end; }
+    .f-pinned{ margin: -6px 0 14px; }
+
+    /* Voice recorder in the form */
+    .f-rec{ margin: 0 0 14px; }
+    .add-form .f-label{ margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .f-label span{ font-weight: 500; color: var(--faint); }
+    .rec-row{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .rec-row .btn[hidden]{ display: none; }
+    .rec-btn{ display: inline-flex; align-items: center; gap: 8px; }
+    .rec-dot{ width: 10px; height: 10px; border-radius: 50%; background: #e0002a; }
+    .rec-btn.is-recording .rec-dot{ animation: blink 1s infinite; }
+    @keyframes blink{ 50%{ opacity: .2; } }
+    .rec-time{ font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--muted); }
+
+    /* Play button on a pin's card */
+    .play-btn{
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 45%, #2a0f1e, #000 70%);
+      border: 0; color: var(--text); font: inherit; cursor: pointer;
+    }
+    .play-icon{
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--magenta), var(--amber));
+      display: grid; place-items: center;
+      box-shadow: 0 6px 24px rgba(255,95,168,.45);
+      transition: transform .15s;
+    }
+    .play-icon::before{   /* triangle */
+      content: ""; margin-left: 5px;
+      border-style: solid; border-width: 13px 0 13px 21px;
+      border-color: transparent transparent transparent #14070d;
+    }
+    .play-btn:hover .play-icon{ transform: scale(1.06); }
+    .play-btn.is-playing .play-icon{ animation: thump .45s ease-in-out infinite alternate; }
+    .play-btn.is-playing .play-icon::before{   /* pause bars */
+      margin-left: 0; width: 6px; height: 22px; border: 0;
+      background: #14070d; box-shadow: 10px 0 0 #14070d; transform: translateX(-5px);
+    }
+    @keyframes thump{ to{ transform: scale(1.12); } }
+    .play-label{ font-family: "Unbounded", sans-serif; font-weight: 700; font-size: 14px; }
 
     .confetti{ position: fixed; inset: 0; z-index: 5000; pointer-events: none; overflow: hidden; }
     .confetti span{
@@ -358,6 +398,16 @@
         <label>Where?
           <input type="text" id="f-place" maxlength="80" placeholder="City, ST" autocomplete="off" />
         </label>
+        <p class="f-note f-pinned">The pin is locked to where you are right now.</p>
+        <div class="f-rec">
+          <p class="f-label">Your Diddy D <span>(required)</span></p>
+          <div class="rec-row">
+            <button type="button" class="btn rec-btn" id="rec-btn"><span class="rec-dot" aria-hidden="true"></span><span id="rec-label">Record</span></button>
+            <button type="button" class="btn btn-ghost" id="rec-play" hidden>Play</button>
+            <span class="rec-time" id="rec-time" aria-live="polite"></span>
+          </div>
+          <p class="f-note">Tap Record and yell it. It stops on its own after 5 seconds.</p>
+        </div>
         <label>Who screamed it?
           <input type="text" id="f-by" maxlength="40" list="people-list" autocomplete="off" placeholder="Name" />
         </label>
@@ -380,10 +430,10 @@
   </main>
 
   <div class="add-ctl" id="add-ctl" hidden>
-    <button type="button" class="btn" id="add-btn">+ Add a pin</button>
+    <button type="button" class="btn" id="add-btn">+ Add a Diddy D</button>
     <div class="add-hint" id="add-hint" hidden>
-      <span id="add-hint-text">Tap the map where it was screamed</span>
-      <button type="button" class="btn btn-ghost" id="locate-btn">Use my location</button>
+      <span id="add-hint-text">Finding where you are…</span>
+      <button type="button" class="btn btn-ghost" id="locate-btn" hidden>Try again</button>
       <button type="button" class="btn btn-ghost" id="add-cancel">Cancel</button>
     </div>
   </div>
@@ -395,6 +445,9 @@
        - lat / lng: right-click a spot in Google Maps to copy them
        - video: a YouTube link, or a path to a file in this repo
                 (e.g. "videos/boulder.mp4"). Leave "" for no video.
+       - audio (optional): a sound file in this repo, e.g. "audio/boulder.m4a",
+                to give the pin a play button.
+       Pins people add through the site live in Firebase, not here.
        ========================================================= */
     const SIGHTINGS = [
       {
@@ -538,8 +591,15 @@
       return m ? m[1] : null;
     }
 
-    function mediaHtml(video){
-      if (!video) return '<div class="no-video">DIDDY D!</div>';
+    const hasRecording = s => Boolean(s.id || s.audio || s.audioData);
+
+    function mediaHtml(s){
+      const video = s.video;
+      if (!video) {
+        return hasRecording(s)
+          ? `<button type="button" class="play-btn"><span class="play-icon" aria-hidden="true"></span><span class="play-label">Play the Diddy D</span></button>`
+          : '<div class="no-video">DIDDY D!</div>';
+      }
       const yt = youTubeId(video);
       if (yt) {
         return `<iframe src="https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}"
@@ -551,17 +611,18 @@
     const formatDate = d =>
       new Date(d + "T12:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
-    // The hover card is text only; the video loads once the pin is clicked.
+    // The hover card is text only; the video or recording loads once the pin is clicked.
     function cardHtml(s, compact){
       const date = s.date ? formatDate(s.date) : "";
+      const hint = s.video ? "Click for video" : hasRecording(s) ? "Click to hear it" : "";
       return `
-        ${compact ? "" : `<div class="card-media">${mediaHtml(s.video)}</div>`}
+        ${compact ? "" : `<div class="card-media">${mediaHtml(s)}</div>`}
         <div class="card-body">
           <p class="card-place">${esc(s.place)}</p>
           <p class="card-by">Screamed by <span style="--pin:${colorOf(s.by)}">${esc(s.by)}</span></p>
           ${date ? `<p class="card-meta">${date}</p>` : ""}
           ${s.note ? `<p class="card-note">${esc(s.note)}</p>` : ""}
-          ${compact && s.video ? `<p class="card-hint">Click for video</p>` : ""}
+          ${compact && hint ? `<p class="card-hint">${hint}</p>` : ""}
         </div>`;
     }
 
@@ -661,8 +722,14 @@
         el.classList.toggle("dd-compact", compactCard);
         el.addEventListener("mouseenter", cancelClose);
         el.addEventListener("mouseleave", scheduleClose);
+        // Leaflet stops clicks inside popups from bubbling, so wire the play button here.
+        const playBtn = el.querySelector(".play-btn");
+        if (playBtn) {
+          audioFor(s).catch(() => {});   // start downloading now so the tap plays instantly
+          playBtn.addEventListener("click", () => playClip(s, playBtn));
+        }
       });
-      marker.on("popupclose", () => { locked = false; });
+      marker.on("popupclose", () => { locked = false; stopPlayback(); });
 
       const entry = { s, li, select };
       entries.push(entry);
@@ -690,14 +757,16 @@
     SIGHTINGS.forEach(addSighting);
     renderList();
 
-    /* ---------- Add a pin (saved to Firebase so everyone sees it) ---------- */
+    /* ---------- Add a Diddy D (saved to Firebase so everyone sees it) ---------- */
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/pins`;
     const HEX = /^#[0-9a-f]{6}$/i;
+    const LIST_FIELDS = ["place", "by", "lat", "lng", "color", "date"];   // the recording is left out of the list and fetched on play
 
     function fromDoc(doc){
       const f = doc.fields || {};
       const val = x => x && (x.stringValue ?? x.doubleValue ?? x.integerValue);
       return {
+        id: doc.name.split("/").pop(),
         place: String(val(f.place) || "").trim(),
         by: String(val(f.by) || "").trim(),
         lat: Number(val(f.lat)),
@@ -711,9 +780,10 @@
 
     async function loadPins(){
       const pins = [];
+      const mask = LIST_FIELDS.map(f => `&mask.fieldPaths=${f}`).join("");
       let pageToken = "";
       do {
-        const res = await fetch(`${firestoreUrl}?key=${FIREBASE.apiKey}&pageSize=300` +
+        const res = await fetch(`${firestoreUrl}?key=${FIREBASE.apiKey}&pageSize=300${mask}` +
           (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ""));
         if (!res.ok) throw new Error(`Loading pins failed (${res.status})`);
         const data = await res.json();
@@ -723,6 +793,7 @@
       return pins.filter(p => p.place && p.by && isFinite(p.lat) && isFinite(p.lng));
     }
 
+    // Saves the pin and returns its new id.
     async function savePin(p){
       const res = await fetch(`${firestoreUrl}?key=${FIREBASE.apiKey}`, {
         method: "POST",
@@ -733,13 +804,15 @@
           lat:   { doubleValue: p.lat },
           lng:   { doubleValue: p.lng },
           color: { stringValue: p.color },
-          date:  { stringValue: p.date }
+          date:  { stringValue: p.date },
+          audio: { stringValue: p.audioData }
         } })
       });
       if (!res.ok) throw new Error(`Saving failed (${res.status}): ${await res.text()}`);
+      return (await res.json()).name.split("/").pop();
     }
 
-    // Turn a map tap into "City, ST" using OpenStreetMap's free lookup.
+    // Turn a location into "City, ST" using OpenStreetMap's free lookup.
     async function placeNameFor(latlng){
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&lat=${latlng.lat}&lon=${latlng.lng}`);
       const j = await res.json();
@@ -749,11 +822,65 @@
       return [town, state].filter(Boolean).join(", ") || j.name || "";
     }
 
-    const mapEl = document.getElementById("map");
+    /* ---------- Playing recordings ---------- */
+    // Resolves to a playable URL for a pin's recording, downloading it once if needed.
+    function audioFor(s){
+      if (s.audioUrl) return Promise.resolve(s.audioUrl);
+      if (s.audio) return Promise.resolve(s.audioUrl = s.audio);
+      if (!s.audioPromise) {
+        s.audioPromise = (async () => {
+          let data = s.audioData;
+          if (!data) {
+            const res = await fetch(`${firestoreUrl}/${s.id}?key=${FIREBASE.apiKey}&mask.fieldPaths=audio`);
+            if (!res.ok) throw new Error(`Loading recording failed (${res.status})`);
+            data = (await res.json()).fields?.audio?.stringValue;
+          }
+          const m = /^data:(audio\/[\w.+-]+)[^,]*;base64,([A-Za-z0-9+/=]+)$/.exec(data || "");
+          if (!m) throw new Error("No recording");
+          const bytes = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0));
+          return s.audioUrl = URL.createObjectURL(new Blob([bytes], { type: m[1] }));
+        })();
+        s.audioPromise.catch(() => { s.audioPromise = null; });   // let a later tap retry
+      }
+      return s.audioPromise;
+    }
+
+    let playing = null;   // { audio, btn }
+    function stopPlayback(){
+      if (!playing) return;
+      playing.audio.pause();
+      playing.btn.classList.remove("is-playing");
+      playing.btn.querySelector(".play-label").textContent = "Play it again";
+      playing = null;
+    }
+
+    async function playClip(s, btn){
+      const tappedSame = playing?.btn === btn;
+      stopPlayback();
+      if (tappedSame) return;   // second tap = stop
+
+      const label = btn.querySelector(".play-label");
+      let url = s.audioUrl;
+      if (!url) {
+        label.textContent = "Loading…";
+        try { url = await audioFor(s); }
+        catch (err) { label.textContent = "No recording found"; return; }
+      }
+      const audio = new Audio(url);
+      playing = { audio, btn };
+      btn.classList.add("is-playing");
+      label.textContent = "Diddy D!";
+      audio.onended = () => { if (playing?.audio === audio) stopPlayback(); };
+      // Some phones block playback that starts after a download; a second tap always works.
+      audio.play().catch(() => { if (playing?.audio === audio) stopPlayback(); label.textContent = "Tap to play"; });
+    }
+
+    /* ---------- The add form ---------- */
     const addCtl = document.getElementById("add-ctl");
     const addBtn = document.getElementById("add-btn");
     const hint = document.getElementById("add-hint");
     const hintText = document.getElementById("add-hint-text");
+    const retryBtn = document.getElementById("locate-btn");
     const form = document.getElementById("add-form");
     const fPlace = document.getElementById("f-place");
     const fBy = document.getElementById("f-by");
@@ -762,6 +889,10 @@
     const fDate = document.getElementById("f-date");
     const fError = document.getElementById("f-error");
     const fSubmit = document.getElementById("f-submit");
+    const recBtn = document.getElementById("rec-btn");
+    const recLabel = document.getElementById("rec-label");
+    const recPlay = document.getElementById("rec-play");
+    const recTime = document.getElementById("rec-time");
 
     const chosenColor = () => fColors.querySelector("input:checked")?.value;
     const pinColorForForm = () => {
@@ -796,12 +927,10 @@
     }
 
     async function lookUpPlace(latlng){
-      if (adding.placeEdited) return;
-      const ticket = ++adding.lookups;
       fPlace.placeholder = "Looking up…";
       try {
         const name = await placeNameFor(latlng);
-        if (adding && ticket === adding.lookups && !adding.placeEdited) fPlace.value = name;
+        if (adding && !fPlace.value.trim()) fPlace.value = name;
       } catch (err) {
         // Lookup is just a convenience; the visitor can type the place in.
       } finally {
@@ -853,81 +982,176 @@
       Promise.allSettled(done).then(() => layer.remove());
     }
 
+    /* ---------- Voice recorder ---------- */
+    const MAX_REC_MS = 5000;
+    const MAX_CLIP_BYTES = 280000;   // stays under the 400,000-character limit in the Firestore rules once encoded
+    // AAC first so iPhones can play everything; Chrome/Firefox fall back to Opus.
+    const REC_TYPES = ["audio/mp4;codecs=mp4a.40.2", "audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
+    let rec = null;    // the recording in progress
+    let clip = null;   // the finished recording: { dataUrl, url, seconds }
+
+    const blobToDataUrl = blob => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+
+    function renderRecorder(){
+      recBtn.classList.toggle("is-recording", !!rec);
+      recLabel.textContent = rec ? "Stop" : clip ? "Redo" : "Record";
+      recPlay.hidden = !!rec || !clip;
+      recTime.textContent = rec
+        ? `${Math.max(0, Math.ceil((MAX_REC_MS - (Date.now() - rec.startedAt)) / 1000))}s left`
+        : clip ? `${clip.seconds.toFixed(1)}s` : "";
+      fSubmit.disabled = !!rec;
+    }
+
+    function clearClip(){
+      if (clip) URL.revokeObjectURL(clip.url);
+      clip = null;
+    }
+
+    async function startRecording(){
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        showError("This browser can't record audio. Try Safari or Chrome.");
+        return;
+      }
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        showError("Allow microphone access to record your Diddy D.");
+        return;
+      }
+      if (!adding) { stream.getTracks().forEach(t => t.stop()); return; }
+
+      const mimeType = REC_TYPES.find(t => MediaRecorder.isTypeSupported(t));
+      const recorder = new MediaRecorder(stream, { ...(mimeType && { mimeType }), audioBitsPerSecond: 64000 });
+      const chunks = [];
+      const session = { recorder, startedAt: Date.now(), cancelled: false };
+      recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());   // turn the mic off
+        clearInterval(session.ticker);
+        clearTimeout(session.autoStop);
+        if (rec === session) rec = null;
+        if (session.cancelled) return;
+
+        const seconds = (Date.now() - session.startedAt) / 1000;
+        const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || "audio/webm" });
+        if (seconds < 0.5 || !blob.size) showError("That was too short. Try again.");
+        else if (blob.size > MAX_CLIP_BYTES) showError("That recording is too big. Try a shorter one.");
+        else clip = { dataUrl: await blobToDataUrl(blob), url: URL.createObjectURL(blob), seconds };
+        renderRecorder();
+      };
+
+      clearClip();
+      fError.hidden = true;
+      rec = session;
+      recorder.start();
+      session.ticker = setInterval(renderRecorder, 250);
+      session.autoStop = setTimeout(() => { if (recorder.state === "recording") recorder.stop(); }, MAX_REC_MS);
+      renderRecorder();
+    }
+
+    function cancelRecording(){
+      if (!rec) return;
+      rec.cancelled = true;
+      if (rec.recorder.state === "recording") rec.recorder.stop();
+      rec = null;
+    }
+
+    let previewAudio = null;
+    function playPreview(){
+      if (!clip) return;
+      previewAudio?.pause();
+      previewAudio = new Audio(clip.url);
+      previewAudio.play().catch(() => {});
+    }
+
+    /* ---------- Adding flow: find the visitor, lock the pin there, record ---------- */
     function startAdding(){
       map.closePopup();
-      adding = { marker: null, lookups: 0, placeEdited: false };
+      adding = { marker: null };
       form.reset();
       fError.hidden = true;
       fDate.value = new Date().toLocaleDateString("en-CA");   // today, as YYYY-MM-DD
+      clearClip();
+      renderRecorder();
       buildSwatches();
       addBtn.hidden = true;
       hint.hidden = false;
-      hintText.textContent = "Tap the map where it was screamed";
-      mapEl.classList.add("placing");
       if (isPhone.matches) sheet.classList.add("collapsed");
+      locate();
     }
 
-    function placeAt(latlng){
-      if (!adding.marker) {
-        adding.marker = L.marker(latlng, { icon: pinIcon(pinColorForForm()), draggable: true, zIndexOffset: 1000 }).addTo(map);
-        adding.marker.on("dragend", () => lookUpPlace(adding.marker.getLatLng()));
-        sheet.classList.remove("collapsed");
-        sheet.classList.add("adding");
-        form.hidden = false;
-        map.invalidateSize({ pan: false });
-      } else {
-        adding.marker.setLatLng(latlng);
+    function locate(){
+      const session = adding;
+      retryBtn.hidden = true;
+      if (!navigator.geolocation) {
+        hintText.textContent = "This browser can't share your location, so you can't add a Diddy D from it.";
+        return;
       }
-      hintText.textContent = "Tap again or drag the pin to move it";
-      map.panInside(latlng, { padding: [60, 60] });
+      hintText.textContent = "Finding where you are…";
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          if (adding !== session) return;
+          placeAt(L.latLng(pos.coords.latitude, pos.coords.longitude));
+        },
+        err => {
+          if (adding !== session) return;
+          hintText.textContent = err.code === err.PERMISSION_DENIED
+            ? "Location is blocked. Allow location for this site in your browser settings, then try again."
+            : "Couldn't find your location. Try again in a moment.";
+          retryBtn.hidden = false;
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+      );
+    }
+
+    // Lock the new pin to the visitor's location and open the form.
+    function placeAt(latlng){
+      adding.marker = L.marker(latlng, { icon: pinIcon(pinColorForForm()), interactive: false, zIndexOffset: 1000 }).addTo(map);
+      hint.hidden = true;
+      sheet.classList.remove("collapsed");
+      sheet.classList.add("adding");
+      form.hidden = false;
+      map.invalidateSize({ pan: false });
+      map.setView(latlng, Math.max(map.getZoom(), 13));
       lookUpPlace(latlng);
-      if (!isPhone.matches) fBy.focus();   // on phones, don't throw the keyboard over the map
     }
 
     function stopAdding(){
+      cancelRecording();
+      previewAudio?.pause();
+      clearClip();
       adding?.marker?.remove();
       adding = null;
       addBtn.hidden = false;
       hint.hidden = true;
-      mapEl.classList.remove("placing");
       sheet.classList.remove("adding");
       form.hidden = true;
+      fSubmit.disabled = false;
       map.invalidateSize({ pan: false });
-    }
-
-    function locate(){
-      if (!navigator.geolocation) {
-        hintText.textContent = "Location isn't available here. Tap the map instead.";
-        return;
-      }
-      hintText.textContent = "Finding you…";
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          if (!adding) return;
-          const here = L.latLng(pos.coords.latitude, pos.coords.longitude);
-          map.setView(here, Math.max(map.getZoom(), 12));
-          placeAt(here);
-        },
-        () => { if (adding) hintText.textContent = "Couldn't get your location. Tap the map instead."; },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
     }
 
     form.addEventListener("submit", async e => {
       e.preventDefault();
       const place = fPlace.value.trim();
       const typed = fBy.value.trim();
-      const problem = !place ? "Where was it screamed?" : !typed ? "Who screamed it?" : "";
+      const problem = !clip ? "Record your Diddy D first." : !place ? "Where was it screamed?" : !typed ? "Who screamed it?" : "";
       if (problem) { showError(problem); return; }
 
       const by = knownName(typed) || typed;
       const ll = adding.marker.getLatLng().wrap();
       const pin = {
         place, by,
-        lat: +ll.lat.toFixed(5),
-        lng: +ll.lng.toFixed(5),
+        lat: +ll.lat.toFixed(6),   // exact (6 decimals is about 10 cm)
+        lng: +ll.lng.toFixed(6),
         color: pinColorForForm(),
         date: fDate.value || "",
+        audioData: clip.dataUrl,
         video: "",
         note: ""
       };
@@ -936,7 +1160,7 @@
       fSubmit.textContent = "Adding…";
       fError.hidden = true;
       try {
-        await savePin(pin);
+        pin.id = await savePin(pin);
         stopAdding();
         const entry = addSighting(pin);
         renderList();
@@ -944,7 +1168,7 @@
         phraseConfetti();
       } catch (err) {
         console.error(err);
-        showError("Couldn't save the pin. Check your connection and try again.");
+        showError("Couldn't save your Diddy D. Check your connection and try again.");
       } finally {
         fSubmit.disabled = false;
         fSubmit.textContent = "Add pin";
@@ -965,11 +1189,13 @@
       addBtn.addEventListener("click", startAdding);
       document.getElementById("add-cancel").addEventListener("click", stopAdding);
       document.getElementById("f-cancel").addEventListener("click", stopAdding);
-      document.getElementById("locate-btn").addEventListener("click", locate);
-      map.on("click", e => { if (adding) placeAt(e.latlng); });
+      retryBtn.addEventListener("click", locate);
+      recBtn.addEventListener("click", () => {
+        if (rec) rec.recorder.stop(); else startRecording();
+      });
+      recPlay.addEventListener("click", playPreview);
       fBy.addEventListener("input", syncSwatches);
       fColors.addEventListener("change", syncSwatches);
-      fPlace.addEventListener("input", () => { if (adding) adding.placeEdited = fPlace.value.trim() !== ""; });
 
       // If nobody has moved the map yet, re-fit phones once everyone's pins have loaded.
       let mapTouched = false;
