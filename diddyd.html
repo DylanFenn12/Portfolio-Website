@@ -61,12 +61,15 @@
     }
     .sub{ margin: 4px 0 0; color: var(--muted); font-size: 15px; }
     .count{
+      display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 2px 18px;
       font-family: "JetBrains Mono", monospace;
       font-size: 14px;
       color: var(--cyan);
       white-space: nowrap;
     }
     .count strong{ font-size: 22px; }
+    .count .states{ color: var(--amber); cursor: default; }
+    .count .states[hidden]{ display: none; }
 
     main{ flex: 1; display: flex; min-height: 0; }
     #map{ flex: 1; min-height: 0; background: var(--bg); }
@@ -279,7 +282,7 @@
       header{ padding: calc(10px + env(safe-area-inset-top)) 16px 10px; flex-wrap: nowrap; align-items: center; }
       h1{ font-size: 26px; }
       .sub{ display: none; }
-      .count{ font-size: 12px; }
+      .count{ font-size: 12px; flex-direction: column; align-items: flex-end; gap: 0; }
       .count strong{ font-size: 18px; }
 
       main{ flex-direction: column; }
@@ -416,7 +419,10 @@
       <h1>DIDDY D!</h1>
       <p class="sub">Every place we've screamed it. Hover a pin for a peek, click to watch.</p>
     </div>
-    <div class="count"><strong id="count">0</strong> screams logged</div>
+    <div class="count">
+      <span><strong id="count">0</strong> screams logged</span>
+      <span class="states" id="states-wrap" hidden><strong id="states">0</strong>/50 states</span>
+    </div>
   </header>
 
   <main>
@@ -472,6 +478,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
   <script>
     /* =========================================================
        ADD NEW SIGHTINGS HERE
@@ -839,7 +846,76 @@
         Object.keys(tally).map(n => `<option value="${esc(n)}"></option>`).join("");
 
       document.getElementById("count").textContent = sightings.length;
+      updateStateCount();
     }
+
+    /* ---------- States reached ---------- */
+    // US state borders (public domain Census data). DC and territories are left out so it's out of 50.
+    const STATES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json";
+    let states = null;   // [{ name, polygons: [[outerRing, ...holes], ...] }]
+
+    // Ray casting: is the point inside this ring of [lng, lat] points?
+    function inRing(x, y, ring){
+      let inside = false;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [xi, yi] = ring[i], [xj, yj] = ring[j];
+        if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+      }
+      return inside;
+    }
+
+    // Distance in degrees from a point to the nearest edge of a ring.
+    function distToRing(x, y, ring){
+      let best = Infinity;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [x1, y1] = ring[j], [x2, y2] = ring[i];
+        const dx = x2 - x1, dy = y2 - y1;
+        const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy || 1)));
+        best = Math.min(best, Math.hypot(x - (x1 + t * dx), y - (y1 + t * dy)));
+      }
+      return best;
+    }
+
+    // The state a pin is in. The border map is simplified, so a pin just off a coast
+    // (a pier, a beach) counts for the nearest state within about 25 km.
+    function stateAt(lat, lng){
+      for (const st of states)
+        for (const [outer, ...holes] of st.polygons)
+          if (inRing(lng, lat, outer) && !holes.some(h => inRing(lng, lat, h))) return st.name;
+      let nearest = null, best = 0.25;
+      for (const st of states)
+        for (const [outer] of st.polygons) {
+          const d = distToRing(lng, lat, outer);
+          if (d < best) { best = d; nearest = st.name; }
+        }
+      return nearest;
+    }
+
+    function updateStateCount(){
+      if (!states) return;
+      const reached = new Set();
+      sightings.forEach(s => {
+        if (s.state === undefined) s.state = stateAt(s.lat, s.lng);
+        if (s.state) reached.add(s.state);
+      });
+      document.getElementById("states").textContent = reached.size;
+      const wrap = document.getElementById("states-wrap");
+      wrap.title = [...reached].sort().join(", ");   // hover to see which ones
+      wrap.hidden = false;
+    }
+
+    fetch(STATES_URL)
+      .then(res => res.json())
+      .then(topo => {
+        states = topojson.feature(topo, topo.objects.states).features
+          .filter(f => +f.id <= 56 && f.id !== "11")   // 50 states only: no DC (11) or territories (60+)
+          .map(f => ({
+            name: f.properties.name,
+            polygons: f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates
+          }));
+        updateStateCount();
+      })
+      .catch(err => console.error(err));   // the count just stays hidden
 
     SIGHTINGS.forEach(addSighting);
     render();
