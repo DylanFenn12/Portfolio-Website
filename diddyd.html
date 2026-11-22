@@ -188,6 +188,41 @@
     .f-error[hidden]{ display: none; }
     .f-actions{ display: flex; gap: 8px; justify-content: flex-end; }
     .f-pinned{ margin: -6px 0 14px; }
+    .add-form input[readonly]{ opacity: .7; }
+
+    /* Shared pins: count badge, and one row per Diddy D on the card */
+    .pin-count{
+      position: absolute; top: -9px; right: -11px;
+      min-width: 17px; height: 17px; padding: 0 4px;
+      border-radius: 9px;
+      background: #fff; color: #111;
+      font: 700 10px/17px "JetBrains Mono", monospace; text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,.5);
+      pointer-events: none;
+    }
+    .who{ color: var(--pin); font-weight: 600; }
+    .takes{ list-style: none; margin: 10px 0 0; padding: 0; max-height: 150px; overflow-y: auto; border-top: 1px solid var(--line); }
+    .takes li{ display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 14px; border-bottom: 1px solid var(--line); }
+    .takes li:last-child{ border-bottom: 0; }
+    .take-play{
+      width: 28px; height: 28px; flex-shrink: 0;
+      border: 0; border-radius: 50%; cursor: pointer;
+      background: linear-gradient(135deg, var(--magenta), var(--amber));
+      display: grid; place-items: center;
+    }
+    .take-play::before{   /* triangle */
+      content: ""; margin-left: 3px;
+      border-style: solid; border-width: 6px 0 6px 10px;
+      border-color: transparent transparent transparent #14070d;
+    }
+    .take-play.is-playing::before{   /* pause bars */
+      margin-left: 0; width: 3px; height: 11px; border: 0;
+      background: #14070d; box-shadow: 5px 0 0 #14070d; transform: translateX(-2.5px);
+    }
+    .take-play.is-empty{ background: var(--line); cursor: default; }
+    .take-play.is-empty::before{ display: none; }
+    .take-date{ margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); }
+    @media (pointer: coarse){ .take-play{ width: 34px; height: 34px; } }
 
     /* Voice recorder in the form */
     .f-rec{ margin: 0 0 14px; }
@@ -398,7 +433,7 @@
         <label>Where?
           <input type="text" id="f-place" maxlength="80" placeholder="City, ST" autocomplete="off" />
         </label>
-        <p class="f-note f-pinned">The pin is locked to where you are right now.</p>
+        <p class="f-note f-pinned" id="f-pinned">The pin is locked to where you are right now.</p>
         <div class="f-rec">
           <p class="f-label">Your Diddy D <span>(required)</span></p>
           <div class="rec-row">
@@ -575,13 +610,21 @@
       try { localStorage.setItem("dd-basemap", e.name); } catch (err) {}
     });
 
-    const pinIcon = color => L.divIcon({
-      className: "dd-marker",
-      html: `<div class="dd-pin" style="--pin:${color}"></div>`,
-      iconSize: [22, 22],
-      iconAnchor: [11, 26],
-      popupAnchor: [0, -26]
-    });
+    // One color fills the pin; a shared pin is split into each person's color.
+    const pinFill = colors => colors.length === 1 ? colors[0]
+      : `conic-gradient(${colors.map((c, i) => `${c} ${i / colors.length * 100}% ${(i + 1) / colors.length * 100}%`).join(", ")})`;
+
+    const pinIcon = (colors, count = 1) => {
+      colors = [].concat(colors);
+      return L.divIcon({
+        className: "dd-marker",
+        html: `<div class="dd-pin" style="--pin:${colors[0]};background:${pinFill(colors)}"></div>` +
+              (count > 1 ? `<span class="pin-count">${count}</span>` : ""),
+        iconSize: [22, 22],
+        iconAnchor: [11, 26],
+        popupAnchor: [0, -26]
+      });
+    };
 
     const esc = (s = "") => String(s).replace(/[&<>"']/g, c =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -593,13 +636,7 @@
 
     const hasRecording = s => Boolean(s.id || s.audio || s.audioData);
 
-    function mediaHtml(s){
-      const video = s.video;
-      if (!video) {
-        return hasRecording(s)
-          ? `<button type="button" class="play-btn"><span class="play-icon" aria-hidden="true"></span><span class="play-label">Play the Diddy D</span></button>`
-          : '<div class="no-video">DIDDY D!</div>';
-      }
+    function videoHtml(video){
       const yt = youTubeId(video);
       if (yt) {
         return `<iframe src="https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}"
@@ -611,17 +648,41 @@
     const formatDate = d =>
       new Date(d + "T12:00:00").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
-    // The hover card is text only; the video or recording loads once the pin is clicked.
-    function cardHtml(s, compact){
-      const date = s.date ? formatDate(s.date) : "";
-      const hint = s.video ? "Click for video" : hasRecording(s) ? "Click to hear it" : "";
+    // Everyone on a pin, once each, in the order they first screamed there.
+    const peopleOn = g => [...new Set(g.items.map(s => s.by))];
+    // "A", "A & B", "A, B & C", each name in its color
+    function namesHtml(names){
+      const tags = names.map(n => `<span class="who" style="--pin:${colorOf(n)}">${esc(n)}</span>`);
+      return tags.length < 2 ? tags.join("") : `${tags.slice(0, -1).join(", ")} &amp; ${tags[tags.length - 1]}`;
+    }
+
+    // The hover card is text only; videos and recordings load once the pin is clicked.
+    // A shared pin lists each Diddy D with its own play button; the big button plays them all.
+    function cardHtml(g, compact){
+      const single = g.items.length === 1 ? g.items[0] : null;
+      const voiced = g.items.filter(hasRecording);
+      const hint = single?.video ? "Click for video"
+        : voiced.length > 1 ? `Click to hear all ${voiced.length}` : voiced.length ? "Click to hear it" : "";
+      const media = single?.video ? videoHtml(single.video)
+        : voiced.length
+          ? `<button type="button" class="play-btn" data-play="all"><span class="play-icon" aria-hidden="true"></span><span class="play-label">${voiced.length > 1 ? `Play all ${voiced.length}` : "Play the Diddy D"}</span></button>`
+          : '<div class="no-video">DIDDY D!</div>';
+      const takes = single || compact ? "" : `<ul class="takes">${g.items.map((s, i) => `
+        <li>
+          ${hasRecording(s)
+            ? `<button type="button" class="take-play" data-play="${i}" aria-label="Play ${esc(s.by)}'s Diddy D"></button>`
+            : `<span class="take-play is-empty" aria-hidden="true"></span>`}
+          <span class="who" style="--pin:${colorOf(s.by)}">${esc(s.by)}</span>
+          ${s.date ? `<span class="take-date">${formatDate(s.date)}</span>` : ""}
+        </li>`).join("")}</ul>`;
       return `
-        ${compact ? "" : `<div class="card-media">${mediaHtml(s)}</div>`}
+        ${compact ? "" : `<div class="card-media">${media}</div>`}
         <div class="card-body">
-          <p class="card-place">${esc(s.place)}</p>
-          <p class="card-by">Screamed by <span style="--pin:${colorOf(s.by)}">${esc(s.by)}</span></p>
-          ${date ? `<p class="card-meta">${date}</p>` : ""}
-          ${s.note ? `<p class="card-note">${esc(s.note)}</p>` : ""}
+          <p class="card-place">${esc(g.place)}</p>
+          <p class="card-by">Screamed by ${namesHtml(peopleOn(g))}</p>
+          ${single?.date ? `<p class="card-meta">${formatDate(single.date)}</p>` : ""}
+          ${takes}
+          ${single?.note ? `<p class="card-note">${esc(single.note)}</p>` : ""}
           ${compact && hint ? `<p class="card-hint">${hint}</p>` : ""}
         </div>`;
     }
@@ -643,19 +704,45 @@
       if (isPhone.matches) sheet.classList.toggle("collapsed");
     });
 
-    // Every pin on the map: the built-in SIGHTINGS plus any added through the site.
-    const entries = [];
+    // Every Diddy D: the built-in SIGHTINGS plus any added through the site.
+    // Diddy Ds within MERGE_RADIUS_M of each other share one pin.
+    const MERGE_RADIUS_M = 100;
+    const sightings = [];
+    let groups = [];      // { latlng, place, items, marker, li, select }
     const spotList = document.getElementById("spots");
-    let adding = null;   // set while someone is placing a new pin
+    let adding = null;   // set while someone is adding a new Diddy D
+
+    function addSighting(s){
+      colorOf(s.by, s.color);   // lock in the person's color
+      sightings.push(s);
+    }
+
+    const groupNear = latlng => groups.find(g => map.distance(g.latlng, latlng) <= MERGE_RADIUS_M);
+    const groupOf = s => groups.find(g => g.items.includes(s));
+    const latestDate = g => g.items.reduce((d, s) => (s.date || "") > d ? s.date : d, "");
+
+    // The earliest Diddy D at a spot anchors the pin (its position and place name);
+    // later ones within range join it.
+    function buildGroups(){
+      const ordered = sightings.map((s, i) => ({ s, i })).sort((a, b) =>
+        (a.s.date || "9999").localeCompare(b.s.date || "9999") || a.i - b.i);
+      groups = [];
+      for (const { s } of ordered) {
+        const latlng = L.latLng(s.lat, s.lng);
+        const g = groupNear(latlng);
+        if (g) g.items.push(s);
+        else groups.push({ latlng, place: s.place, items: [s] });
+      }
+    }
 
     // Hover opens the card; moving the mouse onto the card keeps it open.
     // Clicking a pin "locks" it open until it's closed with the X.
-    function addSighting(s){
-      const color = colorOf(s.by, s.color);
-      const marker = L.marker([s.lat, s.lng], { icon: pinIcon(color), title: s.place }).addTo(map);
-      // Popup content is rebuilt on every open so videos restart and stop playing once closed.
+    function drawGroup(g){
+      const colors = peopleOn(g).map(n => colorOf(n));
+      const marker = L.marker(g.latlng, { icon: pinIcon(colors, g.items.length), title: g.place }).addTo(map);
+      // Popup content is rebuilt on every open so media restarts and stops once closed.
       let compactCard = false;
-      marker.bindPopup(() => cardHtml(s, compactCard), { autoPan: false });
+      marker.bindPopup(() => cardHtml(g, compactCard), { autoPan: false });
       const popup = marker.getPopup();
 
       let closeTimer = null;
@@ -688,20 +775,22 @@
       };
 
       // Sidebar row: hovering highlights the pin, clicking flies to it.
+      const latest = latestDate(g);
+      const meta = [latest && formatDate(latest), g.items.length > 1 && `${g.items.length} Diddy Ds`].filter(Boolean).join(" · ");
       const li = document.createElement("li");
       li.innerHTML = `
-        <button class="spot" type="button" style="--pin:${color}">
-          <span class="dot"></span>
+        <button class="spot" type="button" style="--pin:${colors[0]}">
+          <span class="dot" style="background:${pinFill(colors)}"></span>
           <span>
-            <span class="spot-place">${esc(s.place)}</span>
-            <span class="spot-by">by <span>${esc(s.by)}</span></span>
-            ${s.date ? `<span class="spot-date">${formatDate(s.date)}</span>` : ""}
+            <span class="spot-place">${esc(g.place)}</span>
+            <span class="spot-by">by ${namesHtml(peopleOn(g))}</span>
+            ${meta ? `<span class="spot-date">${meta}</span>` : ""}
           </span>
         </button>`;
       const row = li.firstElementChild;
       const setHot = on => {
         row.classList.toggle("is-hot", on);
-        marker.getElement()?.firstElementChild.classList.toggle("is-hot", on);
+        marker.getElement()?.querySelector(".dd-pin").classList.toggle("is-hot", on);
       };
       row.addEventListener("click", select);
 
@@ -722,28 +811,28 @@
         el.classList.toggle("dd-compact", compactCard);
         el.addEventListener("mouseenter", cancelClose);
         el.addEventListener("mouseleave", scheduleClose);
-        // Leaflet stops clicks inside popups from bubbling, so wire the play button here.
-        const playBtn = el.querySelector(".play-btn");
-        if (playBtn) {
-          audioFor(s).catch(() => {});   // start downloading now so the tap plays instantly
-          playBtn.addEventListener("click", () => playClip(s, playBtn));
-        }
+        // Leaflet stops clicks inside popups from bubbling, so wire the play buttons here.
+        const voiced = g.items.filter(hasRecording);
+        if (!compactCard) voiced.forEach(s => audioFor(s).catch(() => {}));   // download now so taps play instantly
+        el.querySelectorAll("[data-play]").forEach(btn => btn.addEventListener("click", () =>
+          playClips(btn.dataset.play === "all" ? voiced : [g.items[+btn.dataset.play]], btn)));
       });
       marker.on("popupclose", () => { locked = false; stopPlayback(); });
 
-      const entry = { s, li, select };
-      entries.push(entry);
-      return entry;
+      Object.assign(g, { marker, li, select });
     }
 
-    // Rebuild the list (newest first), the legend, the name suggestions and the count.
-    function renderList(){
-      [...entries]
-        .sort((a, b) => (b.s.date || "").localeCompare(a.s.date || ""))
-        .forEach(e => spotList.appendChild(e.li));
+    // Redraw every pin and list row (newest first), plus the legend, name suggestions and count.
+    function render(){
+      groups.forEach(g => { g.marker.remove(); g.li.remove(); });
+      buildGroups();
+      groups.forEach(drawGroup);
+      [...groups]
+        .sort((a, b) => latestDate(b).localeCompare(latestDate(a)))
+        .forEach(g => spotList.appendChild(g.li));
 
       const tally = {};
-      entries.forEach(({ s }) => { tally[s.by] = (tally[s.by] || 0) + 1; });
+      sightings.forEach(s => { tally[s.by] = (tally[s.by] || 0) + 1; });
       document.getElementById("legend").innerHTML = Object.entries(tally)
         .sort((a, b) => b[1] - a[1])
         .map(([name, n]) => `<li style="--pin:${colorOf(name)}"><span class="dot"></span>${esc(name)} <b>${n}</b></li>`)
@@ -751,11 +840,11 @@
       document.getElementById("people-list").innerHTML =
         Object.keys(tally).map(n => `<option value="${esc(n)}"></option>`).join("");
 
-      document.getElementById("count").textContent = entries.length;
+      document.getElementById("count").textContent = sightings.length;
     }
 
     SIGHTINGS.forEach(addSighting);
-    renderList();
+    render();
 
     /* ---------- Add a Diddy D (saved to Firebase so everyone sees it) ---------- */
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/pins`;
@@ -845,34 +934,52 @@
       return s.audioPromise;
     }
 
-    let playing = null;   // { audio, btn }
+    let playing = null;   // { btn, label, idleText, audio }
     function stopPlayback(){
       if (!playing) return;
-      playing.audio.pause();
-      playing.btn.classList.remove("is-playing");
-      playing.btn.querySelector(".play-label").textContent = "Play it again";
+      const { btn, label, audio, idleText } = playing;
       playing = null;
+      audio?.pause();
+      btn.classList.remove("is-playing");
+      if (label) label.textContent = idleText;
     }
 
-    async function playClip(s, btn){
+    // Play one or more recordings back to back. The big button shows whose turn it is.
+    async function playClips(items, btn){
       const tappedSame = playing?.btn === btn;
       stopPlayback();
       if (tappedSame) return;   // second tap = stop
 
       const label = btn.querySelector(".play-label");
-      let url = s.audioUrl;
-      if (!url) {
-        label.textContent = "Loading…";
-        try { url = await audioFor(s); }
-        catch (err) { label.textContent = "No recording found"; return; }
-      }
-      const audio = new Audio(url);
-      playing = { audio, btn };
+      const session = { btn, label, idleText: label?.textContent.replace(/^(Loading…|Tap to play|No recording found)$/, "Play it again") };
+      playing = session;
       btn.classList.add("is-playing");
-      label.textContent = "Diddy D!";
-      audio.onended = () => { if (playing?.audio === audio) stopPlayback(); };
-      // Some phones block playback that starts after a download; a second tap always works.
-      audio.play().catch(() => { if (playing?.audio === audio) stopPlayback(); label.textContent = "Tap to play"; });
+      let played = 0;
+      for (const s of items) {
+        let url = s.audioUrl;
+        if (!url) {
+          if (label) label.textContent = "Loading…";
+          try { url = await audioFor(s); } catch (err) { continue; }
+          if (playing !== session) return;
+        }
+        const audio = session.audio = new Audio(url);
+        if (label) label.textContent = items.length > 1 ? s.by : "Diddy D!";
+        try {
+          await audio.play();
+        } catch (err) {
+          // Some phones block playback that starts after a download; a second tap always works.
+          stopPlayback();
+          if (label) label.textContent = "Tap to play";
+          return;
+        }
+        played++;
+        await new Promise(done => { audio.onended = done; audio.onpause = done; });
+        if (playing !== session) return;
+      }
+      if (playing === session) {
+        session.idleText = played ? (items.length > 1 ? `Play all ${items.length} again` : "Play it again") : "No recording found";
+        stopPlayback();
+      }
     }
 
     /* ---------- The add form ---------- */
@@ -883,6 +990,8 @@
     const retryBtn = document.getElementById("locate-btn");
     const form = document.getElementById("add-form");
     const fPlace = document.getElementById("f-place");
+    const fPinned = document.getElementById("f-pinned");
+    const PINNED_NOTE = fPinned.textContent;
     const fBy = document.getElementById("f-by");
     const fColors = document.getElementById("f-colors");
     const fNote = document.getElementById("f-color-note");
@@ -1119,7 +1228,17 @@
       form.hidden = false;
       map.invalidateSize({ pan: false });
       map.setView(latlng, Math.max(map.getZoom(), 13));
-      lookUpPlace(latlng);
+
+      // Standing at an existing pin? The new Diddy D joins it under that pin's place name.
+      adding.joining = groupNear(latlng);
+      if (adding.joining) {
+        const names = peopleOn(adding.joining);
+        fPlace.value = adding.joining.place;
+        fPlace.readOnly = true;
+        fPinned.textContent = `You're at ${names.length < 2 ? names[0] : names.slice(0, -1).join(", ") + " & " + names[names.length - 1]}'s pin, so your Diddy D will be added to it.`;
+      } else {
+        lookUpPlace(latlng);
+      }
     }
 
     function stopAdding(){
@@ -1128,6 +1247,8 @@
       clearClip();
       adding?.marker?.remove();
       adding = null;
+      fPlace.readOnly = false;
+      fPinned.textContent = PINNED_NOTE;
       addBtn.hidden = false;
       hint.hidden = true;
       sheet.classList.remove("adding");
@@ -1162,9 +1283,9 @@
       try {
         pin.id = await savePin(pin);
         stopAdding();
-        const entry = addSighting(pin);
-        renderList();
-        entry.select();
+        addSighting(pin);
+        render();
+        groupOf(pin).select();
         phraseConfetti();
       } catch (err) {
         console.error(err);
@@ -1203,9 +1324,9 @@
       loadPins()
         .then(pins => {
           pins.forEach(addSighting);
-          renderList();
-          if (isPhone.matches && !mapTouched && entries.length) {
-            map.fitBounds(entries.map(e => [e.s.lat, e.s.lng]), { padding: [50, 50], maxZoom: 6 });
+          render();
+          if (isPhone.matches && !mapTouched && groups.length) {
+            map.fitBounds(groups.map(g => g.latlng), { padding: [50, 50], maxZoom: 6 });
           }
         })
         .catch(err => console.error(err));
