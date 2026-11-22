@@ -157,7 +157,7 @@
     .add-form[hidden], aside.adding .side-head, aside.adding .spots{ display: none; }
     .add-form label, .add-form fieldset{ display: block; margin: 0 0 12px; padding: 0; border: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
     .add-form legend{ padding: 0; margin-bottom: 6px; }
-    .add-form input[type="text"], .add-form input[type="date"]{
+    .add-form input[type="text"]{
       display: block; width: 100%;
       margin-top: 5px;
       padding: 10px 12px;
@@ -452,9 +452,7 @@
           <div class="swatches" id="f-colors"></div>
           <p class="f-note" id="f-color-note"></p>
         </fieldset>
-        <label>When?
-          <input type="date" id="f-date" />
-        </label>
+        <p class="f-label">When? <span id="f-date"></span></p>
         <p class="f-error" id="f-error" role="alert" hidden></p>
         <div class="f-actions">
           <button type="button" class="btn btn-ghost" id="f-cancel">Cancel</button>
@@ -996,6 +994,7 @@
     const fColors = document.getElementById("f-colors");
     const fNote = document.getElementById("f-color-note");
     const fDate = document.getElementById("f-date");
+    const today = () => new Date().toLocaleDateString("en-CA");   // YYYY-MM-DD in the visitor's time zone
     const fError = document.getElementById("f-error");
     const fSubmit = document.getElementById("f-submit");
     const recBtn = document.getElementById("rec-btn");
@@ -1185,7 +1184,7 @@
       adding = { marker: null };
       form.reset();
       fError.hidden = true;
-      fDate.value = new Date().toLocaleDateString("en-CA");   // today, as YYYY-MM-DD
+      fDate.textContent = `Today, ${formatDate(today())}`;
       clearClip();
       renderRecorder();
       buildSwatches();
@@ -1271,7 +1270,7 @@
         lat: +ll.lat.toFixed(6),   // exact (6 decimals is about 10 cm)
         lng: +ll.lng.toFixed(6),
         color: pinColorForForm(),
-        date: fDate.value || "",
+        date: today(),   // always the day it's added; visitors can't pick a date
         audioData: clip.dataUrl,
         video: "",
         note: ""
