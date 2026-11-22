@@ -1168,7 +1168,9 @@
         if (session.cancelled) return;
 
         const seconds = (Date.now() - session.startedAt) / 1000;
-        const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || "audio/webm" });
+        // Keep just "audio/mp4": iPhones label clips "audio/mp4; codecs=…" (with a space), which the Firestore rules reject.
+        const type = (recorder.mimeType || mimeType || "audio/webm").split(";")[0].trim();
+        const blob = new Blob(chunks, { type });
         if (seconds < 0.5 || !blob.size) showError("That was too short. Try again.");
         else if (blob.size > MAX_CLIP_BYTES) showError("That recording is too big. Try a shorter one.");
         else clip = { dataUrl: await blobToDataUrl(blob), url: URL.createObjectURL(blob), seconds };
